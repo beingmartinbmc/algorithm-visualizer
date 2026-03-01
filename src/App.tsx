@@ -8,6 +8,7 @@ import TreeTraversalPage from '@/features/tree-traversal/TreeTraversalPage';
 import BalancedTreePage from '@/features/balanced-trees/BalancedTreePage';
 import GamesPage from '@/features/games/GamesPage';
 import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
+import DijkstraGamePage from '@/features/games/dijkstra/DijkstraGamePage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/balanced-trees" element={<BalancedTreePage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/fibonacci" element={<FibonacciGamePage />} />
+          <Route path="/games/dijkstra" element={<DijkstraGamePage />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -11,6 +11,15 @@ const games = [
     gradient: 'from-cyan-500 to-teal-500',
     shadowColor: 'shadow-cyan-500/20',
   },
+  {
+    path: '/games/dijkstra',
+    title: 'Dijkstra Delivery Simulator',
+    subtitle: 'Based on Edsger W. Dijkstra\'s shortest-path algorithm',
+    description: 'Navigate a city graph as a delivery driver. Build your route node-by-node, then compare it to the optimal Dijkstra shortest path. Watch the algorithm run step-by-step with live priority queue updates.',
+    skills: ['Graph Theory', 'Shortest Path', 'Greedy Algorithms', 'Priority Queues'],
+    gradient: 'from-amber-500 to-orange-500',
+    shadowColor: 'shadow-amber-500/20',
+  },
 ];
 
 export default function GamesPage() {
