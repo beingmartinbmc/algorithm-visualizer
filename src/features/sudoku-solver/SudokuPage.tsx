@@ -27,8 +27,8 @@ export default function SudokuPage() {
   } = useSudoku();
 
   return (
-    <div className="flex flex-1 gap-6 overflow-hidden p-6">
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 overflow-auto">
+    <div className="flex flex-1 flex-col md:flex-row gap-4 md:gap-6 overflow-auto p-4 md:p-6">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 min-h-0">
         <SudokuGridComponent
           grid={grid}
           gridSize={gridSize}
