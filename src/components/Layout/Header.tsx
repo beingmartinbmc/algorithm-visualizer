@@ -1,11 +1,10 @@
-import { Network, BarChart3, Grid3X3, TreePine, GitBranch, Gamepad2 } from 'lucide-react';
+import { Network, BarChart3, Grid3X3, GitBranch, Gamepad2, Waypoints } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
-  { path: '/graph-traversal', label: 'Graph Traversal', icon: Network },
+  { path: '/traversals', label: 'Traversals', icon: Waypoints },
   { path: '/sorting', label: 'Sorting', icon: BarChart3 },
   { path: '/sudoku-solver', label: 'Sudoku Solver', icon: Grid3X3 },
-  { path: '/tree-traversal', label: 'Tree Traversal', icon: TreePine },
   { path: '/balanced-trees', label: 'BST / AVL / RB', icon: GitBranch },
   { path: '/games', label: 'Games', icon: Gamepad2 },
 ];
@@ -24,8 +23,8 @@ export default function Header() {
         </Link>
         <nav className="flex items-center gap-1 ml-4">
           {navItems.map(({ path, label, icon: Icon }) => {
-            const isActive = path === '/games'
-              ? location.pathname.startsWith('/games')
+            const isActive = path === '/games' || path === '/traversals'
+              ? location.pathname.startsWith(path)
               : location.pathname === path;
             return (
               <Link

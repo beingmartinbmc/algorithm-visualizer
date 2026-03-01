@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Network, BarChart3, Grid3X3, TreePine, GitBranch, Gamepad2, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { BarChart3, Grid3X3, GitBranch, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
-    path: '/graph-traversal',
-    title: 'Graph Traversal',
-    description: 'Visualize BFS, DFS, Dijkstra, and A* pathfinding algorithms on an interactive grid. Draw walls, place start/end points, and watch the algorithm explore.',
-    icon: Network,
+    path: '/traversals',
+    title: 'Traversals',
+    description: 'Explore graph and tree traversal algorithms with interactive visualizations. Pathfind through grids with BFS, DFS, Dijkstra & A*, or step through binary tree traversals.',
+    icon: Waypoints,
     gradient: 'from-indigo-500 to-blue-500',
     shadowColor: 'shadow-indigo-500/20',
-    tags: ['BFS', 'DFS', 'Dijkstra', 'A*'],
+    tags: ['BFS', 'DFS', 'Dijkstra', 'A*', 'In-Order', 'Pre-Order', 'Post-Order'],
   },
   {
     path: '/sorting',
@@ -28,15 +28,6 @@ const modules = [
     gradient: 'from-emerald-500 to-teal-500',
     shadowColor: 'shadow-emerald-500/20',
     tags: ['4×4', '9×9', '16×16', 'Backtracking'],
-  },
-  {
-    path: '/tree-traversal',
-    title: 'Tree Traversals',
-    description: 'Visualize In-Order, Pre-Order, Post-Order, and Level-Order traversals on a randomized binary tree with step-by-step playback.',
-    icon: TreePine,
-    gradient: 'from-amber-500 to-orange-500',
-    shadowColor: 'shadow-amber-500/20',
-    tags: ['In-Order', 'Pre-Order', 'Post-Order', 'Level-Order'],
   },
   {
     path: '/balanced-trees',
