@@ -20,6 +20,7 @@ export default function SudokuPage() {
     solveComplete,
     reset,
     startCustomPuzzle,
+    editCurrentPuzzle,
     lockCustomPuzzle,
     setCellValue,
     selectCell,
@@ -57,6 +58,7 @@ export default function SudokuPage() {
         onSolveComplete={solveComplete}
         onReset={reset}
         onStartCustom={startCustomPuzzle}
+        onEditCurrent={editCurrentPuzzle}
         onLockCustom={lockCustomPuzzle}
       />
     </div>
