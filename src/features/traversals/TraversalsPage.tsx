@@ -36,7 +36,7 @@ export default function TraversalsPage() {
             <span className="text-xs font-medium text-indigo-300">Traversal Algorithms</span>
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-white">
-            Explore <span className="bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">Traversals</span>
+            Explore <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Traversals</span>
           </h2>
           <p className="mt-3 max-w-lg mx-auto text-sm text-slate-400 leading-relaxed">
             Visualize how algorithms navigate graphs and trees — from grid-based pathfinding to binary tree walks.
@@ -44,7 +44,7 @@ export default function TraversalsPage() {
         </section>
 
         <section className="px-6 pb-12">
-          <div className="mx-auto max-w-2xl grid gap-5">
+          <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-5">
             {traversals.map(({ path, title, subtitle, description, skills, gradient, shadowColor, icon: Icon }) => (
               <Link
                 key={path}
