@@ -42,7 +42,7 @@ export default function GamesPage() {
         </section>
 
         <section className="px-6 pb-12">
-          <div className="mx-auto max-w-2xl grid gap-5">
+          <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-5">
             {games.map(({ path, title, subtitle, description, skills, gradient, shadowColor }) => (
               <Link
                 key={path}
