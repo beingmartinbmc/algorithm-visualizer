@@ -1,5 +1,4 @@
 import type { GridMatrix, AlgorithmResult, GridNode } from '../types/graph';
-import { NodeType } from '../types/graph';
 import { getNeighbors, reconstructPath, cloneGrid } from './helpers';
 
 export function bfs(

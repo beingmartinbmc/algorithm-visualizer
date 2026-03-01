@@ -1,5 +1,5 @@
 import { useRef, useCallback } from 'react';
-import type { VisualizationSpeed } from '@/types/graph';
+import type { VisualizationSpeed } from '@/features/graph-traversal/types/graph';
 
 const PENTATONIC_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
 
