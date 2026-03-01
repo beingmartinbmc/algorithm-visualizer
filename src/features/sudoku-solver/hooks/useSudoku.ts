@@ -73,6 +73,14 @@ export function useSudoku() {
     setSelectedCell(null);
   }, [gridSize]);
 
+  const editCurrentPuzzle = useCallback(() => {
+    setSteps([]);
+    setStepIndex(-1);
+    setIsSolved(false);
+    setIsEditing(true);
+    setSelectedCell(null);
+  }, []);
+
   const lockCustomPuzzle = useCallback(() => {
     setOriginalValues(puzzleValues.map((row) => [...row]));
     setIsEditing(false);
@@ -177,6 +185,7 @@ export function useSudoku() {
     solveComplete,
     reset,
     startCustomPuzzle,
+    editCurrentPuzzle,
     lockCustomPuzzle,
     setCellValue,
     selectCell,

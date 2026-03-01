@@ -7,6 +7,7 @@ import {
   Loader2,
   PenLine,
   Lock,
+  Pencil,
 } from 'lucide-react';
 import type { GridSize } from '../types/sudoku';
 import { GRID_SIZE_INFO } from '../types/sudoku';
@@ -26,6 +27,7 @@ interface SudokuControlsProps {
   onSolveComplete: () => void;
   onReset: () => void;
   onStartCustom: () => void;
+  onEditCurrent: () => void;
   onLockCustom: () => void;
 }
 
@@ -46,6 +48,7 @@ export default function SudokuControls({
   onSolveComplete,
   onReset,
   onStartCustom,
+  onEditCurrent,
   onLockCustom,
 }: SudokuControlsProps) {
   return (
@@ -87,14 +90,24 @@ export default function SudokuControls({
           Custom Puzzle
         </h3>
         {!isEditing ? (
-          <button
-            onClick={onStartCustom}
-            disabled={isGenerating}
-            className="w-full flex items-center justify-center gap-2 rounded-lg bg-amber-500/15 px-3 py-2.5 text-sm font-medium text-amber-300 ring-1 ring-amber-500/30 transition-all hover:bg-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <PenLine size={14} />
-            Enter Your Own Puzzle
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={onStartCustom}
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-amber-500/15 px-3 py-2.5 text-sm font-medium text-amber-300 ring-1 ring-amber-500/30 transition-all hover:bg-amber-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <PenLine size={14} />
+              Start From Blank
+            </button>
+            <button
+              onClick={onEditCurrent}
+              disabled={isGenerating}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-sky-500/15 px-3 py-2.5 text-sm font-medium text-sky-300 ring-1 ring-sky-500/30 transition-all hover:bg-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Pencil size={14} />
+              Edit Current Puzzle
+            </button>
+          </div>
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-amber-300/80 leading-relaxed">
