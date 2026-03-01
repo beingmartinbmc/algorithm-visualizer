@@ -18,7 +18,7 @@ function balanceFactor(node: BTreeNode): number {
   return height(node.left) - height(node.right);
 }
 
-function rotateRight(y: BTreeNode, steps: TreeStep[], root: BTreeNode | null): BTreeNode {
+function rotateRight(y: BTreeNode, steps: TreeStep[], _root: BTreeNode | null): BTreeNode {
   const x = y.left!;
   steps.push({ description: `Right rotate at ${y.value}`, highlightIds: [y.id, x.id], snapshotValues: [], snapshotRoot: null });
   y.left = x.right;
@@ -28,7 +28,7 @@ function rotateRight(y: BTreeNode, steps: TreeStep[], root: BTreeNode | null): B
   return x;
 }
 
-function rotateLeft(x: BTreeNode, steps: TreeStep[], root: BTreeNode | null): BTreeNode {
+function rotateLeft(x: BTreeNode, steps: TreeStep[], _root: BTreeNode | null): BTreeNode {
   const y = x.right!;
   steps.push({ description: `Left rotate at ${x.value}`, highlightIds: [x.id, y.id], snapshotValues: [], snapshotRoot: null });
   x.right = y.left;

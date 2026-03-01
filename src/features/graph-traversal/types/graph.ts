@@ -1,12 +1,14 @@
-export enum NodeType {
-  EMPTY = 'empty',
-  WALL = 'wall',
-  START = 'start',
-  END = 'end',
-  VISITED = 'visited',
-  PATH = 'path',
-  EXPLORING = 'exploring',
-}
+export const NodeType = {
+  EMPTY: 'empty',
+  WALL: 'wall',
+  START: 'start',
+  END: 'end',
+  VISITED: 'visited',
+  PATH: 'path',
+  EXPLORING: 'exploring',
+} as const;
+
+export type NodeType = (typeof NodeType)[keyof typeof NodeType];
 
 export interface GridNode {
   row: number;
