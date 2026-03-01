@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Network, BarChart3, Grid3X3, TreePine, GitBranch, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { Network, BarChart3, Grid3X3, TreePine, GitBranch, Gamepad2, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
@@ -46,6 +46,15 @@ const modules = [
     gradient: 'from-rose-500 to-red-500',
     shadowColor: 'shadow-rose-500/20',
     tags: ['BST', 'AVL', 'Red-Black', 'Rotations'],
+  },
+  {
+    path: '/games',
+    title: 'Games',
+    description: 'Master algorithms and mathematical concepts through interactive games. Challenge yourself, build intuition, and learn by doing — not just watching.',
+    icon: Gamepad2,
+    gradient: 'from-cyan-500 to-teal-500',
+    shadowColor: 'shadow-cyan-500/20',
+    tags: ['Fibonacci Spiral', 'Golden Ratio', 'Pattern Recognition', 'Game'],
   },
 ];
 

@@ -6,6 +6,8 @@ import SortingPage from '@/features/sorting/SortingPage';
 import SudokuPage from '@/features/sudoku-solver/SudokuPage';
 import TreeTraversalPage from '@/features/tree-traversal/TreeTraversalPage';
 import BalancedTreePage from '@/features/balanced-trees/BalancedTreePage';
+import GamesPage from '@/features/games/GamesPage';
+import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/sudoku-solver" element={<SudokuPage />} />
           <Route path="/tree-traversal" element={<TreeTraversalPage />} />
           <Route path="/balanced-trees" element={<BalancedTreePage />} />
+          <Route path="/games" element={<GamesPage />} />
+          <Route path="/games/fibonacci" element={<FibonacciGamePage />} />
         </Routes>
       </div>
     </BrowserRouter>
