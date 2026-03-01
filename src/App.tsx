@@ -6,7 +6,8 @@ import SortingPage from '@/features/sorting/SortingPage';
 import SudokuPage from '@/features/sudoku-solver/SudokuPage';
 import TreeTraversalPage from '@/features/traversals/tree/TreeTraversalPage';
 import TraversalsPage from '@/features/traversals/TraversalsPage';
-import BalancedTreePage from '@/features/balanced-trees/BalancedTreePage';
+import BalancedTreePage from '@/features/data-structures/balanced-trees/BalancedTreePage';
+import DataStructuresPage from '@/features/data-structures/DataStructuresPage';
 import GamesPage from '@/features/games/GamesPage';
 import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
 import DijkstraGamePage from '@/features/games/dijkstra/DijkstraGamePage';
@@ -23,7 +24,8 @@ function App() {
           <Route path="/traversals/tree" element={<TreeTraversalPage />} />
           <Route path="/sorting" element={<SortingPage />} />
           <Route path="/sudoku-solver" element={<SudokuPage />} />
-          <Route path="/balanced-trees" element={<BalancedTreePage />} />
+          <Route path="/data-structures" element={<DataStructuresPage />} />
+          <Route path="/data-structures/balanced-trees" element={<BalancedTreePage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/fibonacci" element={<FibonacciGamePage />} />
           <Route path="/games/dijkstra" element={<DijkstraGamePage />} />

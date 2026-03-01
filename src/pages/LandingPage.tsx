@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BarChart3, Grid3X3, GitBranch, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { BarChart3, Grid3X3, Database, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
@@ -30,10 +30,10 @@ const modules = [
     tags: ['4×4', '9×9', '16×16', 'Backtracking'],
   },
   {
-    path: '/balanced-trees',
-    title: 'BST / AVL / RB Tree',
-    description: 'Insert and delete values in Binary Search Trees, AVL Trees, and Red-Black Trees. Watch rotations, recoloring, and rebalancing in real time.',
-    icon: GitBranch,
+    path: '/data-structures',
+    title: 'Data Structures',
+    description: 'Visualize how data structures organize and retrieve information. Explore balanced trees with live rotations, recoloring, and rebalancing — with more structures coming soon.',
+    icon: Database,
     gradient: 'from-rose-500 to-red-500',
     shadowColor: 'shadow-rose-500/20',
     tags: ['BST', 'AVL', 'Red-Black', 'Rotations'],
