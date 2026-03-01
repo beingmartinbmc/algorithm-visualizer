@@ -26,12 +26,6 @@ jobs:
       
     - name: Build
       run: npm run build
-      
-    - name: SPA fallback (copy index.html to 404.html)
-      run: cp docs/index.html docs/404.html
-
-    - name: Create .nojekyll file
-      run: touch docs/.nojekyll
 
     - name: Commit and push docs
       run: |
