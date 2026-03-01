@@ -52,7 +52,7 @@ export default function SudokuControls({
   onLockCustom,
 }: SudokuControlsProps) {
   return (
-    <div className="flex flex-col gap-5 w-72 shrink-0 overflow-y-auto max-h-full pr-1">
+    <div className="flex flex-col gap-5 w-full md:w-72 shrink-0 overflow-y-auto max-h-full pr-1">
       {/* Grid Size */}
       <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
