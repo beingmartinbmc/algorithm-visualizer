@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight, Swords, Grid3X3 } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords, Grid3X3, Layers } from 'lucide-react';
 
 const games = [
   {
@@ -41,6 +41,16 @@ const games = [
     gradient: 'from-emerald-500 to-teal-500',
     shadowColor: 'shadow-emerald-500/20',
     icon: Grid3X3,
+  },
+  {
+    path: '/games/mahjong',
+    title: 'Mahjong Hand Solver',
+    subtitle: 'Backtracking-based winning hand validator',
+    description: 'Build a 14-tile Mahjong hand and check if it forms a valid winning combination — 4 melds (pongs or chows) plus 1 pair. Watch the backtracking solver try every possibility step-by-step.',
+    skills: ['Backtracking', 'Constraint Validation', 'Combinatorics', 'Pattern Matching'],
+    gradient: 'from-red-500 to-pink-500',
+    shadowColor: 'shadow-red-500/20',
+    icon: Layers,
   },
 ];
 
