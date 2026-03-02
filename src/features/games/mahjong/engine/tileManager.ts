@@ -174,3 +174,11 @@ export function generateWinningHand(): TileCode[] {
 
   return sortHand(hand);
 }
+
+/** Generate a random hand guaranteed NOT to be winning (caller verifies with solve()). */
+export function generateNonWinningHand(): TileCode[] {
+  // A known non-winning hand — used as a reliable fallback
+  return sortHand([
+    'B1', 'B2', 'B4', 'C3', 'C5', 'C7', 'D1', 'D3', 'D5', 'D7', 'D9', 'B6', 'C8', 'D2',
+  ] as TileCode[]);
+}

@@ -13,21 +13,21 @@ function MiniTile({ code }: { code: TileCode }) {
 
   return (
     <span
-      className="inline-flex flex-col items-center justify-center rounded-md border border-slate-700/60 bg-slate-900/80 w-9 h-11 sm:w-10 sm:h-12"
+      className="inline-flex flex-col items-center justify-center rounded-md border border-slate-700/60 bg-slate-900/80 w-9 h-11 sm:w-10 sm:h-12 md:w-12 md:h-14 lg:w-14 lg:h-16"
     >
-      <span style={{ color }} className="text-sm sm:text-base font-extrabold leading-none">{value}</span>
-      <span className="text-[7px] text-slate-500 leading-none mt-0.5">{suitSymbol}</span>
+      <span style={{ color }} className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold leading-none">{value}</span>
+      <span className="text-[7px] md:text-[9px] text-slate-500 leading-none mt-0.5">{suitSymbol}</span>
     </span>
   );
 }
 
 function MeldGroup({ meld, index }: { meld: Meld; index: number }) {
   return (
-    <div className="flex items-center gap-1">
-      <span className="text-[10px] font-medium text-slate-600 w-12 shrink-0">
+    <div className="flex items-center gap-1.5 md:gap-2">
+      <span className="text-[10px] md:text-xs font-medium text-slate-600 w-12 md:w-14 shrink-0">
         {meld.type === 'pong' ? 'Pong' : 'Chow'} {index + 1}
       </span>
-      <div className="flex gap-0.5">
+      <div className="flex gap-0.5 md:gap-1">
         {meld.tiles.map((t, i) => (
           <MiniTile key={`${t}-${i}`} code={t} />
         ))}
@@ -41,23 +41,23 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
 
   if (result.isWin) {
     return (
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 backdrop-blur-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🀄</span>
-          <h3 className="text-sm font-bold text-emerald-300">Winning Hand!</h3>
+      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 md:p-5 backdrop-blur-sm">
+        <div className="flex items-center gap-2 mb-3 md:mb-4">
+          <span className="text-lg md:text-2xl">🀄</span>
+          <h3 className="text-sm md:text-base font-bold text-emerald-300">Winning Hand!</h3>
         </div>
 
         {/* Pair */}
-        <div className="flex items-center gap-1 mb-3">
-          <span className="text-[10px] font-medium text-slate-600 w-12 shrink-0">Pair</span>
-          <div className="flex gap-0.5">
+        <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
+          <span className="text-[10px] md:text-xs font-medium text-slate-600 w-12 md:w-14 shrink-0">Pair</span>
+          <div className="flex gap-0.5 md:gap-1">
             <MiniTile code={result.pair[0]} />
             <MiniTile code={result.pair[1]} />
           </div>
         </div>
 
         {/* Melds */}
-        <div className="space-y-2">
+        <div className="space-y-2 md:space-y-3">
           {result.melds.map((meld, i) => (
             <MeldGroup key={i} meld={meld} index={i} />
           ))}
@@ -67,12 +67,12 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
   }
 
   return (
-    <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 backdrop-blur-sm">
+    <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 md:p-5 backdrop-blur-sm">
       <div className="flex items-center gap-2">
-        <span className="text-lg">❌</span>
-        <h3 className="text-sm font-bold text-red-300">Not a Winning Hand</h3>
+        <span className="text-lg md:text-2xl">❌</span>
+        <h3 className="text-sm md:text-base font-bold text-red-300">Not a Winning Hand</h3>
       </div>
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs md:text-sm text-slate-400">
         Hand is not a valid winning combination. A winning hand needs 4 melds (pongs or chows) and 1 pair.
       </p>
     </div>
