@@ -37,7 +37,7 @@ export default function BlockTray({
     setInputValue('');
   };
 
-  const showInput = mode === 'guided' || mode === 'sandbox';
+  const showInput = mode === 'sandbox';
 
   return (
     <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
