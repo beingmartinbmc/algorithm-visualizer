@@ -29,14 +29,14 @@ export default function SpiralCanvas({ placedSquares, lastPlacedId }: SpiralCanv
 
   if (placedSquares.length === 0) {
     return (
-      <div className="flex flex-1 w-full h-full items-center justify-center rounded-xl border border-slate-700/50 bg-slate-950/80 text-slate-500">
+      <div className="flex flex-1 w-full min-h-[200px] h-full items-center justify-center rounded-xl border border-slate-700/50 bg-slate-950/80 text-slate-500">
         Place the first block to begin
       </div>
     );
   }
 
   return (
-    <div className="flex-1 w-full rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-hidden">
+    <div className="flex-1 w-full min-h-[200px] rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-hidden">
       <svg
         viewBox={viewBox}
         className="w-full h-full"

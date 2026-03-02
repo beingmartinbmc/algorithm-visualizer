@@ -29,24 +29,6 @@ export default function FibonacciGamePage() {
 
   return (
     <div className="flex flex-1 flex-col md:flex-row gap-4 md:gap-6 overflow-auto p-4 md:p-6">
-      {/* Main area */}
-      <div className="flex md:flex-1 flex-col gap-4 min-h-[40vh] md:min-h-0 max-h-[60vh] md:max-h-none overflow-auto">
-        <div className="flex-1 flex flex-col min-h-0">
-          <SpiralCanvas
-            placedSquares={placedSquares}
-            lastPlacedId={lastPlacedId}
-          />
-        </div>
-        <BlockTray
-          blocks={availableBlocks}
-          lastError={lastError}
-          shakeBlockId={shakeBlockId}
-          isComplete={isComplete}
-          onPlaceBlock={placeBlock}
-        />
-        <EducationalPanel sequence={sequence} />
-      </div>
-
       {/* Side panel */}
       <GameControls
         mode={mode}
@@ -63,6 +45,24 @@ export default function FibonacciGamePage() {
         onToggleHint={toggleHint}
         onToggleSound={toggleSound}
       />
+
+      {/* Main area */}
+      <div className="order-last md:order-first flex md:flex-1 flex-col gap-4 min-h-[40vh] md:min-h-0 max-h-[60vh] md:max-h-none overflow-auto">
+        <div className="flex-1 flex flex-col min-h-0">
+          <SpiralCanvas
+            placedSquares={placedSquares}
+            lastPlacedId={lastPlacedId}
+          />
+        </div>
+        <BlockTray
+          blocks={availableBlocks}
+          lastError={lastError}
+          shakeBlockId={shakeBlockId}
+          isComplete={isComplete}
+          onPlaceBlock={placeBlock}
+        />
+        <EducationalPanel sequence={sequence} />
+      </div>
     </div>
   );
 }
