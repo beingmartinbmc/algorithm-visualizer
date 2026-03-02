@@ -22,7 +22,7 @@ const modules = [
     tags: ['Bubble', 'Selection', 'Insertion', 'Quick', 'Heap', 'Merge'],
   },
   {
-    path: '/sudoku-solver',
+    path: '/games/sudoku-solver',
     title: 'Sudoku Solver',
     description: 'Generate random Sudoku puzzles of different sizes and step through a backtracking solver. Go forward, backward, or solve instantly.',
     icon: Grid3X3,
