@@ -60,6 +60,77 @@ export interface SolverStep {
   remaining: Record<string, number>; // frequency snapshot
 }
 
+// ── Game Modes ──────────────────────────────────────────────────────────────
+
+export type MahjongGameMode = 'sandbox' | 'guided' | 'challenge' | 'two-player';
+
+export interface ModeInfo {
+  label: string;
+  description: string;
+}
+
+export const MODE_INFO: Record<MahjongGameMode, ModeInfo> = {
+  sandbox: { label: 'Sandbox', description: 'Build any hand and check it freely' },
+  guided: { label: 'Guided', description: 'Learn to spot pairs & melds step-by-step' },
+  challenge: { label: 'Challenge', description: 'Speed rounds — Win or Not Win?' },
+  'two-player': { label: '2 Player', description: 'Take turns building hands' },
+};
+
+// ── Guided Mode ─────────────────────────────────────────────────────────────
+
+export type GuidedPhase = 'judging' | 'grouping' | 'feedback';
+
+export interface GuidedRound {
+  hand: TileCode[];
+  isWinning: boolean;
+  solution: WinResult | null;
+  phase: GuidedPhase;
+  playerSaidWin: boolean | null;
+  selectedTiles: number[];       // indices of selected tiles
+  foundPair: [TileCode, TileCode] | null;
+  foundMelds: Meld[];
+  hintsUsed: number;
+  showHint: boolean;
+  feedback: string | null;
+  roundComplete: boolean;
+}
+
+// ── Challenge Mode ──────────────────────────────────────────────────────────
+
+export interface ChallengeState {
+  hand: TileCode[];
+  isWinning: boolean;
+  solution: WinResult | null;
+  round: number;
+  score: number;
+  streak: number;
+  bestStreak: number;
+  timer: number;
+  answered: boolean;
+  lastCorrect: boolean | null;
+  totalCorrect: number;
+  totalAnswered: number;
+}
+
+// ── Two Player Mode ─────────────────────────────────────────────────────────
+
+export type TwoPlayerPhase = 'building' | 'results';
+
+export interface PlayerState {
+  name: string;
+  hand: TileCode[];
+  result: SolveResult | null;
+  score: number;
+}
+
+export interface TwoPlayerState {
+  phase: TwoPlayerPhase;
+  players: [PlayerState, PlayerState];
+  currentPlayer: 0 | 1;
+  round: number;
+  roundComplete: boolean;
+}
+
 // ── Game State ───────────────────────────────────────────────────────────────
 
 export interface MahjongGameState {
