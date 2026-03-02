@@ -49,10 +49,10 @@ export default function GraphCanvas({
   const relaxedEdge = currentAlgoStep?.relaxedEdge ?? null;
 
   function getNodeColor(id: string): string {
-    if (id === startNode) return '#4ade80';
-    if (id === endNode) return '#f87171';
+    if (id === startNode) return '#facc15';
+    if (id === endNode) return '#fb923c';
     if (currentAlgoStep) {
-      if (id === algoCurrentId) return '#facc15';
+      if (id === algoCurrentId) return '#38bdf8';
       if (algoVisited.includes(id)) return '#34d399';
     }
     if (playerPath.includes(id)) return '#818cf8';
@@ -60,9 +60,9 @@ export default function GraphCanvas({
   }
 
   function getNodeRing(id: string): string {
-    if (id === startNode) return '#22c55e';
-    if (id === endNode) return '#ef4444';
-    if (currentAlgoStep && id === algoCurrentId) return '#eab308';
+    if (id === startNode) return '#eab308';
+    if (id === endNode) return '#f97316';
+    if (currentAlgoStep && id === algoCurrentId) return '#0ea5e9';
     if (playerPath.includes(id)) return '#6366f1';
     return '#475569';
   }
