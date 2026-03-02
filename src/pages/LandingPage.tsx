@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart3, Grid3X3, Database, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
@@ -9,7 +10,7 @@ const modules = [
     icon: Waypoints,
     gradient: 'from-indigo-500 to-blue-500',
     shadowColor: 'shadow-indigo-500/20',
-    tags: ['BFS', 'DFS', 'Dijkstra', 'A*', 'In-Order', 'Pre-Order', 'Post-Order'],
+    tags: ['BFS', 'DFS', 'Dijkstra', 'A*', 'Tree', 'Trie'],
   },
   {
     path: '/sorting',
@@ -68,6 +69,11 @@ const features = [
 ];
 
 export default function LandingPage() {
+  useEffect(() => {
+    const img = new Image();
+    img.src = 'https://s01.flagcounter.com/count2/rg8G/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_0/labels_0/pageviews_0/flags_0/percent_0/';
+  }, []);
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Hero */}
@@ -150,6 +156,21 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      {/* Footer */}
+      <footer className="border-t border-slate-800/50 px-6 py-6">
+        <div className="mx-auto max-w-4xl flex flex-col items-center gap-3">
+          <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} Algorithm Visualizer. Made with passion and creativity.</p>
+          <a
+            href="https://info.flagcounter.com/rg8G"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
+          >
+            <span>📊</span>
+            <span>View Analytics</span>
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

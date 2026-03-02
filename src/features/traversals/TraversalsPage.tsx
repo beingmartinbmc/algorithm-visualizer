@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Network, TreePine, ArrowRight, Waypoints } from 'lucide-react';
+import { Network, TreePine, ArrowRight, Waypoints, Type } from 'lucide-react';
 
 const traversals = [
   {
@@ -21,6 +21,16 @@ const traversals = [
     gradient: 'from-amber-500 to-orange-500',
     shadowColor: 'shadow-amber-500/20',
     icon: TreePine,
+  },
+  {
+    path: '/traversals/trie',
+    title: 'Trie Traversal',
+    subtitle: 'Prefix tree search & visualization',
+    description: 'Build a trie from words, then search by prefix or full word. Watch the algorithm traverse the tree node by node with step-by-step playback.',
+    skills: ['Prefix Search', 'Word Search', 'Autocomplete', 'Trie'],
+    gradient: 'from-teal-500 to-cyan-500',
+    shadowColor: 'shadow-teal-500/20',
+    icon: Type,
   },
 ];
 
