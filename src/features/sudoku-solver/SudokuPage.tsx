@@ -24,6 +24,8 @@ export default function SudokuPage() {
     lockCustomPuzzle,
     setCellValue,
     selectCell,
+    evaluationResult,
+    evaluate,
   } = useSudoku();
 
   return (
@@ -52,10 +54,12 @@ export default function SudokuPage() {
         isEditing={isEditing}
         canGoNext={canGoNext}
         canGoPrev={canGoPrev}
+        evaluationResult={evaluationResult}
         onGenerate={generate}
         onNextStep={nextStep}
         onPrevStep={prevStep}
         onSolveComplete={solveComplete}
+        onEvaluate={evaluate}
         onReset={reset}
         onStartCustom={startCustomPuzzle}
         onEditCurrent={editCurrentPuzzle}

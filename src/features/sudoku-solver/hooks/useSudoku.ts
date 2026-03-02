@@ -1,7 +1,57 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { GridSize, CellValue, SudokuGrid, SolverStep } from '../types/sudoku';
+import { getBoxDimensions } from '../types/sudoku';
 import { solveWithSteps } from '../algorithms/solver';
 import { generateSudoku } from '../algorithms/generator';
+
+export type EvaluationResult = 'correct' | 'incomplete' | 'errors' | null;
+
+function validateGrid(values: CellValue[][], size: GridSize): EvaluationResult {
+  // Check if all cells are filled
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (values[r][c] === null) return 'incomplete';
+    }
+  }
+
+  const { boxRows, boxCols } = getBoxDimensions(size);
+
+  // Check rows
+  for (let r = 0; r < size; r++) {
+    const seen = new Set<number>();
+    for (let c = 0; c < size; c++) {
+      const v = values[r][c]!;
+      if (seen.has(v)) return 'errors';
+      seen.add(v);
+    }
+  }
+
+  // Check columns
+  for (let c = 0; c < size; c++) {
+    const seen = new Set<number>();
+    for (let r = 0; r < size; r++) {
+      const v = values[r][c]!;
+      if (seen.has(v)) return 'errors';
+      seen.add(v);
+    }
+  }
+
+  // Check boxes
+  for (let br = 0; br < size; br += boxRows) {
+    for (let bc = 0; bc < size; bc += boxCols) {
+      const seen = new Set<number>();
+      for (let r = br; r < br + boxRows; r++) {
+        for (let c = bc; c < bc + boxCols; c++) {
+          const v = values[r][c]!;
+          if (seen.has(v)) return 'errors';
+          seen.add(v);
+        }
+      }
+    }
+  }
+
+  return 'correct';
+}
 
 function buildSudokuGrid(
   values: CellValue[][],
@@ -32,6 +82,7 @@ export function useSudoku() {
   const [steps, setSteps] = useState<SolverStep[]>([]);
   const [stepIndex, setStepIndex] = useState(-1);
   const [isSolved, setIsSolved] = useState(false);
+  const [evaluationResult, setEvaluationResult] = useState<EvaluationResult>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
@@ -92,6 +143,7 @@ export function useSudoku() {
 
   const setCellValue = useCallback((row: number, col: number, value: CellValue) => {
     if (!isEditing) return;
+    setEvaluationResult(null);
     setPuzzleValues((prev) => {
       const next = prev.map((r) => [...r]);
       next[row][col] = value;
@@ -156,12 +208,24 @@ export function useSudoku() {
     setIsSolved(lastStep.action === 'solved');
   }, [initSteps]);
 
+  const evaluate = useCallback(() => {
+    const result = validateGrid(puzzleValues, gridSize);
+    setEvaluationResult(result);
+    if (result === 'correct') {
+      setIsSolved(true);
+      setIsEditing(false);
+      setSelectedCell(null);
+    }
+  }, [puzzleValues, gridSize]);
+
   const reset = useCallback(() => {
     setPuzzleValues(originalValues.map((row) => [...row]));
     setSteps([]);
     setStepIndex(-1);
     setIsSolved(false);
+    setIsEditing(false);
     setSelectedCell(null);
+    setEvaluationResult(null);
   }, [originalValues]);
 
   const totalSteps = steps.length;
@@ -182,7 +246,9 @@ export function useSudoku() {
     generate,
     nextStep,
     prevStep,
+    evaluationResult,
     solveComplete,
+    evaluate,
     reset,
     startCustomPuzzle,
     editCurrentPuzzle,

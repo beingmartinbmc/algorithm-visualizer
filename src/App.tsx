@@ -6,6 +6,7 @@ import SortingPage from '@/features/sorting/SortingPage';
 import SudokuPage from '@/features/sudoku-solver/SudokuPage';
 import TreeTraversalPage from '@/features/traversals/tree/TreeTraversalPage';
 import TraversalsPage from '@/features/traversals/TraversalsPage';
+import TriePage from '@/features/traversals/trie/TriePage';
 import BalancedTreePage from '@/features/data-structures/balanced-trees/BalancedTreePage';
 import DataStructuresPage from '@/features/data-structures/DataStructuresPage';
 import GamesPage from '@/features/games/GamesPage';
@@ -22,6 +23,7 @@ function App() {
           <Route path="/traversals" element={<TraversalsPage />} />
           <Route path="/traversals/graph" element={<GraphTraversalPage />} />
           <Route path="/traversals/tree" element={<TreeTraversalPage />} />
+          <Route path="/traversals/trie" element={<TriePage />} />
           <Route path="/sorting" element={<SortingPage />} />
           <Route path="/sudoku-solver" element={<SudokuPage />} />
           <Route path="/data-structures" element={<DataStructuresPage />} />

@@ -8,9 +8,11 @@ import {
   PenLine,
   Lock,
   Pencil,
+  CheckCircle2,
 } from 'lucide-react';
 import type { GridSize } from '../types/sudoku';
 import { GRID_SIZE_INFO } from '../types/sudoku';
+import type { EvaluationResult } from '../hooks/useSudoku';
 
 interface SudokuControlsProps {
   gridSize: GridSize;
@@ -21,10 +23,12 @@ interface SudokuControlsProps {
   isEditing: boolean;
   canGoNext: boolean;
   canGoPrev: boolean;
+  evaluationResult: EvaluationResult;
   onGenerate: (size: GridSize) => void;
   onNextStep: () => void;
   onPrevStep: () => void;
   onSolveComplete: () => void;
+  onEvaluate: () => void;
   onReset: () => void;
   onStartCustom: () => void;
   onEditCurrent: () => void;
@@ -42,10 +46,12 @@ export default function SudokuControls({
   isEditing,
   canGoNext,
   canGoPrev,
+  evaluationResult,
   onGenerate,
   onNextStep,
   onPrevStep,
   onSolveComplete,
+  onEvaluate,
   onReset,
   onStartCustom,
   onEditCurrent,
@@ -120,6 +126,26 @@ export default function SudokuControls({
               <Lock size={14} />
               Lock Puzzle & Solve
             </button>
+            <button
+              onClick={onEvaluate}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-500/15 px-3 py-2.5 text-sm font-medium text-indigo-300 ring-1 ring-indigo-500/30 transition-all hover:bg-indigo-500/25"
+            >
+              <CheckCircle2 size={14} />
+              Evaluate
+            </button>
+            {evaluationResult && (
+              <div className={`rounded-lg px-3 py-2 text-xs font-medium text-center ${
+                evaluationResult === 'correct'
+                  ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30'
+                  : evaluationResult === 'incomplete'
+                    ? 'bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30'
+                    : 'bg-rose-500/15 text-rose-300 ring-1 ring-rose-500/30'
+              }`}>
+                {evaluationResult === 'correct' && 'Solved correctly!'}
+                {evaluationResult === 'incomplete' && 'Some cells are still empty.'}
+                {evaluationResult === 'errors' && 'There are conflicts in your solution.'}
+              </div>
+            )}
           </div>
         )}
       </div>
