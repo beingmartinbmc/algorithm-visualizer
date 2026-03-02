@@ -47,8 +47,8 @@ export default function FibonacciGamePage() {
       />
 
       {/* Main area */}
-      <div className="order-last md:order-first flex md:flex-1 flex-col gap-4 min-h-[40vh] md:min-h-0 max-h-[60vh] md:max-h-none overflow-auto">
-        <div className="flex-1 flex flex-col min-h-0">
+      <div className="order-last md:order-first flex md:flex-1 flex-col gap-4 min-h-0 md:min-h-0 overflow-auto">
+        <div className="min-h-[200px] md:flex-1 flex flex-col">
           <SpiralCanvas
             placedSquares={placedSquares}
             lastPlacedId={lastPlacedId}

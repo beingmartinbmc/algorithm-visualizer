@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import TrieCanvas from './components/TrieCanvas';
 import TrieControls from './components/TrieControls';
 import { useTrie } from './hooks/useTrie';
+import { useTrieSound } from './hooks/useTrieSound';
 
 export default function TriePage() {
   const {
@@ -33,6 +34,34 @@ export default function TriePage() {
     removeWord,
     loadSampleWords,
   } = useTrie();
+
+  const { playTraverseTone, playMatchTone, playNotFoundTone, setEnabled: setSoundEnabled } = useTrieSound();
+  const [soundEnabled, setSoundEnabledState] = useState(true);
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabledState(next);
+    setSoundEnabled(next);
+  };
+
+  // Play audio on step changes
+  const prevStepRef = useRef(stepIndex);
+  useEffect(() => {
+    if (stepIndex < 0 || stepIndex === prevStepRef.current) {
+      prevStepRef.current = stepIndex;
+      return;
+    }
+    prevStepRef.current = stepIndex;
+    const step = steps[stepIndex];
+    if (!step) return;
+    if (step.action === 'visit') {
+      playTraverseTone(step.char ? step.char.charCodeAt(0) % 8 : 0);
+    } else if (step.action === 'match' || step.action === 'prefix-match') {
+      playMatchTone();
+    } else if (step.action === 'not-found') {
+      playNotFoundTone();
+    }
+  }, [stepIndex, steps, playTraverseTone, playMatchTone, playNotFoundTone]);
 
   // Auto-play logic
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,6 +110,8 @@ export default function TriePage() {
         onAddWord={addWord}
         onRemoveWord={removeWord}
         onLoadSample={loadSampleWords}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
       />
 
       <div className="order-last md:order-first flex md:flex-1 flex-col items-center justify-center gap-3 min-h-[40vh] md:min-h-0 max-h-[50vh] md:max-h-none overflow-auto">

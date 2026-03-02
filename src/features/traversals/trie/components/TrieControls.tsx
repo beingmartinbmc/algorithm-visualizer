@@ -8,6 +8,8 @@ import {
   Plus,
   X,
   RefreshCw,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import type { SearchMode, TrieStep } from '../types/trie';
 
@@ -36,6 +38,8 @@ interface TrieControlsProps {
   onAddWord: () => void;
   onRemoveWord: (word: string) => void;
   onLoadSample: () => void;
+  soundEnabled: boolean;
+  onToggleSound: () => void;
 }
 
 export default function TrieControls({
@@ -61,6 +65,8 @@ export default function TrieControls({
   onAddWord,
   onRemoveWord,
   onLoadSample,
+  soundEnabled,
+  onToggleSound,
 }: TrieControlsProps) {
   const currentStep = stepIndex >= 0 && stepIndex < steps.length ? steps[stepIndex] : null;
 
@@ -242,6 +248,19 @@ export default function TrieControls({
           <RefreshCw size={12} /> Load Sample Words
         </button>
       </div>
+
+      {/* Sound Toggle */}
+      <button
+        onClick={onToggleSound}
+        className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all ${
+          soundEnabled
+            ? 'bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30 hover:bg-indigo-500/25'
+            : 'bg-slate-800/60 text-slate-500 ring-1 ring-slate-700/40 hover:bg-slate-700/60'
+        }`}
+      >
+        {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+        {soundEnabled ? 'Sound On' : 'Sound Off'}
+      </button>
 
       {/* Legend */}
       <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
