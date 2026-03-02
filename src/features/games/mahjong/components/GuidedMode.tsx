@@ -1,6 +1,6 @@
 import { CheckCircle, XCircle, ArrowRight, RotateCcw, Lightbulb, SkipForward, Volume2, VolumeX } from 'lucide-react';
 import type { TileCode, Suit } from '../types/mahjong';
-import { SUIT_COLORS, HAND_SIZE } from '../types/mahjong';
+import { SUIT_COLORS } from '../types/mahjong';
 import { useMahjongGuided } from '../hooks/useMahjongGuided';
 
 function GuidedTile({ code, index, selected, onClick }: {

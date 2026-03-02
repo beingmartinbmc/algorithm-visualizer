@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { TileCode, GuidedRound, Meld, WinResult } from '../types/mahjong';
+import type { TileCode, GuidedRound } from '../types/mahjong';
 import { generateWinningHand, generateRandomHand } from '../engine/tileManager';
 import { solve } from '../engine/solver';
 import { useMahjongSound } from './useMahjongSound';
