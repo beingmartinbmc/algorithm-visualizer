@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords } from 'lucide-react';
 
 const games = [
   {
@@ -10,6 +10,7 @@ const games = [
     skills: ['Pattern Recognition', 'Mathematical Sequences', 'Spatial Reasoning', 'Golden Ratio'],
     gradient: 'from-cyan-500 to-teal-500',
     shadowColor: 'shadow-cyan-500/20',
+    icon: Puzzle,
   },
   {
     path: '/games/dijkstra',
@@ -19,6 +20,17 @@ const games = [
     skills: ['Graph Theory', 'Shortest Path', 'Greedy Algorithms', 'Priority Queues'],
     gradient: 'from-amber-500 to-orange-500',
     shadowColor: 'shadow-amber-500/20',
+    icon: Puzzle,
+  },
+  {
+    path: '/games/battles',
+    title: 'Algorithm Battles',
+    subtitle: 'Head-to-head algorithm showdowns',
+    description: 'Pit two sorting algorithms against each other on the same input. Watch them race side-by-side with live metrics, performance graphs, and detailed results. Predict the winner or just watch and learn.',
+    skills: ['Sorting', 'Big-O Analysis', 'Performance', 'Comparison'],
+    gradient: 'from-rose-500 to-orange-500',
+    shadowColor: 'shadow-rose-500/20',
+    icon: Swords,
   },
 ];
 
@@ -43,7 +55,7 @@ export default function GamesPage() {
 
         <section className="px-6 pb-12">
           <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {games.map(({ path, title, subtitle, description, skills, gradient, shadowColor }) => (
+            {games.map(({ path, title, subtitle, description, skills, gradient, shadowColor, icon: Icon }) => (
               <Link
                 key={path}
                 to={path}
@@ -54,7 +66,7 @@ export default function GamesPage() {
                 `}
               >
                 <div className={`mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-lg ${shadowColor}`}>
-                  <Puzzle size={20} className="text-white" />
+                  <Icon size={20} className="text-white" />
                 </div>
                 <h4 className="text-base font-bold text-white">{title}</h4>
                 <p className="text-[10px] text-slate-500 italic">{subtitle}</p>
