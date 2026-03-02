@@ -56,6 +56,7 @@ export default function FibonacciGamePage() {
         </div>
         <BlockTray
           blocks={availableBlocks}
+          mode={mode}
           lastError={lastError}
           shakeBlockId={shakeBlockId}
           isComplete={isComplete}
