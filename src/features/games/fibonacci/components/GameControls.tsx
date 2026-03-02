@@ -51,7 +51,7 @@ export default function GameControls({
   onToggleSound,
 }: GameControlsProps) {
   return (
-    <div className="flex flex-col gap-4 w-full md:w-72 shrink-0 overflow-y-auto max-h-full pr-1">
+    <div className="flex flex-col gap-4 w-full md:w-72 md:shrink-0 md:overflow-y-auto md:max-h-full pr-1">
       {/* Game Info */}
       <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
         <h3 className="text-sm font-bold text-indigo-300 mb-1">{GAME_DESCRIPTION.title}</h3>
