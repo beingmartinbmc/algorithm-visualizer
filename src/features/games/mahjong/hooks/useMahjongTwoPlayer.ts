@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { TileCode, TwoPlayerState, PlayerState, SolveResult } from '../types/mahjong';
+import type { TileCode, TwoPlayerState, PlayerState } from '../types/mahjong';
 import { HAND_SIZE } from '../types/mahjong';
 import { sortHand, canAddTile } from '../engine/tileManager';
 import { solve } from '../engine/solver';

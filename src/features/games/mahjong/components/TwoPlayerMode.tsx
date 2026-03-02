@@ -3,7 +3,7 @@ import type { TileCode, Suit } from '../types/mahjong';
 import { SUITS, SUIT_NAMES, SUIT_COLORS, TILE_VALUES, HAND_SIZE } from '../types/mahjong';
 import { useMahjongTwoPlayer } from '../hooks/useMahjongTwoPlayer';
 
-function TpTile({ code, index, onRemove }: { code: TileCode; index: number; onRemove?: () => void }) {
+function TpTile({ code, index: _index, onRemove }: { code: TileCode; index: number; onRemove?: () => void }) {
   const suit = code[0] as Suit;
   const value = code[1];
   const color = SUIT_COLORS[suit];
