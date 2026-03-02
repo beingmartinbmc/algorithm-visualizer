@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight, Swords } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords, Grid3X3 } from 'lucide-react';
 
 const games = [
   {
@@ -31,6 +31,16 @@ const games = [
     gradient: 'from-rose-500 to-orange-500',
     shadowColor: 'shadow-rose-500/20',
     icon: Swords,
+  },
+  {
+    path: '/games/sudoku-solver',
+    title: 'Sudoku Solver',
+    subtitle: 'Constraint satisfaction via backtracking',
+    description: 'Generate random Sudoku puzzles of different sizes and step through a backtracking solver. Go forward, backward, or solve instantly.',
+    skills: ['Backtracking', 'Constraint Satisfaction', '4×4 / 9×9 / 16×16', 'Puzzle Solving'],
+    gradient: 'from-emerald-500 to-teal-500',
+    shadowColor: 'shadow-emerald-500/20',
+    icon: Grid3X3,
   },
 ];
 

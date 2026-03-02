@@ -26,7 +26,7 @@ function App() {
           <Route path="/traversals/tree" element={<TreeTraversalPage />} />
           <Route path="/traversals/trie" element={<TriePage />} />
           <Route path="/sorting" element={<SortingPage />} />
-          <Route path="/sudoku-solver" element={<SudokuPage />} />
+          <Route path="/games/sudoku-solver" element={<SudokuPage />} />
           <Route path="/data-structures" element={<DataStructuresPage />} />
           <Route path="/data-structures/balanced-trees" element={<BalancedTreePage />} />
           <Route path="/games" element={<GamesPage />} />

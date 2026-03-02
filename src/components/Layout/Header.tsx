@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Network, BarChart3, Grid3X3, Database, Gamepad2, Waypoints, Menu, X } from 'lucide-react';
+import { Network, BarChart3, Database, Gamepad2, Waypoints, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
   { path: '/traversals', label: 'Traversals', icon: Waypoints },
   { path: '/sorting', label: 'Sorting', icon: BarChart3 },
-  { path: '/sudoku-solver', label: 'Sudoku Solver', icon: Grid3X3 },
   { path: '/data-structures', label: 'Data Structures', icon: Database },
   { path: '/games', label: 'Games', icon: Gamepad2 },
 ];
