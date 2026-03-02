@@ -1,6 +1,6 @@
 import type { SortingAlgorithmType } from '@/features/sorting/types/sorting';
 
-export type BattleCategory = 'sorting';
+export type BattleCategory = 'sorting' | 'pathfinding' | 'recursion';
 
 export type GameMode = 'realtime' | 'turbo' | 'prediction';
 
