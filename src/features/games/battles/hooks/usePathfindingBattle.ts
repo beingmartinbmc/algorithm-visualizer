@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { GridMatrix } from '@/features/traversals/graph/types/graph';
-import type { PathAlgorithm, PathfindingStep } from '../engine/pathfindingEngine';
+import type { PathAlgorithm, PathfindingStep, MazeType } from '../engine/pathfindingEngine';
 import { createBattleGrid, runPathfindingBattle } from '../engine/pathfindingEngine';
 import type { GameMode } from '../types/battle';
 import { useBattleSound } from './useBattleSound';
@@ -18,6 +18,7 @@ export interface PathfindingAlgoState {
 export function usePathfindingBattle() {
   const [algorithmA, setAlgorithmA] = useState<PathAlgorithm>('bfs');
   const [algorithmB, setAlgorithmB] = useState<PathAlgorithm>('dfs');
+  const [mazeType, setMazeType] = useState<MazeType>('random');
   const [gameMode, setGameMode] = useState<GameMode>('realtime');
   const [speed, setSpeed] = useState(50);
   const [status, setStatus] = useState<'setup' | 'running' | 'paused' | 'finished'>('setup');
@@ -63,7 +64,7 @@ export function usePathfindingBattle() {
   }, []);
 
   const startBattle = useCallback(() => {
-    const { grid: g, start, end } = createBattleGrid();
+    const { grid: g, start, end } = createBattleGrid(mazeType);
     setGrid(g);
 
     const resA = runPathfindingBattle(g, start, end, algorithmA);
@@ -110,7 +111,7 @@ export function usePathfindingBattle() {
     setWinner(null);
     setPredictionCorrect(null);
     setStatus('running');
-  }, [algorithmA, algorithmB, gameMode, prediction, determineWinner, playWinTone]);
+  }, [algorithmA, algorithmB, mazeType, gameMode, prediction, determineWinner, playWinTone]);
 
   const tick = useCallback(() => {
     let iA = indexARef.current;
@@ -179,6 +180,7 @@ export function usePathfindingBattle() {
   return {
     algorithmA, setAlgorithmA,
     algorithmB, setAlgorithmB,
+    mazeType, setMazeType,
     gameMode, setGameMode,
     speed, setSpeed,
     status,
