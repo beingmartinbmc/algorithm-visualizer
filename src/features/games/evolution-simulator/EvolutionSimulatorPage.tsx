@@ -1,4 +1,4 @@
-import { Pause, Play, RotateCcw, Shuffle } from 'lucide-react';
+import { Pause, Play, RotateCcw, Shuffle, Volume2, VolumeX } from 'lucide-react';
 import FitnessChart from './components/FitnessChart';
 import PopulationList from './components/PopulationList';
 import GeneComparison from './components/GeneComparison';
@@ -12,6 +12,8 @@ const SPEED_PRESETS = [
 
 export default function EvolutionSimulatorPage() {
   const {
+    mode,
+    setMode,
     target,
     setTarget,
     populationSize,
@@ -26,6 +28,8 @@ export default function EvolutionSimulatorPage() {
     setSelectionStrategy,
     speedMs,
     setSpeedMs,
+    soundEnabled,
+    toggleSound,
     state,
     status,
     topIndividuals,
@@ -38,6 +42,7 @@ export default function EvolutionSimulatorPage() {
   } = useEvolutionSimulator();
 
   const isRunning = status === 'running';
+  const isGuided = mode === 'guided';
   const best = state?.bestIndividual;
   const avgFitness = state?.averageFitness ?? 0;
 
@@ -48,6 +53,41 @@ export default function EvolutionSimulatorPage() {
           <h2 className="text-lg md:text-xl font-bold text-white">Evolution Simulator — Genetic Algorithm</h2>
           <p className="text-xs text-slate-400 mt-1">Evolve a population of strings toward a target using selection, crossover, and mutation.</p>
 
+          <div className="mt-3 rounded-xl bg-indigo-500/5 ring-1 ring-indigo-500/15 px-3 py-2">
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              Each generation: evaluate fitness → select parents → crossover genes → mutate characters → keep the elite.
+              Watch best and average fitness curves to understand convergence dynamics.
+            </p>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2 md:max-w-sm">
+            <button
+              onClick={() => setMode('guided')}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold ring-1 transition-all ${
+                isGuided
+                  ? 'bg-amber-500/20 text-amber-300 ring-amber-500/40'
+                  : 'bg-slate-800/60 text-slate-400 ring-slate-700/40 hover:bg-slate-700/60'
+              }`}
+            >
+              Guided Mode
+            </button>
+            <button
+              onClick={() => setMode('free-play')}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold ring-1 transition-all ${
+                !isGuided
+                  ? 'bg-cyan-500/20 text-cyan-300 ring-cyan-500/40'
+                  : 'bg-slate-800/60 text-slate-400 ring-slate-700/40 hover:bg-slate-700/60'
+              }`}
+            >
+              Free-play Mode
+            </button>
+          </div>
+          {isGuided && (
+            <p className="mt-2 text-[10px] text-amber-300/80">
+              Guided mode uses recommended settings (HELLO WORLD, pop 300, mutation 3%, crossover 75%) for stable learning.
+            </p>
+          )}
+
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div>
@@ -57,10 +97,12 @@ export default function EvolutionSimulatorPage() {
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
                     placeholder="HELLO WORLD"
+                    disabled={isGuided}
                     className="flex-1 rounded-lg bg-slate-950/70 px-3 py-2 text-sm text-slate-200 ring-1 ring-slate-700/50 outline-none focus:ring-cyan-500/50"
                   />
                   <button
                     onClick={randomTarget}
+                    disabled={isGuided}
                     className="rounded-lg bg-slate-800/70 px-3 py-2 text-xs text-slate-300 ring-1 ring-slate-700/50 hover:bg-slate-700/70"
                   >
                     <Shuffle size={14} />
@@ -72,12 +114,14 @@ export default function EvolutionSimulatorPage() {
                 <div>
                   <label className="text-[11px] text-slate-400">Population Size</label>
                   <input type="number" min={1} max={2000} value={populationSize}
+                    disabled={isGuided}
                     onChange={(e) => setPopulationSize(Number(e.target.value) || 1)}
                     className="mt-1 w-full rounded-lg bg-slate-950/70 px-3 py-2 text-sm text-slate-200 ring-1 ring-slate-700/50" />
                 </div>
                 <div>
                   <label className="text-[11px] text-slate-400">Max Generations</label>
                   <input type="number" min={1} max={20000} value={maxGenerations}
+                    disabled={isGuided}
                     onChange={(e) => setMaxGenerations(Number(e.target.value) || 1)}
                     className="mt-1 w-full rounded-lg bg-slate-950/70 px-3 py-2 text-sm text-slate-200 ring-1 ring-slate-700/50" />
                 </div>
@@ -91,6 +135,7 @@ export default function EvolutionSimulatorPage() {
                   <span>{mutationRatePercent}%</span>
                 </div>
                 <input type="range" min={0} max={100} value={mutationRatePercent}
+                  disabled={isGuided}
                   onChange={(e) => setMutationRatePercent(Number(e.target.value))}
                   className="w-full accent-rose-500" />
               </div>
@@ -100,6 +145,7 @@ export default function EvolutionSimulatorPage() {
                   <span>{crossoverRatePercent}%</span>
                 </div>
                 <input type="range" min={0} max={100} value={crossoverRatePercent}
+                  disabled={isGuided}
                   onChange={(e) => setCrossoverRatePercent(Number(e.target.value))}
                   className="w-full accent-sky-500" />
               </div>
@@ -108,6 +154,7 @@ export default function EvolutionSimulatorPage() {
                 <div className="mt-1 grid grid-cols-2 gap-2">
                   {(['roulette', 'tournament'] as const).map((s) => (
                     <button key={s}
+                      disabled={isGuided}
                       onClick={() => setSelectionStrategy(s)}
                       className={`rounded-lg px-3 py-2 text-xs font-medium ring-1 transition-all ${
                         selectionStrategy === s
@@ -136,6 +183,15 @@ export default function EvolutionSimulatorPage() {
             <button onClick={reset}
               className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800/70 px-3 py-2 text-xs font-semibold text-slate-300 ring-1 ring-slate-700/50 hover:bg-slate-700/70">
               <RotateCcw size={14} /> Reset
+            </button>
+            <button onClick={() => toggleSound(!soundEnabled)}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold ring-1 ${
+                soundEnabled
+                  ? 'bg-indigo-500/15 text-indigo-300 ring-indigo-500/30'
+                  : 'bg-slate-800/70 text-slate-400 ring-slate-700/40'
+              }`}>
+              {soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              {soundEnabled ? 'Sound On' : 'Sound Off'}
             </button>
 
             <div className="ml-auto inline-flex items-center gap-2">
