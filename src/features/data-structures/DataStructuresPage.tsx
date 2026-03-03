@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { GitBranch, ArrowRight, Database } from 'lucide-react';
+import { GitBranch, ArrowRight, Database, Layers, AlignJustify, List, Link2 } from 'lucide-react';
 
 const structures = [
   {
@@ -11,6 +11,46 @@ const structures = [
     gradient: 'from-rose-500 to-red-500',
     shadowColor: 'shadow-rose-500/20',
     icon: GitBranch,
+  },
+  {
+    path: '/data-structures/stack',
+    title: 'Stack',
+    subtitle: 'Last In, First Out (LIFO)',
+    description: 'Push and pop elements onto a stack. Visualize LIFO order, peek at the top, and step through each operation with animated highlights.',
+    skills: ['LIFO', 'Push O(1)', 'Pop O(1)', 'Peek O(1)'],
+    gradient: 'from-emerald-500 to-teal-500',
+    shadowColor: 'shadow-emerald-500/20',
+    icon: Layers,
+  },
+  {
+    path: '/data-structures/queue',
+    title: 'Queue',
+    subtitle: 'First In, First Out (FIFO)',
+    description: 'Enqueue elements at the rear and dequeue from the front. Watch front and rear pointers update with each operation.',
+    skills: ['FIFO', 'Enqueue O(1)', 'Dequeue O(1)', 'Peek O(1)'],
+    gradient: 'from-sky-500 to-blue-500',
+    shadowColor: 'shadow-sky-500/20',
+    icon: AlignJustify,
+  },
+  {
+    path: '/data-structures/array',
+    title: 'Array',
+    subtitle: 'Contiguous indexed memory',
+    description: 'Access elements by index in O(1). Visualize insert and delete with element shifting, and watch a linear search scan the array step-by-step.',
+    skills: ['Access O(1)', 'Insert O(n)', 'Delete O(n)', 'Search O(n)'],
+    gradient: 'from-violet-500 to-purple-500',
+    shadowColor: 'shadow-violet-500/20',
+    icon: List,
+  },
+  {
+    path: '/data-structures/linked-list',
+    title: 'Linked List',
+    subtitle: 'Pointer-chained nodes',
+    description: 'Prepend, append, insert, delete, and search through a singly linked list. Watch traversal step through each node and pointer re-linking in action.',
+    skills: ['Prepend O(1)', 'Append O(n)', 'Insert O(n)', 'Delete O(n)'],
+    gradient: 'from-amber-500 to-orange-500',
+    shadowColor: 'shadow-amber-500/20',
+    icon: Link2,
   },
 ];
 
