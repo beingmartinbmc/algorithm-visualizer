@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { useDSSound } from '../../hooks/useDSSound';
 
 export interface ArrayCell {
   id: number;
@@ -31,6 +32,39 @@ export function useArrayDS() {
   const [speed, setSpeed] = useState(400);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const speedRef = useRef(speed);
+  const pendingAutoPlay = useRef(false);
+  const { soundEnabled, toggleSound, playInsert, playDelete, playAccess, playTraverse, playFound, playNotFound } = useDSSound();
+  const playStepSoundRef = useRef<(idx: number, stepsArr: ArrayStep[]) => void>(() => {});
+
+  useEffect(() => { speedRef.current = speed; }, [speed]);
+
+  useEffect(() => {
+    if (!pendingAutoPlay.current || steps.length === 0) return;
+    pendingAutoPlay.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsPlaying(true);
+    let idx = 0;
+    const tick = () => {
+      if (idx >= steps.length - 1) { setIsPlaying(false); return; }
+      idx++;
+      setStepIndex(idx);
+      playStepSoundRef.current(idx, steps);
+      timerRef.current = setTimeout(tick, speedRef.current);
+    };
+    timerRef.current = setTimeout(tick, speedRef.current);
+  }, [steps]);
+
+  const playStepSound = useCallback((idx: number, stepsArr: ArrayStep[]) => {
+    const s = stepsArr[idx];
+    if (!s) return;
+    if (s.highlightColor === 'green') playFound();
+    else if (s.highlightColor === 'red') playDelete();
+    else if (s.highlightColor === 'blue') playAccess();
+    else if (s.highlightColor === 'yellow') playTraverse(idx, stepsArr.length);
+    else if (s.highlightColor === 'orange') playTraverse(idx, stepsArr.length);
+  }, [playFound, playDelete, playAccess, playTraverse]);
+  useEffect(() => { playStepSoundRef.current = playStepSound; }, [playStepSound]);
 
   const displayArray = stepIndex >= 0 && steps[stepIndex] ? steps[stepIndex].array : array;
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null;
@@ -55,7 +89,9 @@ export function useArrayDS() {
         },
       ];
       setSteps(built);
-      setStepIndex(1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
+      playAccess();
       addHistory(`Access [${idx}] → ${prev[idx].value}`);
       return prev;
     });
@@ -84,7 +120,9 @@ export function useArrayDS() {
       });
 
       setSteps(built);
-      setStepIndex(1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
+      playInsert();
       addHistory(`Insert ${val} at [${idx}]`);
       return next;
     });
@@ -116,7 +154,9 @@ export function useArrayDS() {
         highlightColor: null,
       });
       setSteps(built);
-      setStepIndex(2);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
+      playDelete();
       addHistory(`Delete [${idx}] → ${val}`);
       return next;
     });
@@ -147,13 +187,16 @@ export function useArrayDS() {
           highlightIndices: [],
           highlightColor: null,
         });
+        playNotFound();
         addHistory(`Search ${val} → not found`);
       } else {
+        playFound();
         addHistory(`Search ${val} → found at [${foundIdx}]`);
       }
 
       setSteps(built);
-      setStepIndex(built.length - 1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       return prev;
     });
   }, []);
@@ -177,7 +220,9 @@ export function useArrayDS() {
         },
       ];
       setSteps(built);
-      setStepIndex(1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
+      playInsert();
       addHistory(`Push ${val}`);
       return next;
     });
@@ -203,8 +248,12 @@ export function useArrayDS() {
   }, []);
 
   const nextStep = useCallback(() => {
-    setStepIndex((i) => Math.min(i + 1, steps.length - 1));
-  }, [steps.length]);
+    setStepIndex((i) => {
+      const next = Math.min(i + 1, steps.length - 1);
+      playStepSound(next, steps);
+      return next;
+    });
+  }, [steps, playStepSound]);
 
   const prevStep = useCallback(() => {
     setStepIndex((i) => Math.max(i - 1, 0));
@@ -223,10 +272,11 @@ export function useArrayDS() {
       if (idx >= steps.length - 1) { setIsPlaying(false); return; }
       idx++;
       setStepIndex(idx);
+      playStepSound(idx, steps);
       timerRef.current = setTimeout(tick, speed);
     };
     timerRef.current = setTimeout(tick, speed);
-  }, [isPlaying, stepIndex, steps.length, speed]);
+  }, [isPlaying, stepIndex, steps, speed, playStepSound]);
 
   return {
     array,
@@ -252,6 +302,8 @@ export function useArrayDS() {
     nextStep,
     prevStep,
     autoPlay,
+    soundEnabled,
+    toggleSound,
     canGoNext: stepIndex < steps.length - 1,
     canGoPrev: stepIndex > 0,
   };
