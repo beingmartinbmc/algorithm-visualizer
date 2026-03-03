@@ -7,6 +7,13 @@ const PF_COLS = 25;
 const WALL_DENSITY = 0.25;
 
 export type PathAlgorithm = AlgorithmType;
+export type MazeType = 'random' | 'recursive-division' | 'dfs-maze';
+
+export const MAZE_OPTIONS: { value: MazeType; label: string }[] = [
+  { value: 'random', label: 'Random Scatter' },
+  { value: 'recursive-division', label: 'Recursive Division' },
+  { value: 'dfs-maze', label: 'DFS Maze' },
+];
 
 export interface PathfindingStep {
   visitedSoFar: Set<string>;
@@ -24,39 +31,115 @@ export interface PathfindingResult {
 
 function key(r: number, c: number) { return `${r},${c}`; }
 
-export function createBattleGrid(): { grid: GridMatrix; start: { row: number; col: number }; end: { row: number; col: number } } {
+function makeEmptyGrid(): GridMatrix {
   const grid: GridMatrix = [];
   for (let r = 0; r < PF_ROWS; r++) {
     const row: GridNode[] = [];
     for (let c = 0; c < PF_COLS; c++) {
       row.push({
-        row: r,
-        col: c,
-        type: NodeType.EMPTY,
-        distance: Infinity,
-        heuristic: 0,
-        totalCost: Infinity,
-        parent: null,
-        isVisited: false,
+        row: r, col: c, type: NodeType.EMPTY,
+        distance: Infinity, heuristic: 0, totalCost: Infinity,
+        parent: null, isVisited: false,
       });
     }
     grid.push(row);
   }
+  return grid;
+}
 
-  const start = { row: Math.floor(PF_ROWS / 2), col: 1 };
-  const end = { row: Math.floor(PF_ROWS / 2), col: PF_COLS - 2 };
-  grid[start.row][start.col].type = NodeType.START;
-  grid[end.row][end.col].type = NodeType.END;
-
+function randomScatter(grid: GridMatrix, start: { row: number; col: number }, end: { row: number; col: number }) {
   for (let r = 0; r < PF_ROWS; r++) {
     for (let c = 0; c < PF_COLS; c++) {
       if ((r === start.row && c === start.col) || (r === end.row && c === end.col)) continue;
-      if (Math.random() < WALL_DENSITY) {
-        grid[r][c].type = NodeType.WALL;
+      if (Math.random() < WALL_DENSITY) grid[r][c].type = NodeType.WALL;
+    }
+  }
+}
+
+function recursiveDivision(grid: GridMatrix, start: { row: number; col: number }, end: { row: number; col: number }) {
+  const isReserved = (r: number, c: number) =>
+    (r === start.row && c === start.col) || (r === end.row && c === end.col);
+
+  function divide(rStart: number, rEnd: number, cStart: number, cEnd: number, horizontal: boolean) {
+    if (horizontal) {
+      if (rEnd - rStart < 2) return;
+      const possibleRows: number[] = [];
+      for (let r = rStart + 1; r < rEnd; r += 1) possibleRows.push(r);
+      if (possibleRows.length === 0) return;
+      const wallRow = possibleRows[Math.floor(Math.random() * possibleRows.length)];
+      const passCol = cStart + Math.floor(Math.random() * (cEnd - cStart + 1));
+      for (let c = cStart; c <= cEnd; c++) {
+        if (c === passCol || isReserved(wallRow, c)) continue;
+        grid[wallRow][c].type = NodeType.WALL;
+      }
+      divide(rStart, wallRow - 1, cStart, cEnd, !horizontal);
+      divide(wallRow + 1, rEnd, cStart, cEnd, !horizontal);
+    } else {
+      if (cEnd - cStart < 2) return;
+      const possibleCols: number[] = [];
+      for (let c = cStart + 1; c < cEnd; c += 1) possibleCols.push(c);
+      if (possibleCols.length === 0) return;
+      const wallCol = possibleCols[Math.floor(Math.random() * possibleCols.length)];
+      const passRow = rStart + Math.floor(Math.random() * (rEnd - rStart + 1));
+      for (let r = rStart; r <= rEnd; r++) {
+        if (r === passRow || isReserved(r, wallCol)) continue;
+        grid[r][wallCol].type = NodeType.WALL;
+      }
+      divide(rStart, rEnd, cStart, wallCol - 1, !horizontal);
+      divide(rStart, rEnd, wallCol + 1, cEnd, !horizontal);
+    }
+  }
+
+  divide(0, PF_ROWS - 1, 0, PF_COLS - 1, Math.random() > 0.5);
+}
+
+function dfsMaze(grid: GridMatrix, start: { row: number; col: number }, end: { row: number; col: number }) {
+  // Fill everything with walls, then carve passages with DFS
+  for (let r = 0; r < PF_ROWS; r++)
+    for (let c = 0; c < PF_COLS; c++)
+      grid[r][c].type = NodeType.WALL;
+
+  const visited = new Set<string>();
+  function carve(r: number, c: number) {
+    visited.add(`${r},${c}`);
+    grid[r][c].type = NodeType.EMPTY;
+    const dirs = [[0, 2], [0, -2], [2, 0], [-2, 0]].sort(() => Math.random() - 0.5);
+    for (const [dr, dc] of dirs) {
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr >= 0 && nr < PF_ROWS && nc >= 0 && nc < PF_COLS && !visited.has(`${nr},${nc}`)) {
+        // Carve the wall between current and next
+        grid[r + dr / 2][c + dc / 2].type = NodeType.EMPTY;
+        carve(nr, nc);
       }
     }
   }
 
+  // Start carving from an odd cell
+  const sr = start.row % 2 === 0 ? start.row + 1 : start.row;
+  const sc = start.col % 2 === 0 ? start.col + 1 : start.col;
+  carve(Math.min(sr, PF_ROWS - 1), Math.min(sc, PF_COLS - 1));
+
+  // Ensure start and end cells + their neighbors are open
+  grid[start.row][start.col].type = NodeType.EMPTY;
+  grid[end.row][end.col].type = NodeType.EMPTY;
+  if (start.col + 1 < PF_COLS) grid[start.row][start.col + 1].type = NodeType.EMPTY;
+  if (end.col - 1 >= 0) grid[end.row][end.col - 1].type = NodeType.EMPTY;
+}
+
+export function createBattleGrid(mazeType: MazeType = 'random'): { grid: GridMatrix; start: { row: number; col: number }; end: { row: number; col: number } } {
+  const grid = makeEmptyGrid();
+  const start = { row: Math.floor(PF_ROWS / 2), col: 1 };
+  const end = { row: Math.floor(PF_ROWS / 2), col: PF_COLS - 2 };
+
+  switch (mazeType) {
+    case 'recursive-division': recursiveDivision(grid, start, end); break;
+    case 'dfs-maze': dfsMaze(grid, start, end); break;
+    default: randomScatter(grid, start, end); break;
+  }
+
+  grid[start.row][start.col].type = NodeType.START;
+  grid[end.row][end.col].type = NodeType.END;
   return { grid, start, end };
 }
 

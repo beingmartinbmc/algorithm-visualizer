@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight, Swords, Grid3X3, Layers } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords, Grid3X3, Layers, Dna } from 'lucide-react';
 
 const games = [
   {
@@ -51,6 +51,16 @@ const games = [
     gradient: 'from-red-500 to-pink-500',
     shadowColor: 'shadow-red-500/20',
     icon: Layers,
+  },
+  {
+    path: '/games/evolution-simulator',
+    title: 'Evolution Simulator',
+    subtitle: 'Genetic Algorithm playground',
+    description: 'Evolve random strings toward a target phrase with deterministic genetic operations. Tune mutation, crossover, and selection strategy to study convergence behavior generation by generation.',
+    skills: ['Genetic Algorithms', 'Selection', 'Crossover', 'Mutation'],
+    gradient: 'from-lime-500 to-emerald-500',
+    shadowColor: 'shadow-lime-500/20',
+    icon: Dna,
   },
 ];
 

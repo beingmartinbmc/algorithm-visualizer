@@ -1,7 +1,15 @@
 import { Pause, Play, RotateCcw, Volume2, VolumeX, Trophy, Equal } from 'lucide-react';
 import type { RecursionAlgoState } from '../hooks/useRecursionBattle';
 import { REC_ALGORITHM_OPTIONS, REC_COMPLEXITY } from '../engine/recursionEngine';
+import type { RecursionProblem } from '../engine/recursionEngine';
 import { SPEED_PRESETS } from '../types/battle';
+
+const FUNC_NAMES: Record<RecursionProblem, string> = {
+  fibonacci: 'fib',
+  factorial: 'fact',
+  staircase: 'climb',
+  'coin-change': 'coins',
+};
 
 interface RecursionArenaProps {
   stateA: RecursionAlgoState;
@@ -12,6 +20,7 @@ interface RecursionArenaProps {
   predictionCorrect: boolean | null;
   speed: number;
   soundEnabled: boolean;
+  problem?: RecursionProblem;
   onPause: () => void;
   onResume: () => void;
   onReset: () => void;
@@ -19,7 +28,7 @@ interface RecursionArenaProps {
   onToggleSound: (v: boolean) => void;
 }
 
-function RecursionPanel({ state, color }: { state: RecursionAlgoState; color: 'rose' | 'cyan' }) {
+function RecursionPanel({ state, color, funcName }: { state: RecursionAlgoState; color: 'rose' | 'cyan'; funcName: string }) {
   const name = REC_ALGORITHM_OPTIONS.find((o) => o.value === state.algorithm)!.label;
   const step = state.currentIndex < state.steps.length ? state.steps[state.currentIndex] : null;
   const maxSteps = state.steps.length;
@@ -70,7 +79,7 @@ function RecursionPanel({ state, color }: { state: RecursionAlgoState; color: 'r
         {/* Current state */}
         {step && (
           <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-            <span>fib({step.currentN})</span>
+            <span>{funcName}({step.currentN})</span>
             {step.result !== null && <span className="text-emerald-400">= {step.result}</span>}
           </div>
         )}
@@ -104,6 +113,7 @@ export default function RecursionArena({
   predictionCorrect,
   speed,
   soundEnabled,
+  problem = 'fibonacci',
   onPause,
   onResume,
   onReset,
@@ -113,6 +123,7 @@ export default function RecursionArena({
   const isRunning = status === 'running';
   const nameA = REC_ALGORITHM_OPTIONS.find((o) => o.value === stateA.algorithm)!.label;
   const nameB = REC_ALGORITHM_OPTIONS.find((o) => o.value === stateB.algorithm)!.label;
+  const funcName = FUNC_NAMES[problem];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -151,8 +162,8 @@ export default function RecursionArena({
 
         {/* Dual panels */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <RecursionPanel state={stateA} color="rose" />
-          <RecursionPanel state={stateB} color="cyan" />
+          <RecursionPanel state={stateA} color="rose" funcName={funcName} />
+          <RecursionPanel state={stateB} color="cyan" funcName={funcName} />
         </div>
 
         {/* Result */}
@@ -229,7 +240,11 @@ export default function RecursionArena({
                   : stateB.totalCalls > stateA.totalCalls
                   ? `${nameB} made ${stateB.totalCalls} function calls compared to ${nameA}'s ${stateA.totalCalls}. `
                   : `Both made ${stateA.totalCalls} calls. `}
-                Naive recursion recalculates the same subproblems exponentially (O(2ⁿ)), while memoization caches results reducing to O(n). The iterative approach avoids recursion overhead entirely with O(1) space.
+                {problem === 'factorial'
+                  ? 'Factorial is inherently linear — naive and memoized perform similarly. The iterative version avoids stack overhead.'
+                  : problem === 'coin-change'
+                  ? `Naive coin change explores all combinations (branching factor 3), while memoization caches sub-amounts to avoid redundant work. Iterative DP builds the table bottom-up.`
+                  : `Naive recursion recalculates the same subproblems exponentially (O(2ⁿ)), while memoization caches results reducing to O(n). The iterative approach avoids recursion overhead entirely with O(1) space.`}
               </p>
             </div>
 

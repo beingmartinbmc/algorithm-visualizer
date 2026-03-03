@@ -37,7 +37,7 @@ const modules = [
     icon: Gamepad2,
     gradient: 'from-cyan-500 to-teal-500',
     shadowColor: 'shadow-cyan-500/20',
-    tags: ['Fibonacci', 'Dijkstra', 'Sudoku', 'Mahjong', 'Battles'],
+    tags: ['Fibonacci', 'Dijkstra', 'Sudoku', 'Mahjong', 'Battles', 'Evolution GA'],
   },
 ];
 

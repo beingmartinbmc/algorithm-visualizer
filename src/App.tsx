@@ -18,6 +18,7 @@ import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
 import DijkstraGamePage from '@/features/games/dijkstra/DijkstraGamePage';
 import BattlePage from '@/features/games/battles/BattlePage';
 import MahjongGamePage from '@/features/games/mahjong/MahjongGamePage';
+import EvolutionSimulatorPage from '@/features/games/evolution-simulator/EvolutionSimulatorPage';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/games/dijkstra" element={<DijkstraGamePage />} />
           <Route path="/games/battles" element={<BattlePage />} />
           <Route path="/games/mahjong" element={<MahjongGamePage />} />
+          <Route path="/games/evolution-simulator" element={<EvolutionSimulatorPage />} />
         </Routes>
       </div>
     </BrowserRouter>

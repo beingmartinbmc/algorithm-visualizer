@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { RecursionAlgorithm, RecursionStep } from '../engine/recursionEngine';
-import { runRecursionAlgorithm } from '../engine/recursionEngine';
+import type { RecursionAlgorithm, RecursionStep, RecursionProblem } from '../engine/recursionEngine';
+import { runRecursionAlgorithm, PROBLEM_OPTIONS } from '../engine/recursionEngine';
 import type { GameMode } from '../types/battle';
 import { useBattleSound } from './useBattleSound';
 
@@ -18,7 +18,14 @@ export interface RecursionAlgoState {
 export function useRecursionBattle() {
   const [algorithmA, setAlgorithmA] = useState<RecursionAlgorithm>('naive');
   const [algorithmB, setAlgorithmB] = useState<RecursionAlgorithm>('memoized');
+  const [problem, setProblem] = useState<RecursionProblem>('fibonacci');
   const [inputN, setInputN] = useState(15);
+
+  const changeProblem = useCallback((p: RecursionProblem) => {
+    setProblem(p);
+    const opt = PROBLEM_OPTIONS.find((o) => o.value === p);
+    if (opt) setInputN(opt.defaultN);
+  }, []);
   const [gameMode, setGameMode] = useState<GameMode>('realtime');
   const [speed, setSpeed] = useState(50);
   const [status, setStatus] = useState<'setup' | 'running' | 'paused' | 'finished'>('setup');
@@ -47,8 +54,8 @@ export function useRecursionBattle() {
   }, []);
 
   const startBattle = useCallback(() => {
-    const resA = runRecursionAlgorithm(algorithmA, inputN);
-    const resB = runRecursionAlgorithm(algorithmB, inputN);
+    const resA = runRecursionAlgorithm(algorithmA, inputN, problem);
+    const resB = runRecursionAlgorithm(algorithmB, inputN, problem);
     stepsARef.current = resA.steps;
     stepsBRef.current = resB.steps;
     indexARef.current = 0;
@@ -83,7 +90,7 @@ export function useRecursionBattle() {
     setWinner(null);
     setPredictionCorrect(null);
     setStatus('running');
-  }, [algorithmA, algorithmB, inputN, gameMode, prediction, playWinTone]);
+  }, [algorithmA, algorithmB, inputN, problem, gameMode, prediction, playWinTone]);
 
   const tick = useCallback(() => {
     let iA = indexARef.current;
@@ -136,6 +143,7 @@ export function useRecursionBattle() {
   return {
     algorithmA, setAlgorithmA,
     algorithmB, setAlgorithmB,
+    problem, changeProblem,
     inputN, setInputN,
     gameMode, setGameMode,
     speed, setSpeed,

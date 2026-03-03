@@ -8,15 +8,15 @@ import { useBattle } from './hooks/useBattle';
 import { usePathfindingBattle } from './hooks/usePathfindingBattle';
 import { useRecursionBattle } from './hooks/useRecursionBattle';
 import type { BattleCategory } from './types/battle';
-import { PF_ALGORITHM_OPTIONS } from './engine/pathfindingEngine';
-import { REC_ALGORITHM_OPTIONS } from './engine/recursionEngine';
+import { PF_ALGORITHM_OPTIONS, MAZE_OPTIONS } from './engine/pathfindingEngine';
+import { REC_ALGORITHM_OPTIONS, PROBLEM_OPTIONS } from './engine/recursionEngine';
 import type { GameMode } from './types/battle';
 import { SPEED_PRESETS } from './types/battle';
 
 const categories: { value: BattleCategory; label: string; desc: string; icon: typeof BarChart3 }[] = [
   { value: 'sorting', label: 'Sorting', desc: 'Bubble, Quick, Merge & more', icon: BarChart3 },
   { value: 'pathfinding', label: 'Pathfinding', desc: 'BFS, DFS, Dijkstra, A*', icon: Map },
-  { value: 'recursion', label: 'Recursion', desc: 'Naive vs Memoized Fibonacci', icon: GitBranch },
+  { value: 'recursion', label: 'Recursion', desc: 'Fibonacci, Factorial, Staircase & more', icon: GitBranch },
 ];
 
 function CategoryPicker({ onSelect }: { onSelect: (c: BattleCategory) => void }) {
@@ -90,6 +90,21 @@ function PathfindingSetup({ battle }: { battle: ReturnType<typeof usePathfinding
               </div>
             ))}
           </div>
+          {/* Maze Type */}
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Maze Type</h3>
+            <div className="grid grid-cols-3 gap-1.5">
+              {MAZE_OPTIONS.map((opt) => (
+                <button key={opt.value}
+                  onClick={() => battle.setMazeType(opt.value)}
+                  className={`rounded-lg px-2 py-2 text-[11px] font-medium transition-all ${
+                    battle.mazeType === opt.value
+                      ? 'bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50'
+                  }`}>{opt.label}</button>
+              ))}
+            </div>
+          </div>
           <GameModeAndSpeed gameMode={battle.gameMode} setGameMode={battle.setGameMode} speed={battle.speed} setSpeed={battle.setSpeed}
             soundEnabled={battle.soundEnabled} toggleSound={battle.toggleSound} prediction={battle.prediction} setPrediction={battle.setPrediction}
             nameA={nameA} nameB={nameB} />
@@ -108,6 +123,7 @@ function PathfindingSetup({ battle }: { battle: ReturnType<typeof usePathfinding
 function RecursionSetup({ battle }: { battle: ReturnType<typeof useRecursionBattle> }) {
   const nameA = REC_ALGORITHM_OPTIONS.find((o) => o.value === battle.algorithmA)!.label;
   const nameB = REC_ALGORITHM_OPTIONS.find((o) => o.value === battle.algorithmB)!.label;
+  const problemOpt = PROBLEM_OPTIONS.find((o) => o.value === battle.problem)!;
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -117,10 +133,28 @@ function RecursionSetup({ battle }: { battle: ReturnType<typeof useRecursionBatt
           {' '}vs{' '}
           <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{nameB}</span>
         </h2>
-        <p className="text-xs text-slate-500 mt-1">Compare Fibonacci implementations</p>
+        <p className="text-xs text-slate-500 mt-1">{problemOpt.desc}</p>
       </section>
       <section className="px-4 pb-8">
         <div className="mx-auto max-w-2xl space-y-4">
+          {/* Problem Type */}
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Problem</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              {PROBLEM_OPTIONS.map((opt) => (
+                <button key={opt.value}
+                  onClick={() => battle.changeProblem(opt.value)}
+                  className={`rounded-lg px-2 py-2 text-[11px] font-medium transition-all ${
+                    battle.problem === opt.value
+                      ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50'
+                  }`}>
+                  <span className="block font-semibold">{opt.label}</span>
+                  <span className="block text-[9px] text-slate-500 mt-0.5">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {(['A', 'B'] as const).map((side) => (
               <div key={side} className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
@@ -142,13 +176,19 @@ function RecursionSetup({ battle }: { battle: ReturnType<typeof useRecursionBatt
           <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Input</h3>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-slate-500">Fibonacci N</span>
+              <span className="text-xs text-slate-500">{problemOpt.inputLabel}</span>
               <span className="text-sm font-mono font-bold text-indigo-300">{battle.inputN}</span>
             </div>
-            <input type="range" min={5} max={25} value={battle.inputN}
+            <input type="range" min={problemOpt.inputMin} max={problemOpt.inputMax} value={battle.inputN}
               onChange={(e) => battle.setInputN(Number(e.target.value))}
               className="w-full accent-indigo-500" />
-            <p className="text-[10px] text-slate-500 mt-1">⚠️ Naive recursive is exponential — N &gt; 20 generates many steps</p>
+            <p className="text-[10px] text-slate-500 mt-1">
+              {battle.problem === 'fibonacci' || battle.problem === 'staircase'
+                ? '⚠️ Naive recursive is exponential — large N generates many steps'
+                : battle.problem === 'coin-change'
+                ? '⚠️ Naive coin change branches 3 ways per call — grows very fast'
+                : '⚠️ Factorial is linear — naive and memoized are similar here'}
+            </p>
           </div>
           <GameModeAndSpeed gameMode={battle.gameMode} setGameMode={battle.setGameMode} speed={battle.speed} setSpeed={battle.setSpeed}
             soundEnabled={battle.soundEnabled} toggleSound={battle.toggleSound} prediction={battle.prediction} setPrediction={battle.setPrediction}
@@ -306,6 +346,7 @@ export default function BattlePage() {
         winner={recursion.winner} prediction={recursion.prediction}
         predictionCorrect={recursion.predictionCorrect}
         speed={recursion.speed} soundEnabled={recursion.soundEnabled}
+        problem={recursion.problem}
         onPause={recursion.pause} onResume={recursion.resume} onReset={recursion.reset}
         onSetSpeed={recursion.setSpeed} onToggleSound={recursion.toggleSound}
       /></>;
