@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Grid3X3, Database, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { BarChart3, Database, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
@@ -22,15 +22,6 @@ const modules = [
     tags: ['Bubble', 'Selection', 'Insertion', 'Quick', 'Heap', 'Merge'],
   },
   {
-    path: '/games/sudoku-solver',
-    title: 'Sudoku Solver',
-    description: 'Generate random Sudoku puzzles of different sizes and step through a backtracking solver. Go forward, backward, or solve instantly.',
-    icon: Grid3X3,
-    gradient: 'from-emerald-500 to-teal-500',
-    shadowColor: 'shadow-emerald-500/20',
-    tags: ['4×4', '9×9', '16×16', 'Backtracking'],
-  },
-  {
     path: '/data-structures',
     title: 'Data Structures',
     description: 'Visualize how data structures organize and retrieve information. Explore balanced trees with live rotations, recoloring, and rebalancing — with more structures coming soon.',
@@ -46,7 +37,7 @@ const modules = [
     icon: Gamepad2,
     gradient: 'from-cyan-500 to-teal-500',
     shadowColor: 'shadow-cyan-500/20',
-    tags: ['Fibonacci Spiral', 'Golden Ratio', 'Pattern Recognition', 'Game'],
+    tags: ['Fibonacci', 'Dijkstra', 'Sudoku', 'Mahjong', 'Battles'],
   },
 ];
 
