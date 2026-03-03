@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface ListNode {
   id: number;
@@ -32,6 +32,26 @@ export function useLinkedList() {
   const [speed, setSpeed] = useState(400);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const speedRef = useRef(speed);
+  const pendingAutoPlay = useRef(false);
+
+  useEffect(() => { speedRef.current = speed; }, [speed]);
+
+  // Auto-play traversal animation whenever a new operation produces steps
+  useEffect(() => {
+    if (!pendingAutoPlay.current || steps.length === 0) return;
+    pendingAutoPlay.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsPlaying(true);
+    let idx = 0;
+    const tick = () => {
+      if (idx >= steps.length - 1) { setIsPlaying(false); return; }
+      idx++;
+      setStepIndex(idx);
+      timerRef.current = setTimeout(tick, speedRef.current);
+    };
+    timerRef.current = setTimeout(tick, speedRef.current);
+  }, [steps]);
 
   const displayNodes = stepIndex >= 0 && steps[stepIndex] ? steps[stepIndex].nodes : nodes;
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null;
@@ -61,7 +81,8 @@ export function useLinkedList() {
         makeStep(`${val} inserted at position 0 (head). Updating head pointer.`, next, [newNode.id], 'green', newNode.id),
       ];
       setSteps(built);
-      setStepIndex(1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       addHistory(`Prepend ${val}`);
       return next;
     });
@@ -90,7 +111,8 @@ export function useLinkedList() {
         newNode.id,
       ));
       setSteps(built);
-      setStepIndex(built.length - 1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       addHistory(`Append ${val}`);
       return next;
     });
@@ -119,7 +141,8 @@ export function useLinkedList() {
         newNode.id,
       ));
       setSteps(built);
-      setStepIndex(built.length - 1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       addHistory(`Insert ${val} at [${idx}]`);
       return next;
     });
@@ -153,7 +176,8 @@ export function useLinkedList() {
         null,
       ));
       setSteps(built);
-      setStepIndex(built.length - 1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       addHistory(`Delete [${idx}] → ${target.value}`);
       return next;
     });
@@ -181,7 +205,8 @@ export function useLinkedList() {
         addHistory(`Search ${val} → found at [${foundIdx}]`);
       }
       setSteps(built);
-      setStepIndex(built.length - 1);
+      setStepIndex(0);
+      pendingAutoPlay.current = true;
       return prev;
     });
   }, []);

@@ -4,7 +4,7 @@ import { GitBranch, ArrowRight, Database, Layers, AlignJustify, List, Link2 } fr
 const structures = [
   {
     path: '/data-structures/balanced-trees',
-    title: 'BST / AVL / Red-Black Tree',
+    title: 'Balanced Trees',
     subtitle: 'Self-balancing binary search trees',
     description: 'Insert and delete values in Binary Search Trees, AVL Trees, and Red-Black Trees. Watch rotations, recoloring, and rebalancing in real time.',
     skills: ['BST', 'AVL', 'Red-Black', 'Rotations'],
