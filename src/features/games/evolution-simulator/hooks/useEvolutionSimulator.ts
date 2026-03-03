@@ -7,6 +7,7 @@ import {
   initializeEvolution,
 } from '../engine';
 import type { EvolutionConfig, EvolutionState, SelectionStrategy } from '../engine';
+import { useEvolutionSound } from './useEvolutionSound';
 
 function sanitizeTarget(value: string): string {
   const upper = value.toUpperCase();
@@ -18,6 +19,7 @@ function sanitizeTarget(value: string): string {
 }
 
 export function useEvolutionSimulator() {
+  const [mode, setMode] = useState<'guided' | 'free-play'>('guided');
   const [target, setTarget] = useState(DEFAULT_CONFIG.target);
   const [populationSize, setPopulationSize] = useState(DEFAULT_CONFIG.populationSize);
   const [mutationRatePercent, setMutationRatePercent] = useState(Math.round(DEFAULT_CONFIG.mutationRate * 100));
@@ -25,12 +27,31 @@ export function useEvolutionSimulator() {
   const [maxGenerations, setMaxGenerations] = useState(DEFAULT_CONFIG.maxGenerations);
   const [selectionStrategy, setSelectionStrategy] = useState<SelectionStrategy>(DEFAULT_CONFIG.selectionStrategy);
   const [speedMs, setSpeedMs] = useState(35);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const [state, setState] = useState<EvolutionState | null>(null);
   const [status, setStatus] = useState<'idle' | 'running' | 'paused' | 'finished'>('idle');
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const configRef = useRef<EvolutionConfig | null>(null);
+  const prevBestRef = useRef(0);
+  const { setEnabled, playGenerationTick, playImprove, playComplete } = useEvolutionSound();
+
+  useEffect(() => {
+    if (mode === 'guided') {
+      setTarget('HELLO WORLD');
+      setPopulationSize(300);
+      setMutationRatePercent(3);
+      setCrossoverRatePercent(75);
+      setMaxGenerations(500);
+      setSelectionStrategy('roulette');
+      setSpeedMs(35);
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    setEnabled(soundEnabled);
+  }, [soundEnabled, setEnabled]);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -57,10 +78,16 @@ export function useEvolutionSimulator() {
     setState((prev) => {
       if (!prev || !configRef.current) return prev;
       const next = evolveNextGeneration(configRef.current, prev);
+      const targetLen = configRef.current.target.length;
+      playGenerationTick(next.bestIndividual.fitness, targetLen);
+      if (next.bestIndividual.fitness > prevBestRef.current) {
+        playImprove();
+      }
+      prevBestRef.current = next.bestIndividual.fitness;
       if (next.done) setStatus('finished');
       return next;
     });
-  }, []);
+  }, [playGenerationTick, playImprove]);
 
   useEffect(() => {
     if (status !== 'running') {
@@ -78,17 +105,22 @@ export function useEvolutionSimulator() {
   }, [status, speedMs, step, clearTimer]);
 
   useEffect(() => {
-    if (state?.done && status === 'running') setStatus('finished');
-  }, [state, status]);
+    if (state?.done && status === 'running') {
+      playComplete();
+      setStatus('finished');
+    }
+  }, [state, status, playComplete]);
 
   const start = useCallback(() => {
     const cfg = buildConfig();
     configRef.current = cfg;
     const seed = 1337;
     const init = initializeEvolution(cfg, seed);
+    prevBestRef.current = init.bestIndividual.fitness;
     setState(init);
+    if (init.bestIndividual.fitness > 0) playGenerationTick(init.bestIndividual.fitness, cfg.target.length);
     setStatus(init.done ? 'finished' : 'running');
-  }, [buildConfig]);
+  }, [buildConfig, playGenerationTick]);
 
   const pause = useCallback(() => {
     if (status === 'running') setStatus('paused');
@@ -102,7 +134,12 @@ export function useEvolutionSimulator() {
     clearTimer();
     setState(null);
     setStatus('idle');
+    prevBestRef.current = 0;
   }, [clearTimer]);
+
+  const toggleSound = useCallback((v: boolean) => {
+    setSoundEnabled(v);
+  }, []);
 
   const randomTarget = useCallback(() => {
     const idx = Math.floor(Math.random() * RANDOM_TARGETS.length);
@@ -122,6 +159,8 @@ export function useEvolutionSimulator() {
 
   return {
     // config
+    mode,
+    setMode,
     target,
     setTarget,
     populationSize,
@@ -136,6 +175,8 @@ export function useEvolutionSimulator() {
     setSelectionStrategy,
     speedMs,
     setSpeedMs,
+    soundEnabled,
+    toggleSound,
 
     // state
     state,
