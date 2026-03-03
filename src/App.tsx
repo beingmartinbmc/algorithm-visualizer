@@ -8,6 +8,10 @@ import TreeTraversalPage from '@/features/traversals/tree/TreeTraversalPage';
 import TraversalsPage from '@/features/traversals/TraversalsPage';
 import TriePage from '@/features/traversals/trie/TriePage';
 import BalancedTreePage from '@/features/data-structures/balanced-trees/BalancedTreePage';
+import StackPage from '@/features/data-structures/stack/StackPage';
+import QueuePage from '@/features/data-structures/queue/QueuePage';
+import ArrayPage from '@/features/data-structures/array/ArrayPage';
+import LinkedListPage from '@/features/data-structures/linked-list/LinkedListPage';
 import DataStructuresPage from '@/features/data-structures/DataStructuresPage';
 import GamesPage from '@/features/games/GamesPage';
 import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
@@ -30,6 +34,10 @@ function App() {
           <Route path="/games/sudoku-solver" element={<SudokuPage />} />
           <Route path="/data-structures" element={<DataStructuresPage />} />
           <Route path="/data-structures/balanced-trees" element={<BalancedTreePage />} />
+          <Route path="/data-structures/stack" element={<StackPage />} />
+          <Route path="/data-structures/queue" element={<QueuePage />} />
+          <Route path="/data-structures/array" element={<ArrayPage />} />
+          <Route path="/data-structures/linked-list" element={<LinkedListPage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/fibonacci" element={<FibonacciGamePage />} />
           <Route path="/games/dijkstra" element={<DijkstraGamePage />} />
