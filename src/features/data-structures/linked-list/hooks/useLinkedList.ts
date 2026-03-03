@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useDSSound } from '../../hooks/useDSSound';
 
 export interface ListNode {
   id: number;
@@ -34,6 +35,13 @@ export function useLinkedList() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speedRef = useRef(speed);
   const pendingAutoPlay = useRef(false);
+  const { soundEnabled, toggleSound, playInsert, playDelete, playTraverse, playFound, playNotFound } = useDSSound();
+  const playInsertRef = useRef(playInsert);
+  const playDeleteRef = useRef(playDelete);
+  const playTraverseRef = useRef(playTraverse);
+  useEffect(() => { playInsertRef.current = playInsert; }, [playInsert]);
+  useEffect(() => { playDeleteRef.current = playDelete; }, [playDelete]);
+  useEffect(() => { playTraverseRef.current = playTraverse; }, [playTraverse]);
 
   useEffect(() => { speedRef.current = speed; }, [speed]);
 
@@ -48,6 +56,12 @@ export function useLinkedList() {
       if (idx >= steps.length - 1) { setIsPlaying(false); return; }
       idx++;
       setStepIndex(idx);
+      const s = steps[idx];
+      if (s) {
+        if (s.highlightColor === 'green') playInsertRef.current();
+        else if (s.highlightColor === 'red') playDeleteRef.current();
+        else if (s.highlightColor === 'yellow') playTraverseRef.current(idx, steps.length);
+      }
       timerRef.current = setTimeout(tick, speedRef.current);
     };
     timerRef.current = setTimeout(tick, speedRef.current);
@@ -83,10 +97,11 @@ export function useLinkedList() {
       setSteps(built);
       setStepIndex(0);
       pendingAutoPlay.current = true;
+      playInsert();
       addHistory(`Prepend ${val}`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const append = useCallback((val: number) => {
     const newNode: ListNode = { id: nextId++, value: val };
@@ -113,10 +128,11 @@ export function useLinkedList() {
       setSteps(built);
       setStepIndex(0);
       pendingAutoPlay.current = true;
+      playInsert();
       addHistory(`Append ${val}`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const insertAt = useCallback((val: number, idx: number) => {
     const newNode: ListNode = { id: nextId++, value: val };
@@ -143,10 +159,11 @@ export function useLinkedList() {
       setSteps(built);
       setStepIndex(0);
       pendingAutoPlay.current = true;
+      playInsert();
       addHistory(`Insert ${val} at [${idx}]`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const deleteAt = useCallback((idx: number) => {
     setNodes((prev) => {
@@ -178,10 +195,11 @@ export function useLinkedList() {
       setSteps(built);
       setStepIndex(0);
       pendingAutoPlay.current = true;
+      playDelete();
       addHistory(`Delete [${idx}] → ${target.value}`);
       return next;
     });
-  }, []);
+  }, [playDelete]);
 
   const search = useCallback((val: number) => {
     setNodes((prev) => {
@@ -200,8 +218,10 @@ export function useLinkedList() {
       }
       if (foundIdx === -1) {
         built.push(makeStep(`${val} not found in the list.`, prev, [], null));
+        playNotFound();
         addHistory(`Search ${val} → not found`);
       } else {
+        playFound();
         addHistory(`Search ${val} → found at [${foundIdx}]`);
       }
       setSteps(built);
@@ -209,7 +229,7 @@ export function useLinkedList() {
       pendingAutoPlay.current = true;
       return prev;
     });
-  }, []);
+  }, [playFound, playNotFound]);
 
   const clear = useCallback(() => {
     setNodes([]);
@@ -282,5 +302,7 @@ export function useLinkedList() {
     autoPlay,
     canGoNext: stepIndex < steps.length - 1,
     canGoPrev: stepIndex > 0,
+    soundEnabled,
+    toggleSound,
   };
 }

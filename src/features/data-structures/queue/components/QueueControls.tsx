@@ -1,4 +1,4 @@
-import { Plus, Trash2, Eye, Shuffle, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Eye, Shuffle, ChevronLeft, ChevronRight, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { useQueue } from '../hooks/useQueue';
 
 const speeds = [
@@ -15,7 +15,7 @@ export default function QueueControls({ hook }: QueueControlsProps) {
   const {
     queue, steps, stepIndex, inputValue, setInputValue, history,
     speed, setSpeed, isPlaying, enqueue, dequeue, peekFront, clear, generateRandom,
-    nextStep, prevStep, canGoNext, canGoPrev,
+    nextStep, prevStep, canGoNext, canGoPrev, soundEnabled, toggleSound,
   } = hook;
 
   const handleEnqueue = () => {
@@ -87,6 +87,17 @@ export default function QueueControls({ hook }: QueueControlsProps) {
           className="mt-2 w-full flex items-center justify-center gap-1.5 rounded-lg bg-slate-800/60 px-3 py-2 text-xs font-medium text-slate-400 transition-all hover:bg-slate-700/60 hover:text-slate-300"
         >
           <Shuffle size={12} /> Random Queue
+        </button>
+        <button
+          onClick={() => toggleSound(!soundEnabled)}
+          className={`mt-2 w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+            soundEnabled
+              ? 'bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30'
+              : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60'
+          }`}
+        >
+          {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+          {soundEnabled ? 'Sound On' : 'Sound Off'}
         </button>
       </div>
 
