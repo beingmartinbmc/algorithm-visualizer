@@ -45,6 +45,13 @@ export default function EvolutionSimulatorPage() {
   const isGuided = mode === 'guided';
   const best = state?.bestIndividual;
   const avgFitness = state?.averageFitness ?? 0;
+  const guidedTip = getGuidedTip({
+    status,
+    generation: state?.generation ?? 0,
+    bestFitness: best?.fitness ?? 0,
+    targetLength: target.length,
+    convergence,
+  });
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -86,6 +93,18 @@ export default function EvolutionSimulatorPage() {
             <p className="mt-2 text-[10px] text-amber-300/80">
               Guided mode uses recommended settings (HELLO WORLD, pop 300, mutation 3%, crossover 75%) for stable learning.
             </p>
+          )}
+
+          {isGuided && (
+            <div className="mt-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-amber-300">Guided Walkthrough</h4>
+              <p className="mt-1 text-xs text-slate-300 leading-relaxed">{guidedTip.main}</p>
+              <ul className="mt-2 space-y-1 text-[11px] text-slate-400 list-disc pl-4">
+                {guidedTip.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -249,4 +268,91 @@ function Stat({ label, value }: { label: string; value: string | number }) {
       <div className="text-sm font-mono text-slate-100">{value}</div>
     </div>
   );
+}
+
+function getGuidedTip({
+  status,
+  generation,
+  bestFitness,
+  targetLength,
+  convergence,
+}: {
+  status: 'idle' | 'running' | 'paused' | 'finished';
+  generation: number;
+  bestFitness: number;
+  targetLength: number;
+  convergence: number;
+}) {
+  if (status === 'idle') {
+    return {
+      main: 'Start the simulator to create the initial random population. Every individual has the same length as the target string.',
+      points: [
+        'Fitness = number of correct characters in correct positions.',
+        'Roulette selection gives fitter strings higher chance to reproduce.',
+        'Elitism keeps the best individual every generation.',
+      ],
+    };
+  }
+
+  if (status === 'paused') {
+    return {
+      main: 'Simulation is paused. Compare the best and average fitness lines before continuing.',
+      points: [
+        `Current convergence is ${convergence.toFixed(1)}%.`,
+        'If average fitness is catching best fitness, population is stabilizing.',
+        'Resume to observe further crossover + mutation effects.',
+      ],
+    };
+  }
+
+  if (status === 'finished') {
+    const solved = targetLength > 0 && bestFitness >= targetLength;
+    return {
+      main: solved
+        ? `Solved in ${generation} generations. The best individual now exactly matches the target.`
+        : `Reached max generations at ${convergence.toFixed(1)}% convergence without full match.`,
+      points: solved
+        ? [
+            'Notice how best fitness rose in steps when useful mutations appeared.',
+            'Average fitness should trend upward as good genes spread.',
+            'Try Free-play to test lower mutation or alternate selection strategy.',
+          ]
+        : [
+            'Try increasing max generations or population size.',
+            'Slightly higher mutation can help escape local plateaus.',
+            'Free-play mode lets you experiment with these trade-offs.',
+          ],
+    };
+  }
+
+  if (generation < 10) {
+    return {
+      main: 'Early phase: selection pressure is starting to amplify better character matches.',
+      points: [
+        'Watch the best-fitness line jump when a useful mutation appears.',
+        'Average fitness may rise slowly at first—this is normal.',
+        'Crossover recombines partial matches from different parents.',
+      ],
+    };
+  }
+
+  if (convergence < 60) {
+    return {
+      main: 'Middle phase: the population is accumulating correct characters in more positions.',
+      points: [
+        'Best fitness reflects the strongest candidate so far.',
+        'Average fitness indicates overall population quality.',
+        'Gap between best and average shows remaining diversity.',
+      ],
+    };
+  }
+
+  return {
+    main: 'Late phase: convergence is high; progress often comes from rare beneficial mutations.',
+    points: [
+      'Near the end, single-character improvements become more important.',
+      'If progress stalls, Free-play can help you tune mutation and generation budget.',
+      'Use Gene Comparison to see exactly which positions remain incorrect.',
+    ],
+  };
 }
