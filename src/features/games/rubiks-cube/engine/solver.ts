@@ -1,19 +1,8 @@
 import type { CubeState, Move, SolveStep } from './types';
-import { applyMove, applyMoves, isSolved, cloneCube, invertMove } from './cube';
+import { applyMove, isSolved, cloneCube, invertMove } from './cube';
 
 // Layer-by-layer beginner's method solver
 // Phases: White Cross -> White Corners -> Middle Layer -> Yellow Cross -> Yellow Edges -> Yellow Corners -> Orient Corners
-
-type Algorithm = Move[];
-
-function parseAlg(str: string): Algorithm {
-  return str.split(' ').filter(Boolean) as Move[];
-}
-
-// Check specific sticker positions
-function getSticker(cube: CubeState, face: number, pos: number): string {
-  return cube[face][pos];
-}
 
 // Phase 1: White Cross on top
 function solveWhiteCross(cube: CubeState): { cube: CubeState; steps: SolveStep[] } {

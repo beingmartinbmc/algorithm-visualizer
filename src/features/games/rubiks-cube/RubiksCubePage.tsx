@@ -191,7 +191,6 @@ export default function RubiksCubePage() {
                   result={state.challengeResult}
                   userMoves={state.userMoves}
                   startTime={state.challengeStartTime}
-                  isSolved={state.isSolved}
                   onNewChallenge={() => setMode('challenge')}
                   scrambleMoves={state.scrambleMoves}
                 />

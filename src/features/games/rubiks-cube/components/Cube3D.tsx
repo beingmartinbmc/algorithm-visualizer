@@ -20,27 +20,12 @@ const FACE_TRANSFORMS: Record<number, string> = {
   5: 'rotateY(90deg)',   // R - right
 };
 
-const FACE_LABELS = ['U', 'D', 'F', 'B', 'L', 'R'];
-
-// Which face indices are affected by each move for animation
-const MOVE_FACE_MAP: Record<string, number[]> = {
-  U: [0], D: [1], F: [2], B: [3], L: [4], R: [5],
-};
-
-const MOVE_AXIS: Record<string, string> = {
-  U: 'Y', D: 'Y', F: 'Z', B: 'Z', L: 'X', R: 'X',
-};
-
-const MOVE_DIR: Record<string, number> = {
-  U: -1, D: 1, F: 1, B: -1, L: 1, R: -1,
-};
 
 export default function Cube3D({ cube, animatingMove, onAnimationEnd, size = 200 }: Cube3DProps) {
   const [rotation, setRotation] = useState({ x: -25, y: 35 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, rotX: 0, rotY: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const [animAngle, setAnimAngle] = useState(0);
   const animRef = useRef<number>(0);
 
   const cellSize = size / 3;
@@ -53,24 +38,14 @@ export default function Cube3D({ cube, animatingMove, onAnimationEnd, size = 200
 
     let start: number | null = null;
     const duration = 300; // ms
-    const face = animatingMove[0];
-    const mod = animatingMove.slice(1);
-    const targetAngle = mod === '2' ? 180 : mod === "'" ? -90 : 90;
-    const dir = MOVE_DIR[face] || 1;
-    const finalAngle = targetAngle * dir;
-
     const animate = (timestamp: number) => {
       if (!start) start = timestamp;
       const elapsed = timestamp - start;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-
-      setAnimAngle(finalAngle * eased);
 
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
-        setAnimAngle(0);
         onAnimationEnd?.();
       }
     };

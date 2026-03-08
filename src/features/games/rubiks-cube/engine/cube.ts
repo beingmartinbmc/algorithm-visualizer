@@ -26,11 +26,6 @@ function rotateFaceCW(face: Face): Face {
   return [face[6], face[3], face[0], face[7], face[4], face[1], face[8], face[5], face[2]];
 }
 
-// Rotate a face 90° counter-clockwise
-function rotateFaceCCW(face: Face): Face {
-  return [face[2], face[5], face[8], face[1], face[4], face[7], face[0], face[3], face[6]];
-}
-
 // Apply a single base move (quarter turn CW)
 function applyBaseMoveU(s: CubeState): CubeState {
   const c = cloneCube(s);
