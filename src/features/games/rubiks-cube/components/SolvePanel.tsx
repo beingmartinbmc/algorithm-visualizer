@@ -1,5 +1,11 @@
 import type { SolveStep } from '../engine/types';
-import { Play, Pause, SkipForward, SkipBack, RotateCcw } from 'lucide-react';
+import { Pause, SkipForward, SkipBack, RotateCcw, Wand2, Turtle, Rabbit, Zap } from 'lucide-react';
+
+const SPEED_PRESETS = [
+  { label: 'Slow', value: 1000, icon: Turtle, color: 'from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500' },
+  { label: 'Medium', value: 400, icon: Rabbit, color: 'from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500' },
+  { label: 'Fast', value: 120, icon: Zap, color: 'from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500' },
+] as const;
 
 interface SolvePanelProps {
   steps: SolveStep[];
@@ -7,25 +13,22 @@ interface SolvePanelProps {
   isPlaying: boolean;
   onStepForward: () => void;
   onStepBackward: () => void;
-  onPlay: () => void;
   onPause: () => void;
   onReset: () => void;
+  onAutoSolve?: (speed: number) => void;
   speed: number;
-  onSpeedChange: (speed: number) => void;
   guidedPhase: string;
 }
 
 const PHASE_COLORS: Record<string, string> = {
-  'White Cross': 'text-white',
-  'White Corners': 'text-slate-200',
-  'Middle Layer': 'text-blue-400',
-  'Yellow Cross': 'text-yellow-400',
-  'Last Layer': 'text-yellow-300',
+  'Undo Last Moves': 'text-amber-400',
+  'Restoring Middle': 'text-blue-400',
+  'Final Restoration': 'text-emerald-400',
 };
 
 export default function SolvePanel({
   steps, currentStep, isPlaying, onStepForward, onStepBackward,
-  onPlay, onPause, onReset, speed, onSpeedChange, guidedPhase,
+  onPause, onReset, onAutoSolve, speed, guidedPhase,
 }: SolvePanelProps) {
   const progress = steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
   const currentDesc = currentStep >= 0 && currentStep < steps.length
@@ -76,7 +79,47 @@ export default function SolvePanel({
         )}
       </div>
 
-      {/* Controls */}
+      {/* Auto Solve with speed presets */}
+      {onAutoSolve && currentStep < steps.length - 1 && !isPlaying && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 uppercase font-semibold">
+            <Wand2 size={10} /> Auto Solve
+          </div>
+          <div className="grid grid-cols-3 gap-1.5">
+            {SPEED_PRESETS.map(({ label, value, icon: Icon, color }) => (
+              <button
+                key={label}
+                onClick={() => onAutoSolve(value)}
+                className={`flex flex-col items-center gap-0.5 py-2 rounded-lg
+                  bg-gradient-to-r ${color}
+                  text-white text-[10px] font-semibold transition-all`}
+              >
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* During auto-solve, show pause */}
+      {isPlaying && (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onPause}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
+              bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500
+              text-white text-xs font-semibold transition-all"
+          >
+            <Pause size={14} /> Pause
+          </button>
+          <div className="text-[10px] text-slate-500">
+            {speed <= 150 ? '⚡ Fast' : speed <= 500 ? '🐇 Medium' : '🐢 Slow'}
+          </div>
+        </div>
+      )}
+
+      {/* Step controls */}
       <div className="flex items-center gap-1.5">
         <button
           onClick={onReset}
@@ -87,7 +130,7 @@ export default function SolvePanel({
         </button>
         <button
           onClick={onStepBackward}
-          disabled={currentStep < 0}
+          disabled={currentStep < 0 || isPlaying}
           className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white
             disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Step Back"
@@ -95,42 +138,14 @@ export default function SolvePanel({
           <SkipBack size={14} />
         </button>
         <button
-          onClick={isPlaying ? onPause : onPlay}
-          disabled={steps.length === 0 || currentStep >= steps.length - 1}
+          onClick={onStepForward}
+          disabled={currentStep >= steps.length - 1 || isPlaying}
           className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg
             bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500
             text-white text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
-          {isPlaying ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Play</>}
+          <SkipForward size={14} /> Next Step
         </button>
-        <button
-          onClick={onStepForward}
-          disabled={currentStep >= steps.length - 1}
-          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white
-            disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          title="Step Forward"
-        >
-          <SkipForward size={14} />
-        </button>
-      </div>
-
-      {/* Speed control */}
-      <div className="space-y-1">
-        <div className="flex justify-between text-[10px] text-slate-500">
-          <span>Speed</span>
-          <span>{speed}ms</span>
-        </div>
-        <input
-          type="range"
-          min={100}
-          max={2000}
-          step={100}
-          value={speed}
-          onChange={e => onSpeedChange(Number(e.target.value))}
-          className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-cyan-500"
-        />
       </div>
 
       {/* Steps list */}
