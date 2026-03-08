@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Shuffle, RotateCcw, BookOpen, Trophy, Gamepad2, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Shuffle, RotateCcw, BookOpen, Trophy, Gamepad2, HelpCircle, Volume2, VolumeX } from 'lucide-react';
 import Cube3D from './components/Cube3D';
 import MoveControls from './components/MoveControls';
 import SolvePanel from './components/SolvePanel';
 import ChallengePanel from './components/ChallengePanel';
 import { useRubiksCube } from './hooks/useRubiksCube';
+import { useRubiksSound } from './hooks/useRubiksSound';
 import type { GameMode, CubeState } from './engine/types';
 import { COLOR_MAP } from './engine/types';
 
@@ -39,8 +40,28 @@ export default function RubiksCubePage() {
     stepForward, stepBackward, play, pause, tick, setMode, setSpeed, clearAnimation,
   } = useRubiksCube();
 
+  const sound = useRubiksSound();
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
+
   const tickRef = useRef(tick);
   tickRef.current = tick;
+
+  // Track previous solved state to trigger sound
+  const prevSolvedRef = useRef(state.isSolved);
+  useEffect(() => {
+    if (state.isSolved && !prevSolvedRef.current) {
+      soundRef.current.playSolved();
+    }
+    prevSolvedRef.current = state.isSolved;
+  }, [state.isSolved]);
+
+  // Play sound on each animated move
+  useEffect(() => {
+    if (state.animatingMove) {
+      soundRef.current.playMove(state.animatingMove);
+    }
+  }, [state.animatingMove]);
 
   // Auto-play timer
   useEffect(() => {
@@ -48,6 +69,12 @@ export default function RubiksCubePage() {
     const id = setInterval(() => tickRef.current(), state.speed);
     return () => clearInterval(id);
   }, [state.isPlaying, state.speed]);
+
+  // Auto-solve: set speed then start playing
+  const handleAutoSolve = useCallback((speed: number) => {
+    setSpeed(speed);
+    play();
+  }, [play, setSpeed]);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -71,11 +98,20 @@ export default function RubiksCubePage() {
                 3D interactive cube with step-by-step solving, guided tutorials & timed challenges
               </p>
             </div>
-            {state.isSolved && state.mode !== 'challenge' && (
-              <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 ring-1 ring-emerald-500/30">
-                <span className="text-xs font-semibold text-emerald-400">✓ Solved</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => sound.setEnabled(!sound.isEnabled())}
+                className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors border border-slate-700/50"
+                title={sound.isEnabled() ? 'Mute' : 'Unmute'}
+              >
+                {sound.isEnabled() ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              </button>
+              {state.isSolved && state.mode !== 'challenge' && (
+                <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 ring-1 ring-emerald-500/30">
+                  <span className="text-xs font-semibold text-emerald-400">✓ Solved</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -175,11 +211,10 @@ export default function RubiksCubePage() {
                   isPlaying={state.isPlaying}
                   onStepForward={stepForward}
                   onStepBackward={stepBackward}
-                  onPlay={play}
                   onPause={pause}
                   onReset={() => setMode('guided')}
+                  onAutoSolve={handleAutoSolve}
                   speed={state.speed}
-                  onSpeedChange={setSpeed}
                   guidedPhase={state.guidedPhase}
                 />
               </div>
@@ -205,11 +240,10 @@ export default function RubiksCubePage() {
                   isPlaying={state.isPlaying}
                   onStepForward={stepForward}
                   onStepBackward={stepBackward}
-                  onPlay={play}
                   onPause={pause}
                   onReset={reset}
+                  onAutoSolve={handleAutoSolve}
                   speed={state.speed}
-                  onSpeedChange={setSpeed}
                   guidedPhase={state.guidedPhase}
                 />
               </div>
