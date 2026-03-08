@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { CubeState, Move, SolveStep, GameMode, ChallengeResult } from '../engine/types';
 import { createSolvedCube, applyMove, applyMoves, isSolved, generateScramble, cloneCube } from '../engine/cube';
-import { solveFromMoves, generateGuidedSteps } from '../engine/solver';
+import { solveCubeState } from '../engine/solver';
 
 export interface RubiksCubeState {
   cube: CubeState;
@@ -84,7 +84,7 @@ export function useRubiksCube() {
       let challengeResult = prev.challengeResult;
       if (solved && prev.mode === 'challenge' && prev.challengeStartTime) {
         const elapsed = (Date.now() - prev.challengeStartTime) / 1000;
-        const optSteps = solveFromMoves(prev.scrambleMoves);
+        const optSteps = solveCubeState(applyMoves(createSolvedCube(), prev.scrambleMoves));
         challengeResult = {
           scrambleMoves: prev.scrambleMoves.length,
           userMoves: prev.userMoves.length + 1,
@@ -107,8 +107,7 @@ export function useRubiksCube() {
 
   const startSolve = useCallback(() => {
     setState(prev => {
-      const allMoves = [...prev.scrambleMoves, ...prev.userMoves];
-      const steps = generateGuidedSteps(allMoves);
+      const steps = solveCubeState(prev.cube);
       cubeBeforeSolveRef.current = cloneCube(prev.cube);
       return {
         ...prev,
@@ -210,7 +209,7 @@ export function useRubiksCube() {
     } else if (mode === 'guided') {
       const moves = generateScramble(8);
       const scrambled = applyMoves(solved, moves);
-      const steps = generateGuidedSteps(moves);
+      const steps = solveCubeState(scrambled);
       cubeBeforeSolveRef.current = cloneCube(scrambled);
       setState(prev => ({
         ...prev,
