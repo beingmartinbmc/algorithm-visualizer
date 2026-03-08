@@ -5,13 +5,12 @@ interface ChallengePanelProps {
   result: ChallengeResult | null;
   userMoves: Move[];
   startTime: number | null;
-  isSolved: boolean;
   onNewChallenge: () => void;
   scrambleMoves: Move[];
 }
 
 export default function ChallengePanel({
-  result, userMoves, startTime, isSolved, onNewChallenge, scrambleMoves,
+  result, userMoves, startTime, onNewChallenge, scrambleMoves,
 }: ChallengePanelProps) {
   const elapsed = startTime ? ((Date.now() - startTime) / 1000).toFixed(1) : '0.0';
 
