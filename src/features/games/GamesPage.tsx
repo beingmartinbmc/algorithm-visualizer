@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight, Swords, Grid3X3, Layers, Dna, Box } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords, Grid3X3, Layers, Dna } from 'lucide-react';
 
 const games = [
   {
@@ -61,16 +61,6 @@ const games = [
     gradient: 'from-lime-500 to-emerald-500',
     shadowColor: 'shadow-lime-500/20',
     icon: Dna,
-  },
-  {
-    path: '/games/rubiks-cube',
-    title: "Rubik's Cube Solver",
-    subtitle: '3D interactive cube with step-by-step solving',
-    description: "Scramble a 3D Rubik's Cube and watch a layer-by-layer solver animate each move. Follow guided tutorials, or race the clock in challenge mode.",
-    skills: ['3D Animation', 'Step-by-Step', 'Guided Mode', 'Challenge Mode'],
-    gradient: 'from-sky-500 to-indigo-500',
-    shadowColor: 'shadow-sky-500/20',
-    icon: Box,
   },
 ];
 
