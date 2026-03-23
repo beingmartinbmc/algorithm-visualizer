@@ -30,6 +30,14 @@ const DEMO_COMMANDS = [
   'git log --oneline --all',
 ];
 
+export type DemoSpeed = 'slow' | 'normal' | 'fast';
+
+const SPEED_MS: Record<DemoSpeed, number> = {
+  slow: 1800,
+  normal: 1000,
+  fast: 400,
+};
+
 export function useGit() {
   const [mode, setMode] = useState<GitMode>('freeplay');
   const [gitState, setGitState] = useState<GitState>(createInitialState());
@@ -39,7 +47,12 @@ export function useGit() {
   ]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
+  const [demoPaused, setDemoPaused] = useState(false);
+  const [demoSpeed, setDemoSpeed] = useState<DemoSpeed>('normal');
+  const [demoProgress, setDemoProgress] = useState(0);
   const demoAbortRef = useRef(false);
+  const demoPausedRef = useRef(false);
+  const demoSpeedRef = useRef<DemoSpeed>('normal');
   const { soundEnabled, toggleSound, playForAction } = useGitSound();
 
   const [activeLesson, setActiveLesson] = useState<GuidedLesson | null>(null);
@@ -103,21 +116,39 @@ export function useGit() {
     [gitState, playForAction, mode, activeLesson, currentStep],
   );
 
+  const waitWhilePaused = useCallback(async () => {
+    while (demoPausedRef.current && !demoAbortRef.current) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+  }, []);
+
   const runDemo = useCallback(async () => {
     setIsRunningDemo(true);
+    setDemoPaused(false);
+    setDemoProgress(0);
     demoAbortRef.current = false;
+    demoPausedRef.current = false;
 
     let currentState = createInitialState();
     setGitState(currentState);
     setHistory([{ type: 'info', text: '--- Running Demo ---\n' }]);
     setCommandHistory([]);
 
-    for (const cmd of DEMO_COMMANDS) {
+    const total = DEMO_COMMANDS.length;
+
+    for (let i = 0; i < total; i++) {
       if (demoAbortRef.current) break;
 
-      await new Promise(r => setTimeout(r, 600));
+      await waitWhilePaused();
       if (demoAbortRef.current) break;
 
+      const delay = SPEED_MS[demoSpeedRef.current];
+      await new Promise(r => setTimeout(r, delay));
+
+      await waitWhilePaused();
+      if (demoAbortRef.current) break;
+
+      const cmd = DEMO_COMMANDS[i];
       const cmdResult = parseAndExecute(cmd, currentState);
       currentState = cmdResult.state;
 
@@ -132,6 +163,7 @@ export function useGit() {
       setHistory(prev => [...prev, ...newLines]);
       setGitState(cmdResult.state);
       setCommandHistory(prev => [...prev, cmd]);
+      setDemoProgress(i + 1);
       playForAction(cmdResult.action);
     }
 
@@ -140,13 +172,32 @@ export function useGit() {
         ...prev,
         { type: 'info', text: '\n--- Demo Complete! Try your own commands. ---' },
       ]);
+      setDemoProgress(total);
     }
     setIsRunningDemo(false);
-  }, [playForAction]);
+    setDemoPaused(false);
+  }, [playForAction, waitWhilePaused]);
 
   const stopDemo = useCallback(() => {
     demoAbortRef.current = true;
+    demoPausedRef.current = false;
     setIsRunningDemo(false);
+    setDemoPaused(false);
+  }, []);
+
+  const pauseDemo = useCallback(() => {
+    demoPausedRef.current = true;
+    setDemoPaused(true);
+  }, []);
+
+  const resumeDemo = useCallback(() => {
+    demoPausedRef.current = false;
+    setDemoPaused(false);
+  }, []);
+
+  const changeDemoSpeed = useCallback((speed: DemoSpeed) => {
+    demoSpeedRef.current = speed;
+    setDemoSpeed(speed);
   }, []);
 
   const resetState = useCallback(() => {
@@ -206,11 +257,18 @@ export function useGit() {
     history,
     commandHistory,
     isRunningDemo,
+    demoPaused,
+    demoSpeed,
+    demoProgress,
+    demoTotal: DEMO_COMMANDS.length,
     soundEnabled,
     toggleSound,
     executeCommand,
     runDemo,
     stopDemo,
+    pauseDemo,
+    resumeDemo,
+    changeDemoSpeed,
     resetState,
     switchMode,
     activeLesson,
