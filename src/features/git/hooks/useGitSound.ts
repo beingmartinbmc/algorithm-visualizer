@@ -61,106 +61,72 @@ export function useGitSound() {
     [getCtx],
   );
 
-  const playInit = useCallback(() => {
-    playArpeggio([261.63, 329.63, 392.0, 523.25], 'sine', 0.15);
-  }, [playArpeggio]);
-
-  const playAdd = useCallback(() => {
-    playTone(440, 'sine', 0.1);
-  }, [playTone]);
-
-  const playCommit = useCallback(() => {
-    playArpeggio([523.25, 659.25, 783.99], 'sine', 0.12);
-  }, [playArpeggio]);
-
-  const playBranch = useCallback(() => {
-    playTone(587.33, 'triangle', 0.18);
-  }, [playTone]);
-
-  const playCheckout = useCallback(() => {
-    playArpeggio([392.0, 493.88], 'triangle', 0.1);
-  }, [playArpeggio]);
-
-  const playMerge = useCallback(() => {
-    playChord([523.25, 659.25, 783.99], 'sine', 0.3);
-  }, [playChord]);
-
-  const playRebase = useCallback(() => {
-    playArpeggio([329.63, 392.0, 493.88, 587.33], 'triangle', 0.1);
-  }, [playArpeggio]);
-
-  const playReset = useCallback(() => {
-    playArpeggio([493.88, 392.0, 329.63], 'sawtooth', 0.1, 0.03);
-  }, [playArpeggio]);
-
-  const playStash = useCallback(() => {
-    playTone(349.23, 'triangle', 0.15);
-  }, [playTone]);
-
-  const playError = useCallback(() => {
-    playTone(196.0, 'sawtooth', 0.2, 0.04);
-  }, [playTone]);
-
-  const playInfo = useCallback(() => {
-    playTone(523.25, 'sine', 0.06, 0.03);
-  }, [playTone]);
-
   const playForAction = useCallback(
     (action?: GitAction) => {
       switch (action) {
         case 'init':
-          playInit();
+          playArpeggio([261.63, 329.63, 392.0, 523.25], 'sine', 0.15);
           break;
         case 'add':
-          playAdd();
+          playTone(440, 'sine', 0.1);
           break;
         case 'commit':
-          playCommit();
+          playArpeggio([523.25, 659.25, 783.99], 'sine', 0.12);
           break;
         case 'branch-create':
-          playBranch();
+        case 'tag':
+          playTone(587.33, 'triangle', 0.18);
           break;
         case 'branch-list':
-          playInfo();
+        case 'log':
+        case 'status':
+        case 'diff':
+        case 'remote':
+          playTone(523.25, 'sine', 0.06, 0.03);
           break;
         case 'checkout':
-          playCheckout();
+          playArpeggio([392.0, 493.88], 'triangle', 0.1);
           break;
         case 'merge':
         case 'merge-fast-forward':
-          playMerge();
+          playChord([523.25, 659.25, 783.99], 'sine', 0.3);
           break;
         case 'rebase':
-          playRebase();
+          playArpeggio([329.63, 392.0, 493.88, 587.33], 'triangle', 0.1);
           break;
         case 'reset-soft':
         case 'reset-mixed':
         case 'reset-hard':
-          playReset();
+          playArpeggio([493.88, 392.0, 329.63], 'sawtooth', 0.1, 0.03);
+          break;
+        case 'revert':
+          playArpeggio([440, 349.23, 293.66], 'triangle', 0.1, 0.04);
           break;
         case 'stash-push':
         case 'stash-pop':
-          playStash();
+          playTone(349.23, 'triangle', 0.15);
           break;
         case 'cherry-pick':
-          playCommit();
+          playArpeggio([523.25, 659.25, 783.99], 'sine', 0.12);
           break;
-        case 'tag':
-          playBranch();
+        case 'push':
+          playArpeggio([392.0, 493.88, 587.33, 659.25], 'sine', 0.1);
           break;
-        case 'log':
-        case 'status':
-        case 'diff':
-          playInfo();
+        case 'pull':
+        case 'fetch':
+          playArpeggio([659.25, 587.33, 493.88, 392.0], 'sine', 0.1);
+          break;
+        case 'clone':
+          playArpeggio([261.63, 329.63, 392.0, 493.88, 523.25], 'sine', 0.12);
           break;
         case 'error':
-          playError();
+          playTone(196.0, 'sawtooth', 0.2, 0.04);
           break;
         default:
           break;
       }
     },
-    [playInit, playAdd, playCommit, playBranch, playCheckout, playMerge, playRebase, playReset, playStash, playError, playInfo],
+    [playTone, playChord, playArpeggio],
   );
 
   const toggleSound = useCallback((val: boolean) => {

@@ -30,6 +30,17 @@ export interface GitStashEntry {
   branch: string;
 }
 
+export interface GitRemote {
+  name: string;
+  url: string;
+}
+
+export interface GitRemoteState {
+  branches: GitBranch[];
+  commits: Record<string, GitCommit>;
+  commitOrder: string[];
+}
+
 export type FileStatus = 'untracked' | 'modified' | 'staged' | 'committed' | 'deleted';
 
 export interface FileStatusEntry {
@@ -49,6 +60,9 @@ export interface GitState {
   stagingArea: Record<string, string>;
   stash: GitStashEntry[];
   commitOrder: string[];
+  remotes: GitRemote[];
+  remoteState: GitRemoteState;
+  trackingBranches: Record<string, string>;
 }
 
 export interface GitCommandResult {
@@ -78,10 +92,16 @@ export type GitAction =
   | 'log'
   | 'status'
   | 'diff'
+  | 'push'
+  | 'pull'
+  | 'fetch'
+  | 'clone'
+  | 'revert'
+  | 'remote'
   | 'error';
 
 export interface TerminalLine {
-  type: 'input' | 'output' | 'error' | 'info';
+  type: 'input' | 'output' | 'error' | 'info' | 'hint';
   text: string;
 }
 
@@ -98,4 +118,22 @@ export interface BranchLabel {
   commitId: string;
   isHead: boolean;
   color: string;
+}
+
+export type GitMode = 'guided' | 'freeplay';
+
+export interface GuidedStep {
+  instruction: string;
+  expectedCommand: string | RegExp;
+  hint: string;
+  explanation: string;
+}
+
+export interface GuidedLesson {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  steps: GuidedStep[];
 }

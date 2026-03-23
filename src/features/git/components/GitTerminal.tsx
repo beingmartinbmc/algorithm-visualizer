@@ -64,6 +64,7 @@ function GitTerminalInner({ history, commandHistory, onExecute, disabled }: Prop
       case 'input': return 'text-emerald-400';
       case 'error': return 'text-red-400';
       case 'info': return 'text-indigo-400';
+      case 'hint': return 'text-amber-400/90';
       default: return 'text-slate-300';
     }
   };

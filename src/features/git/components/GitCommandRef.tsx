@@ -5,6 +5,7 @@ const COMMAND_GROUPS = [
     title: 'Setup',
     commands: [
       { cmd: 'git init', desc: 'Initialize a new repository' },
+      { cmd: 'git clone <url>', desc: 'Clone a remote repository' },
     ],
   },
   {
@@ -12,6 +13,8 @@ const COMMAND_GROUPS = [
     commands: [
       { cmd: 'touch <file> [content]', desc: 'Create a new file' },
       { cmd: 'edit <file> <content>', desc: 'Modify a file' },
+      { cmd: 'cat <file>', desc: 'View file content' },
+      { cmd: 'mv <src> <dst>', desc: 'Move/rename a file' },
       { cmd: 'rm <file>', desc: 'Delete a file' },
       { cmd: 'ls', desc: 'List files' },
     ],
@@ -22,7 +25,8 @@ const COMMAND_GROUPS = [
       { cmd: 'git add <file|.>', desc: 'Stage changes' },
       { cmd: 'git commit -m "msg"', desc: 'Create a commit' },
       { cmd: 'git status', desc: 'Show status' },
-      { cmd: 'git diff', desc: 'Show differences' },
+      { cmd: 'git diff', desc: 'Show unstaged changes' },
+      { cmd: 'git diff --staged', desc: 'Show staged changes' },
       { cmd: 'git log --oneline --all', desc: 'View history' },
     ],
   },
@@ -31,6 +35,8 @@ const COMMAND_GROUPS = [
     commands: [
       { cmd: 'git branch <name>', desc: 'Create branch' },
       { cmd: 'git branch', desc: 'List branches' },
+      { cmd: 'git branch -r', desc: 'List remote branches' },
+      { cmd: 'git branch -d <name>', desc: 'Delete a branch' },
       { cmd: 'git checkout <branch>', desc: 'Switch branches' },
       { cmd: 'git checkout -b <name>', desc: 'Create & switch' },
     ],
@@ -44,12 +50,26 @@ const COMMAND_GROUPS = [
     ],
   },
   {
+    title: 'Remote Sync',
+    commands: [
+      { cmd: 'git remote add <name> <url>', desc: 'Add a remote' },
+      { cmd: 'git remote -v', desc: 'List remotes' },
+      { cmd: 'git push -u <remote> <branch>', desc: 'Push & set upstream' },
+      { cmd: 'git push', desc: 'Push to tracked remote' },
+      { cmd: 'git pull', desc: 'Fetch & merge' },
+      { cmd: 'git fetch', desc: 'Download remote changes' },
+    ],
+  },
+  {
     title: 'Undo & Stash',
     commands: [
-      { cmd: 'git reset --soft HEAD~1', desc: 'Soft reset' },
-      { cmd: 'git reset --hard HEAD~1', desc: 'Hard reset' },
+      { cmd: 'git reset --soft HEAD~1', desc: 'Soft reset (keep staged)' },
+      { cmd: 'git reset --mixed HEAD~1', desc: 'Mixed reset (unstage)' },
+      { cmd: 'git reset --hard HEAD~1', desc: 'Hard reset (discard)' },
+      { cmd: 'git revert HEAD', desc: 'Revert last commit' },
       { cmd: 'git stash', desc: 'Stash changes' },
       { cmd: 'git stash pop', desc: 'Restore stash' },
+      { cmd: 'git stash list', desc: 'List stashes' },
     ],
   },
   {
@@ -57,6 +77,7 @@ const COMMAND_GROUPS = [
     commands: [
       { cmd: 'git tag <name>', desc: 'Create a tag' },
       { cmd: 'git tag', desc: 'List tags' },
+      { cmd: 'git tag -d <name>', desc: 'Delete a tag' },
     ],
   },
 ];
