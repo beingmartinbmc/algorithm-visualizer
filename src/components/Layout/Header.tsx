@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Network, BarChart3, Database, Gamepad2, Waypoints, Menu, X } from 'lucide-react';
+import { Network, BarChart3, Database, Gamepad2, Waypoints, GitBranch, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { path: '/sorting', label: 'Sorting', icon: BarChart3 },
   { path: '/data-structures', label: 'Data Structures', icon: Database },
   { path: '/games', label: 'Games', icon: Gamepad2 },
+  { path: '/git', label: 'Git', icon: GitBranch },
 ];
 
 export default function Header() {
@@ -34,7 +35,7 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map(({ path, label, icon: Icon }) => {
-            const isActive = ['/games', '/traversals', '/data-structures'].includes(path)
+            const isActive = ['/games', '/traversals', '/data-structures', '/git'].includes(path)
               ? location.pathname.startsWith(path)
               : location.pathname === path;
             return (
@@ -70,7 +71,7 @@ export default function Header() {
       {menuOpen && (
         <nav className="md:hidden border-t border-slate-800/50 bg-slate-950/95 backdrop-blur-md px-4 pb-3 pt-2 flex flex-col gap-1">
           {navItems.map(({ path, label, icon: Icon }) => {
-            const isActive = ['/games', '/traversals', '/data-structures'].includes(path)
+            const isActive = ['/games', '/traversals', '/data-structures', '/git'].includes(path)
               ? location.pathname.startsWith(path)
               : location.pathname === path;
             return (

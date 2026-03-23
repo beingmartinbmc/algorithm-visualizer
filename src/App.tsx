@@ -19,6 +19,7 @@ import DijkstraGamePage from '@/features/games/dijkstra/DijkstraGamePage';
 import BattlePage from '@/features/games/battles/BattlePage';
 import MahjongGamePage from '@/features/games/mahjong/MahjongGamePage';
 import EvolutionSimulatorPage from '@/features/games/evolution-simulator/EvolutionSimulatorPage';
+import GitPage from '@/features/git/GitPage';
 
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/games/battles" element={<BattlePage />} />
           <Route path="/games/mahjong" element={<MahjongGamePage />} />
           <Route path="/games/evolution-simulator" element={<EvolutionSimulatorPage />} />
+          <Route path="/git" element={<GitPage />} />
 
         </Routes>
       </div>
