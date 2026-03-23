@@ -4,6 +4,13 @@ import { GitFileStatus } from './components/GitFileStatus';
 import { GitCommandRef } from './components/GitCommandRef';
 import { GuidedPanel, StepProgress } from './components/GuidedPanel';
 import { useGit } from './hooks/useGit';
+import type { DemoSpeed } from './hooks/useGit';
+
+const SPEED_LABELS: { value: DemoSpeed; label: string }[] = [
+  { value: 'slow', label: '0.5x' },
+  { value: 'normal', label: '1x' },
+  { value: 'fast', label: '2.5x' },
+];
 
 export default function GitPage() {
   const {
@@ -12,11 +19,18 @@ export default function GitPage() {
     history,
     commandHistory,
     isRunningDemo,
+    demoPaused,
+    demoSpeed,
+    demoProgress,
+    demoTotal,
     soundEnabled,
     toggleSound,
     executeCommand,
     runDemo,
     stopDemo,
+    pauseDemo,
+    resumeDemo,
+    changeDemoSpeed,
     resetState,
     switchMode,
     activeLesson,
@@ -111,30 +125,16 @@ export default function GitPage() {
             Sound
           </button>
 
-          {mode === 'freeplay' && (
-            <>
-              {isRunningDemo ? (
-                <button
-                  onClick={stopDemo}
-                  className="flex items-center gap-1.5 rounded-lg bg-red-500/15 px-3 py-1.5 text-[10px] font-medium text-red-300 ring-1 ring-red-500/30 transition-all hover:bg-red-500/25"
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="6" width="12" height="12" rx="1" />
-                  </svg>
-                  Stop
-                </button>
-              ) : (
-                <button
-                  onClick={runDemo}
-                  className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-[10px] font-medium text-emerald-300 ring-1 ring-emerald-500/30 transition-all hover:bg-emerald-500/25"
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3" />
-                  </svg>
-                  Run Demo
-                </button>
-              )}
-            </>
+          {mode === 'freeplay' && !isRunningDemo && (
+            <button
+              onClick={runDemo}
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-[10px] font-medium text-emerald-300 ring-1 ring-emerald-500/30 transition-all hover:bg-emerald-500/25"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Run Demo
+            </button>
           )}
 
           <button
@@ -149,6 +149,74 @@ export default function GitPage() {
           </button>
         </div>
       </div>
+
+      {/* Demo playback bar */}
+      {isRunningDemo && (
+        <div className="flex items-center gap-3 border-b border-slate-800/50 px-4 py-2 sm:px-6 bg-slate-900/40">
+          {/* Play / Pause */}
+          <button
+            onClick={demoPaused ? resumeDemo : pauseDemo}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800/60 text-slate-300 hover:bg-slate-700/60 hover:text-white transition-all"
+            title={demoPaused ? 'Resume' : 'Pause'}
+          >
+            {demoPaused ? (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            )}
+          </button>
+
+          {/* Stop */}
+          <button
+            onClick={stopDemo}
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+            title="Stop"
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1" />
+            </svg>
+          </button>
+
+          {/* Progress bar */}
+          <div className="flex-1 flex items-center gap-2">
+            <div className="flex-1 h-1.5 rounded-full bg-slate-800/60 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+                style={{ width: `${(demoProgress / demoTotal) * 100}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-slate-500 font-mono tabular-nums w-10 text-right">
+              {demoProgress}/{demoTotal}
+            </span>
+          </div>
+
+          {/* Speed control */}
+          <div className="flex items-center gap-1 rounded-lg bg-slate-800/60 p-0.5">
+            {SPEED_LABELS.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => changeDemoSpeed(value)}
+                className={`rounded-md px-2 py-1 text-[10px] font-medium transition-all ${
+                  demoSpeed === value
+                    ? 'bg-indigo-500/20 text-indigo-300 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {demoPaused && (
+            <span className="text-[10px] text-amber-400 font-medium animate-pulse">PAUSED</span>
+          )}
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 flex-col gap-3 overflow-auto p-3 sm:p-4 lg:flex-row lg:gap-4">
