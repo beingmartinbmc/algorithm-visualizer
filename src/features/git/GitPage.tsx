@@ -2,10 +2,12 @@ import { GitCanvas } from './components/GitCanvas';
 import { GitTerminal } from './components/GitTerminal';
 import { GitFileStatus } from './components/GitFileStatus';
 import { GitCommandRef } from './components/GitCommandRef';
+import { GuidedPanel, StepProgress } from './components/GuidedPanel';
 import { useGit } from './hooks/useGit';
 
 export default function GitPage() {
   const {
+    mode,
     gitState,
     history,
     commandHistory,
@@ -16,6 +18,13 @@ export default function GitPage() {
     runDemo,
     stopDemo,
     resetState,
+    switchMode,
+    activeLesson,
+    currentStep,
+    completedLessons,
+    startLesson,
+    restartLesson,
+    lessons,
   } = useGit();
 
   const currentBranch = gitState.detachedHead
@@ -35,10 +44,45 @@ export default function GitPage() {
           <h2 className="text-sm font-bold text-white">Git Visualizer</h2>
         </div>
 
+        {/* Mode toggle */}
+        <div className="flex items-center rounded-lg bg-slate-800/60 p-0.5">
+          <button
+            onClick={() => switchMode('guided')}
+            className={`rounded-md px-3 py-1 text-[10px] font-medium transition-all ${
+              mode === 'guided'
+                ? 'bg-amber-500/20 text-amber-300 shadow-sm'
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            Guided
+          </button>
+          <button
+            onClick={() => switchMode('freeplay')}
+            className={`rounded-md px-3 py-1 text-[10px] font-medium transition-all ${
+              mode === 'freeplay'
+                ? 'bg-indigo-500/20 text-indigo-300 shadow-sm'
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            Freeplay
+          </button>
+        </div>
+
         {gitState.initialized && (
           <div className="flex items-center gap-1.5 rounded-full bg-slate-800/60 px-2.5 py-1">
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             <span className="text-[10px] font-medium text-slate-300 font-mono">{currentBranch}</span>
+            {gitState.remotes.length > 0 && (
+              <>
+                <div className="h-3 w-px bg-slate-700 mx-1" />
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                <span className="text-[9px] text-slate-500 font-mono">{gitState.remotes[0].name}</span>
+              </>
+            )}
           </div>
         )}
 
@@ -67,30 +111,34 @@ export default function GitPage() {
             Sound
           </button>
 
-          {isRunningDemo ? (
-            <button
-              onClick={stopDemo}
-              className="flex items-center gap-1.5 rounded-lg bg-red-500/15 px-3 py-1.5 text-[10px] font-medium text-red-300 ring-1 ring-red-500/30 transition-all hover:bg-red-500/25"
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-              </svg>
-              Stop
-            </button>
-          ) : (
-            <button
-              onClick={runDemo}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-[10px] font-medium text-emerald-300 ring-1 ring-emerald-500/30 transition-all hover:bg-emerald-500/25"
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-              Run Demo
-            </button>
+          {mode === 'freeplay' && (
+            <>
+              {isRunningDemo ? (
+                <button
+                  onClick={stopDemo}
+                  className="flex items-center gap-1.5 rounded-lg bg-red-500/15 px-3 py-1.5 text-[10px] font-medium text-red-300 ring-1 ring-red-500/30 transition-all hover:bg-red-500/25"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="1" />
+                  </svg>
+                  Stop
+                </button>
+              ) : (
+                <button
+                  onClick={runDemo}
+                  className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-3 py-1.5 text-[10px] font-medium text-emerald-300 ring-1 ring-emerald-500/30 transition-all hover:bg-emerald-500/25"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  Run Demo
+                </button>
+              )}
+            </>
           )}
 
           <button
-            onClick={resetState}
+            onClick={mode === 'guided' && activeLesson ? restartLesson : resetState}
             className="flex items-center gap-1.5 rounded-lg bg-slate-800/50 px-3 py-1.5 text-[10px] font-medium text-slate-400 transition-all hover:bg-slate-700/50 hover:text-slate-300"
           >
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -112,8 +160,16 @@ export default function GitPage() {
           {gitState.initialized && <GitFileStatus state={gitState} />}
         </div>
 
-        {/* Right column — Terminal + Reference */}
+        {/* Right column — Terminal + Panels */}
         <div className="flex flex-col gap-3 lg:w-[380px] xl:w-[420px]">
+          {mode === 'guided' && activeLesson && (
+            <StepProgress
+              lesson={activeLesson}
+              currentStep={currentStep}
+              onRestart={restartLesson}
+            />
+          )}
+
           <div className="flex-1">
             <GitTerminal
               history={history}
@@ -122,7 +178,17 @@ export default function GitPage() {
               disabled={isRunningDemo}
             />
           </div>
-          <GitCommandRef onRunCommand={executeCommand} disabled={isRunningDemo} />
+
+          {mode === 'guided' ? (
+            <GuidedPanel
+              lessons={lessons}
+              completedLessons={completedLessons}
+              activeLessonId={activeLesson?.id}
+              onSelect={startLesson}
+            />
+          ) : (
+            <GitCommandRef onRunCommand={executeCommand} disabled={isRunningDemo} />
+          )}
         </div>
       </div>
     </div>
