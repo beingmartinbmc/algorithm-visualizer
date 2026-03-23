@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Database, Gamepad2, Waypoints, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { BarChart3, Database, Gamepad2, Waypoints, GitBranch, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
@@ -38,6 +38,15 @@ const modules = [
     gradient: 'from-cyan-500 to-teal-500',
     shadowColor: 'shadow-cyan-500/20',
     tags: ['Fibonacci', 'Dijkstra', 'Sudoku', 'Mahjong', 'Battles', 'Evolution GA'],
+  },
+  {
+    path: '/git',
+    title: 'Git Visualizer',
+    description: 'Type real Git commands in an interactive terminal and watch the commit graph, branches, and file states update in real time with audio feedback.',
+    icon: GitBranch,
+    gradient: 'from-orange-500 to-amber-500',
+    shadowColor: 'shadow-orange-500/20',
+    tags: ['Commit', 'Branch', 'Merge', 'Rebase', 'Reset', 'Stash', 'Cherry-pick'],
   },
 ];
 
