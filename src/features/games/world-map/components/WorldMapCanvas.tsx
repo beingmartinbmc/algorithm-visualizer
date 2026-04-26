@@ -13,6 +13,99 @@ interface Props {
   onSelectDestination: (code: string) => void;
 }
 
+const LAND_MASSES = [
+  {
+    name: 'North America',
+    path: 'M45 82C82 46 145 49 196 75C229 59 287 72 331 102C366 126 369 165 337 188C312 207 287 210 264 235C232 268 178 250 149 222C118 192 78 187 56 150C38 119 28 99 45 82Z',
+    fill: '#14532d',
+  },
+  {
+    name: 'Greenland',
+    path: 'M285 42C332 20 390 35 404 75C388 111 325 119 286 92C267 78 265 55 285 42Z',
+    fill: '#475569',
+  },
+  {
+    name: 'Central America',
+    path: 'M246 230C277 232 307 242 329 263C307 276 273 267 246 249C232 240 232 231 246 230Z',
+    fill: '#166534',
+  },
+  {
+    name: 'South America',
+    path: 'M308 264C352 270 383 315 372 374C364 424 334 474 296 483C281 443 259 405 264 359C269 314 281 281 308 264Z',
+    fill: '#15803d',
+  },
+  {
+    name: 'Europe',
+    path: 'M438 122C470 96 535 91 575 117C602 137 593 166 558 176C522 186 489 177 454 165C427 156 416 139 438 122Z',
+    fill: '#0f766e',
+  },
+  {
+    name: 'Africa',
+    path: 'M498 202C553 184 612 223 627 283C640 336 608 409 552 425C514 397 484 340 482 283C480 244 482 216 498 202Z',
+    fill: '#166534',
+  },
+  {
+    name: 'Middle East',
+    path: 'M572 188C615 178 657 196 674 226C648 245 603 239 580 217C568 206 565 194 572 188Z',
+    fill: '#3f6212',
+  },
+  {
+    name: 'Asia',
+    path: 'M600 111C683 52 842 83 927 168C910 223 836 246 775 229C728 216 703 257 655 244C611 232 566 159 600 111Z',
+    fill: '#164e63',
+  },
+  {
+    name: 'Southeast Asia',
+    path: 'M728 252C772 247 824 281 833 322C800 335 755 317 728 287C714 271 714 258 728 252Z',
+    fill: '#0f766e',
+  },
+  {
+    name: 'Australia',
+    path: 'M794 350C850 316 932 335 949 394C897 437 813 426 774 381C760 365 771 354 794 350Z',
+    fill: '#15803d',
+  },
+  {
+    name: 'New Zealand',
+    path: 'M958 420C979 425 987 448 970 461C951 456 941 432 958 420Z',
+    fill: '#15803d',
+  },
+];
+
+const COUNTRY_BORDERS = [
+  'M186 78C184 128 197 172 230 214',
+  'M126 172C171 164 216 173 260 190',
+  'M231 237C262 244 292 252 323 263',
+  'M303 280C329 305 342 335 335 374',
+  'M336 312C350 304 362 304 376 318',
+  'M451 140C482 132 515 134 548 149',
+  'M496 171C501 144 518 124 545 111',
+  'M529 196C540 236 540 277 530 321',
+  'M565 223C594 250 611 286 617 329',
+  'M591 190C613 203 639 212 671 221',
+  'M638 130C675 145 713 153 754 153',
+  'M690 184C729 192 768 201 808 216',
+  'M757 238C759 278 770 303 807 320',
+  'M835 153C841 191 832 219 808 236',
+  'M831 365C861 384 892 394 928 396',
+];
+
+const MAP_LABELS = [
+  { text: 'CANADA', x: 160, y: 118 },
+  { text: 'UNITED STATES', x: 190, y: 178 },
+  { text: 'MEXICO', x: 250, y: 222 },
+  { text: 'BRAZIL', x: 338, y: 336 },
+  { text: 'ARGENTINA', x: 315, y: 424 },
+  { text: 'EUROPE', x: 507, y: 139 },
+  { text: 'NORTH AFRICA', x: 548, y: 246 },
+  { text: 'SOUTH AFRICA', x: 560, y: 390 },
+  { text: 'MIDDLE EAST', x: 632, y: 210 },
+  { text: 'INDIA', x: 710, y: 232 },
+  { text: 'CHINA', x: 779, y: 173 },
+  { text: 'JAPAN', x: 890, y: 161 },
+  { text: 'SOUTHEAST ASIA', x: 770, y: 295 },
+  { text: 'AUSTRALIA', x: 860, y: 390 },
+];
+
 export default function WorldMapCanvas({
   airports,
   routes,
@@ -93,14 +186,60 @@ export default function WorldMapCanvas({
         </defs>
 
         <rect width="1000" height="520" rx="28" fill="url(#ocean)" />
-        <path d="M108 168C126 98 204 70 280 116C324 142 294 202 350 228C310 274 242 268 186 250C132 232 86 226 108 168Z" fill="#0f5132" opacity="0.62" />
-        <path d="M230 270C300 262 342 310 318 376C292 450 220 470 190 400C170 354 174 286 230 270Z" fill="#14532d" opacity="0.52" />
-        <path d="M442 138C500 88 596 88 644 146C686 198 628 236 570 226C506 216 452 204 442 138Z" fill="#134e4a" opacity="0.62" />
-        <path d="M510 230C596 210 662 264 650 340C636 428 548 432 512 366C486 318 468 250 510 230Z" fill="#166534" opacity="0.48" />
-        <path d="M638 132C722 68 852 102 900 174C812 200 784 262 704 244C646 232 604 186 638 132Z" fill="#164e63" opacity="0.62" />
-        <path d="M790 342C846 310 924 332 934 390C876 432 810 420 774 378Z" fill="#166534" opacity="0.5" />
-        <path d="M0 260H1000" stroke="#38bdf8" strokeOpacity="0.12" strokeDasharray="7 10" />
-        <path d="M500 0V520" stroke="#38bdf8" strokeOpacity="0.1" strokeDasharray="7 10" />
+        {[130, 260, 390].map((y) => (
+          <path key={`lat-${y}`} d={`M0 ${y}H1000`} stroke="#38bdf8" strokeOpacity="0.1" strokeDasharray="7 10" />
+        ))}
+        {[125, 250, 375, 500, 625, 750, 875].map((x) => (
+          <path key={`lon-${x}`} d={`M${x} 0V520`} stroke="#38bdf8" strokeOpacity="0.08" strokeDasharray="7 10" />
+        ))}
+        <path d="M0 260H1000" stroke="#67e8f9" strokeOpacity="0.2" strokeDasharray="8 9" />
+        <path d="M500 0V520" stroke="#67e8f9" strokeOpacity="0.14" strokeDasharray="8 9" />
+
+        <g filter="url(#world-shadow)">
+          {LAND_MASSES.map((land) => (
+            <path
+              key={land.name}
+              d={land.path}
+              fill={land.fill}
+              fillOpacity="0.78"
+              stroke="#a7f3d0"
+              strokeOpacity="0.42"
+              strokeWidth="1.8"
+            />
+          ))}
+        </g>
+
+        <g>
+          {COUNTRY_BORDERS.map((border) => (
+            <path
+              key={border}
+              d={border}
+              fill="none"
+              stroke="#d1fae5"
+              strokeOpacity="0.22"
+              strokeWidth="1"
+              strokeDasharray="4 5"
+            />
+          ))}
+        </g>
+
+        <g>
+          {MAP_LABELS.map((label) => (
+            <text
+              key={label.text}
+              x={label.x}
+              y={label.y}
+              textAnchor="middle"
+              fontSize="11"
+              fontWeight="800"
+              letterSpacing="1.4"
+              fill="#e2e8f0"
+              fillOpacity="0.28"
+            >
+              {label.text}
+            </text>
+          ))}
+        </g>
 
         {routes.map((route) => {
           const a = airportMap.get(route.source);
