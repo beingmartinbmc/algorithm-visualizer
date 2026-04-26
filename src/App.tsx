@@ -20,6 +20,7 @@ import BattlePage from '@/features/games/battles/BattlePage';
 import MahjongGamePage from '@/features/games/mahjong/MahjongGamePage';
 import EvolutionSimulatorPage from '@/features/games/evolution-simulator/EvolutionSimulatorPage';
 import RubiksCubeGamePage from '@/features/games/rubiks-cube/RubiksCubeGamePage';
+import WorldMapGamePage from '@/features/games/world-map/WorldMapGamePage';
 import GitPage from '@/features/git/GitPage';
 
 
@@ -49,6 +50,7 @@ function App() {
           <Route path="/games/mahjong" element={<MahjongGamePage />} />
           <Route path="/games/evolution-simulator" element={<EvolutionSimulatorPage />} />
           <Route path="/games/rubiks-cube" element={<RubiksCubeGamePage />} />
+          <Route path="/games/world-map" element={<WorldMapGamePage />} />
           <Route path="/git" element={<GitPage />} />
 
         </Routes>

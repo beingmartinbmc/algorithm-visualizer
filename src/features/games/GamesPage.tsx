@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Puzzle, ArrowRight, Swords, Grid3X3, Layers, Dna } from 'lucide-react';
+import { Puzzle, ArrowRight, Swords, Grid3X3, Layers, Dna, Plane } from 'lucide-react';
 
 const games = [
   {
@@ -21,6 +21,16 @@ const games = [
     gradient: 'from-amber-500 to-orange-500',
     shadowColor: 'shadow-amber-500/20',
     icon: Puzzle,
+  },
+  {
+    path: '/games/world-map',
+    title: 'World Map Flight Simulator',
+    subtitle: 'Global airport routing with Dijkstra, A*, BFS, and greedy search',
+    description: 'Plan international flights across real airport codes and major world hubs. Watch route algorithms scan airports, compare stops, distance, duration, and animate an airplane across the chosen path.',
+    skills: ['Airport Codes', 'Dijkstra', 'A* Search', 'Route Optimization'],
+    gradient: 'from-sky-500 to-blue-500',
+    shadowColor: 'shadow-sky-500/20',
+    icon: Plane,
   },
   {
     path: '/games/battles',
