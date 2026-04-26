@@ -24,10 +24,14 @@ const COMMAND_GROUPS = [
     commands: [
       { cmd: 'git add <file|.>', desc: 'Stage changes' },
       { cmd: 'git commit -m "msg"', desc: 'Create a commit' },
+      { cmd: 'git commit -am "msg"', desc: 'Stage tracked & commit' },
       { cmd: 'git status', desc: 'Show status' },
       { cmd: 'git diff', desc: 'Show unstaged changes' },
       { cmd: 'git diff --staged', desc: 'Show staged changes' },
+      { cmd: 'git status --short', desc: 'Compact porcelain view' },
       { cmd: 'git log --oneline --all', desc: 'View history' },
+      { cmd: 'git show HEAD', desc: 'Inspect a commit' },
+      { cmd: 'git blame <file>', desc: 'Line attribution' },
     ],
   },
   {
@@ -39,6 +43,8 @@ const COMMAND_GROUPS = [
       { cmd: 'git branch -d <name>', desc: 'Delete a branch' },
       { cmd: 'git checkout <branch>', desc: 'Switch branches' },
       { cmd: 'git checkout -b <name>', desc: 'Create & switch' },
+      { cmd: 'git switch <branch>', desc: 'Modern branch switch' },
+      { cmd: 'git switch -c <name>', desc: 'Create & switch' },
     ],
   },
   {
@@ -54,6 +60,8 @@ const COMMAND_GROUPS = [
     commands: [
       { cmd: 'git remote add <name> <url>', desc: 'Add a remote' },
       { cmd: 'git remote -v', desc: 'List remotes' },
+      { cmd: 'git remote rename <old> <new>', desc: 'Rename a remote' },
+      { cmd: 'git remote set-url <name> <url>', desc: 'Change remote URL' },
       { cmd: 'git push -u <remote> <branch>', desc: 'Push & set upstream' },
       { cmd: 'git push', desc: 'Push to tracked remote' },
       { cmd: 'git pull', desc: 'Fetch & merge' },
@@ -66,6 +74,10 @@ const COMMAND_GROUPS = [
       { cmd: 'git reset --soft HEAD~1', desc: 'Soft reset (keep staged)' },
       { cmd: 'git reset --mixed HEAD~1', desc: 'Mixed reset (unstage)' },
       { cmd: 'git reset --hard HEAD~1', desc: 'Hard reset (discard)' },
+      { cmd: 'git restore <file>', desc: 'Discard worktree changes' },
+      { cmd: 'git restore --staged <file>', desc: 'Unstage a file' },
+      { cmd: 'git clean -n', desc: 'Preview untracked cleanup' },
+      { cmd: 'git clean -f', desc: 'Remove untracked files' },
       { cmd: 'git revert HEAD', desc: 'Revert last commit' },
       { cmd: 'git stash', desc: 'Stash changes' },
       { cmd: 'git stash pop', desc: 'Restore stash' },
@@ -73,11 +85,16 @@ const COMMAND_GROUPS = [
     ],
   },
   {
-    title: 'Tags',
+    title: 'Inspect & Utilities',
     commands: [
       { cmd: 'git tag <name>', desc: 'Create a tag' },
       { cmd: 'git tag', desc: 'List tags' },
       { cmd: 'git tag -d <name>', desc: 'Delete a tag' },
+      { cmd: 'git describe HEAD', desc: 'Show closest tag/name' },
+      { cmd: 'git reflog', desc: 'Show HEAD history' },
+      { cmd: 'git config --list', desc: 'Show Git config' },
+      { cmd: 'git rm <file>', desc: 'Remove and stage deletion' },
+      { cmd: 'git mv <src> <dst>', desc: 'Rename and stage change' },
     ],
   },
 ];
@@ -91,7 +108,7 @@ function GitCommandRefInner({ onRunCommand, disabled }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3 backdrop-blur-sm">
+    <div className="rounded-2xl border border-slate-700/50 bg-slate-950/70 p-3 shadow-2xl shadow-black/20 backdrop-blur-sm">
       <div className="flex items-center gap-2 mb-3">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-400">
           <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
@@ -104,7 +121,7 @@ function GitCommandRefInner({ onRunCommand, disabled }: Props) {
           <div key={group.title}>
             <button
               onClick={() => setExpanded(expanded === group.title ? null : group.title)}
-              className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider hover:bg-slate-800/40 transition-colors"
+              className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider transition-colors hover:bg-slate-800/70"
             >
               {group.title}
               <svg
@@ -132,7 +149,7 @@ function GitCommandRefInner({ onRunCommand, disabled }: Props) {
                       className={`
                         flex w-full items-start gap-2 rounded px-2 py-1 text-left transition-colors
                         ${isClickable && !disabled
-                          ? 'hover:bg-indigo-500/10 cursor-pointer'
+                          ? 'hover:bg-indigo-500/10 hover:ring-1 hover:ring-indigo-500/20 cursor-pointer'
                           : 'cursor-default opacity-75'
                         }
                       `}

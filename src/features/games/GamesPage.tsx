@@ -62,6 +62,16 @@ const games = [
     shadowColor: 'shadow-lime-500/20',
     icon: Dna,
   },
+  {
+    path: '/games/rubiks-cube',
+    title: "Rubik's Cube Solver",
+    subtitle: '3D cube solver with guided, freeplay, and challenge modes',
+    description: 'Turn a 3D Rubik\'s Cube, generate scrambles, and step through a solver that reverses the move history. Learn notation in guided mode, experiment freely, or race challenge scrambles.',
+    skills: ['3D Visualization', 'Move Notation', 'Inverse Moves', 'Puzzle Solving'],
+    gradient: 'from-violet-500 to-indigo-500',
+    shadowColor: 'shadow-violet-500/20',
+    icon: Puzzle,
+  },
 ];
 
 export default function GamesPage() {

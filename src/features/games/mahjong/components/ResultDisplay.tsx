@@ -1,33 +1,21 @@
-import type { SolveResult, TileCode, Suit, Meld } from '../types/mahjong';
-import { SUIT_COLORS } from '../types/mahjong';
+import type { SolveResult, TileCode, Meld } from '../types/mahjong';
+import MahjongTile from './MahjongTile';
 
 interface ResultDisplayProps {
   result: SolveResult | null;
 }
 
 function MiniTile({ code }: { code: TileCode }) {
-  const suit = code[0] as Suit;
-  const value = code[1];
-  const color = SUIT_COLORS[suit];
-  const suitSymbol = suit === 'B' ? '竹' : suit === 'C' ? '万' : '●';
-
-  return (
-    <span
-      className="inline-flex flex-col items-center justify-center rounded-md border border-slate-700/60 bg-slate-900/80 w-9 h-11 sm:w-10 sm:h-12 md:w-12 md:h-14 lg:w-14 lg:h-16"
-    >
-      <span style={{ color }} className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold leading-none">{value}</span>
-      <span className="text-[7px] md:text-[9px] text-slate-500 leading-none mt-0.5">{suitSymbol}</span>
-    </span>
-  );
+  return <MahjongTile code={code} size="sm" />;
 }
 
 function MeldGroup({ meld, index }: { meld: Meld; index: number }) {
   return (
-    <div className="flex items-center gap-1.5 md:gap-2">
-      <span className="text-[10px] md:text-xs font-medium text-slate-600 w-12 md:w-14 shrink-0">
+    <div className="flex items-center gap-2 rounded-xl bg-slate-950/35 p-2 ring-1 ring-slate-800/70 md:gap-3">
+      <span className="w-14 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-slate-500 md:w-16 md:text-xs">
         {meld.type === 'pong' ? 'Pong' : 'Chow'} {index + 1}
       </span>
-      <div className="flex gap-0.5 md:gap-1">
+      <div className="flex gap-1 md:gap-1.5">
         {meld.tiles.map((t, i) => (
           <MiniTile key={`${t}-${i}`} code={t} />
         ))}
@@ -41,16 +29,16 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
 
   if (result.isWin) {
     return (
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 md:p-5 backdrop-blur-sm">
+      <div className="rounded-2xl border border-emerald-500/30 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_36%),rgba(16,185,129,0.05)] p-4 shadow-xl shadow-emerald-950/20 backdrop-blur-sm md:p-5">
         <div className="flex items-center gap-2 mb-3 md:mb-4">
           <span className="text-lg md:text-2xl">🀄</span>
           <h3 className="text-sm md:text-base font-bold text-emerald-300">Winning Hand!</h3>
         </div>
 
         {/* Pair */}
-        <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4">
-          <span className="text-[10px] md:text-xs font-medium text-slate-600 w-12 md:w-14 shrink-0">Pair</span>
-          <div className="flex gap-0.5 md:gap-1">
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-slate-950/35 p-2 ring-1 ring-slate-800/70 md:mb-4 md:gap-3">
+          <span className="w-14 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-slate-500 md:w-16 md:text-xs">Pair</span>
+          <div className="flex gap-1 md:gap-1.5">
             <MiniTile code={result.pair[0]} />
             <MiniTile code={result.pair[1]} />
           </div>

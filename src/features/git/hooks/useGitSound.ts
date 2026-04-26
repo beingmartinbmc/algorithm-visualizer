@@ -82,6 +82,9 @@ export function useGitSound() {
         case 'status':
         case 'diff':
         case 'remote':
+        case 'show':
+        case 'reflog':
+        case 'config':
           playTone(523.25, 'sine', 0.06, 0.03);
           break;
         case 'checkout':
@@ -97,6 +100,8 @@ export function useGitSound() {
         case 'reset-soft':
         case 'reset-mixed':
         case 'reset-hard':
+        case 'restore':
+        case 'clean':
           playArpeggio([493.88, 392.0, 329.63], 'sawtooth', 0.1, 0.03);
           break;
         case 'revert':

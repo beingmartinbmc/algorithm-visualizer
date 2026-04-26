@@ -30,7 +30,7 @@ function SandboxMode() {
   } = useMahjong();
 
   return (
-    <div className="flex flex-1 flex-col md:flex-row gap-4 md:gap-6 overflow-auto p-4 md:p-6">
+    <div className="flex flex-1 flex-col md:flex-row gap-4 md:gap-6 overflow-auto bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.08),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(6,78,59,0.16))] p-4 md:p-6">
       <MahjongControls
         handCount={hand.length}
         handIsFull={handIsFull}
@@ -70,7 +70,7 @@ export default function MahjongGamePage() {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       {/* Mode Tabs */}
-      <div className="shrink-0 border-b border-slate-700/50 bg-slate-900/40 backdrop-blur-sm px-4 md:px-6 pt-3 pb-0">
+      <div className="shrink-0 border-b border-emerald-900/40 bg-[linear-gradient(135deg,rgba(15,23,42,0.9),rgba(6,78,59,0.34))] backdrop-blur-sm px-4 md:px-6 pt-3 pb-0">
         <div className="flex gap-1 overflow-x-auto">
           {MODES.map((m) => (
             <button

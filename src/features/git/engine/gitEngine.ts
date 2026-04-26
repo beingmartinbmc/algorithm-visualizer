@@ -46,6 +46,29 @@ function getHeadCommit(state: GitState): GitCommit | null {
   return id ? state.commits[id] ?? null : null;
 }
 
+function resolveCommitId(state: GitState, ref: string): string | null {
+  if (ref === 'HEAD') return getHeadCommitId(state);
+  if (state.commits[ref]) return ref;
+
+  const branch = state.branches.find(b => b.name === ref);
+  if (branch?.commitId) return branch.commitId;
+
+  const tag = state.tags.find(t => t.name === ref);
+  if (tag?.commitId) return tag.commitId;
+
+  if (ref.startsWith('HEAD~')) {
+    const steps = parseInt(ref.slice(5)) || 1;
+    let currentId = getHeadCommitId(state);
+    for (let i = 0; i < steps && currentId; i++) {
+      const commit = state.commits[currentId];
+      currentId = commit?.parentIds[0] ?? null;
+    }
+    return currentId;
+  }
+
+  return null;
+}
+
 function getCommitAncestors(state: GitState, commitId: string): Set<string> {
   const ancestors = new Set<string>();
   const stack = [commitId];
@@ -140,21 +163,39 @@ function handleCommit(state: GitState, args: string[]): GitCommandResult {
   if (!state.initialized) return errorResult('fatal: not a git repository', state);
 
   let message = '';
+  const autoStageTracked = args.includes('-a') || args.includes('--all') || args.includes('-am');
   const mIdx = args.indexOf('-m');
   if (mIdx !== -1 && args[mIdx + 1]) {
     message = args[mIdx + 1].replace(/^["']|["']$/g, '');
+  } else if (args.includes('-am')) {
+    const amIdx = args.indexOf('-am');
+    if (args[amIdx + 1]) message = args[amIdx + 1].replace(/^["']|["']$/g, '');
+    else return errorResult('error: switch `m` requires a value', state);
   } else {
     return errorResult('error: switch `m` requires a value', state);
-  }
-
-  if (Object.keys(state.stagingArea).length === 0) {
-    return errorResult('nothing to commit (create/copy files and use "git add" to track)', state);
   }
 
   const s = cloneState(state);
   const parentId = getHeadCommitId(s);
   const parentCommit = parentId ? s.commits[parentId] : null;
   const parentFiles = parentCommit?.files ?? {};
+
+  if (autoStageTracked) {
+    for (const file of Object.keys(s.workingDirectory)) {
+      if (file in parentFiles && s.workingDirectory[file] !== parentFiles[file]) {
+        s.stagingArea[file] = s.workingDirectory[file];
+      }
+    }
+    for (const file of Object.keys(parentFiles)) {
+      if (!(file in s.workingDirectory)) {
+        s.stagingArea[file] = '__DELETED__';
+      }
+    }
+  }
+
+  if (Object.keys(s.stagingArea).length === 0) {
+    return errorResult('nothing to commit (create/copy files and use "git add" to track)', state);
+  }
 
   const newFiles: Record<string, string> = { ...parentFiles };
   for (const [file, content] of Object.entries(s.stagingArea)) {
@@ -186,10 +227,10 @@ function handleCommit(state: GitState, args: string[]): GitCommandResult {
     s.head = commitId;
   }
 
+  const fileCount = Object.keys(s.stagingArea).length;
   s.stagingArea = {};
   s.workingDirectory = { ...newFiles };
 
-  const fileCount = Object.keys(state.stagingArea).length;
   return result(
     true,
     `[${currentBranch} ${commitId}] ${message}\n ${fileCount} file(s) changed`,
@@ -261,7 +302,7 @@ function handleCheckout(state: GitState, args: string[]): GitCommandResult {
   if (!state.initialized) return errorResult('fatal: not a git repository', state);
   if (args.length === 0) return errorResult('error: you must specify a branch or commit', state);
 
-  const createNew = args[0] === '-b';
+  const createNew = args[0] === '-b' || args[0] === '-c' || args[0] === '--create';
   const target = createNew ? args[1] : args[0];
   if (!target) return errorResult('error: switch `b` requires a value', state);
 
@@ -775,6 +816,36 @@ function handleRemote(state: GitState, args: string[]): GitCommandResult {
     return result(true, `Removed remote '${name}'`, s, 'remote');
   }
 
+  if (args[0] === 'rename') {
+    const oldName = args[1];
+    const newName = args[2];
+    if (!oldName || !newName) return errorResult('usage: git remote rename <old> <new>', state);
+    if (state.remotes.some(r => r.name === newName)) {
+      return errorResult(`error: remote ${newName} already exists`, state);
+    }
+    const s = cloneState(state);
+    const remote = s.remotes.find(r => r.name === oldName);
+    if (!remote) return errorResult(`fatal: No such remote: '${oldName}'`, state);
+    remote.name = newName;
+    for (const [branch, tracking] of Object.entries(s.trackingBranches)) {
+      if (tracking.startsWith(`${oldName}/`)) {
+        s.trackingBranches[branch] = tracking.replace(`${oldName}/`, `${newName}/`);
+      }
+    }
+    return result(true, `Renamed remote '${oldName}' to '${newName}'`, s, 'remote');
+  }
+
+  if (args[0] === 'set-url') {
+    const name = args[1];
+    const url = args[2];
+    if (!name || !url) return errorResult('usage: git remote set-url <name> <url>', state);
+    const s = cloneState(state);
+    const remote = s.remotes.find(r => r.name === name);
+    if (!remote) return errorResult(`fatal: No such remote: '${name}'`, state);
+    remote.url = url;
+    return result(true, `Updated remote '${name}' -> ${url}`, s, 'remote');
+  }
+
   return errorResult(`error: unknown subcommand '${args[0]}'`, state);
 }
 
@@ -1063,11 +1134,47 @@ function handleLog(state: GitState, args: string[]): GitCommandResult {
 
 // ─── git status ────────────────────────────────────────────────────────────────
 
-function handleStatus(state: GitState): GitCommandResult {
+function handleStatus(state: GitState, args: string[] = []): GitCommandResult {
   if (!state.initialized) return errorResult('fatal: not a git repository', state);
 
   const currentBranch = getCurrentBranch(state);
   const lines: string[] = [];
+  const short = args.includes('-s') || args.includes('--short');
+
+  const headCommit = getHeadCommit(state);
+  const committedFiles = headCommit?.files ?? {};
+
+  const staged: string[] = [];
+  const shortLines: string[] = [];
+  for (const [file, content] of Object.entries(state.stagingArea)) {
+    if (content === '__DELETED__') {
+      staged.push(`  deleted:    ${file}`);
+      shortLines.push(`D  ${file}`);
+    } else if (!(file in committedFiles)) {
+      staged.push(`  new file:   ${file}`);
+      shortLines.push(`A  ${file}`);
+    } else {
+      staged.push(`  modified:   ${file}`);
+      shortLines.push(`M  ${file}`);
+    }
+  }
+
+  const modified: string[] = [];
+  const untracked: string[] = [];
+  for (const file of Object.keys(state.workingDirectory)) {
+    if (file in state.stagingArea) continue;
+    if (!(file in committedFiles)) {
+      untracked.push(`  ${file}`);
+      shortLines.push(`?? ${file}`);
+    } else if (state.workingDirectory[file] !== committedFiles[file]) {
+      modified.push(`  modified:   ${file}`);
+      shortLines.push(` M ${file}`);
+    }
+  }
+
+  if (short) {
+    return result(true, shortLines.join('\n') || '', state, 'status');
+  }
 
   if (currentBranch) {
     lines.push(`On branch ${currentBranch}`);
@@ -1079,35 +1186,10 @@ function handleStatus(state: GitState): GitCommandResult {
     lines.push(`HEAD detached at ${state.head}`);
   }
 
-  const headCommit = getHeadCommit(state);
-  const committedFiles = headCommit?.files ?? {};
-
-  const staged: string[] = [];
-  for (const [file, content] of Object.entries(state.stagingArea)) {
-    if (content === '__DELETED__') {
-      staged.push(`  deleted:    ${file}`);
-    } else if (!(file in committedFiles)) {
-      staged.push(`  new file:   ${file}`);
-    } else {
-      staged.push(`  modified:   ${file}`);
-    }
-  }
-
   if (staged.length > 0) {
     lines.push('');
     lines.push('Changes to be committed:');
     lines.push(...staged);
-  }
-
-  const modified: string[] = [];
-  const untracked: string[] = [];
-  for (const file of Object.keys(state.workingDirectory)) {
-    if (file in state.stagingArea) continue;
-    if (!(file in committedFiles)) {
-      untracked.push(`  ${file}`);
-    } else if (state.workingDirectory[file] !== committedFiles[file]) {
-      modified.push(`  modified:   ${file}`);
-    }
   }
 
   if (modified.length > 0) {
@@ -1199,6 +1281,159 @@ function handleDiff(state: GitState, args: string[]): GitCommandResult {
   }
 
   return result(true, lines.join('\n') || 'No differences', state, 'diff');
+}
+
+// ─── git restore / clean / show / reflog / describe / blame ────────────────────
+
+function handleRestore(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const stagedOnly = args.includes('--staged');
+  const worktreeOnly = args.includes('--worktree') || !stagedOnly;
+  const files = args.filter(a => a !== '--staged' && a !== '--worktree' && a !== '--source');
+  const target = files[0] ?? '.';
+  const s = cloneState(state);
+  const headFiles = getHeadCommit(s)?.files ?? {};
+
+  const targets = target === '.'
+    ? Array.from(new Set([...Object.keys(s.workingDirectory), ...Object.keys(s.stagingArea), ...Object.keys(headFiles)]))
+    : [target];
+
+  let restored = 0;
+  for (const file of targets) {
+    if (stagedOnly && file in s.stagingArea) {
+      delete s.stagingArea[file];
+      restored++;
+    }
+    if (worktreeOnly) {
+      if (file in headFiles) {
+        s.workingDirectory[file] = headFiles[file];
+        restored++;
+      } else if (file in s.workingDirectory && !(file in s.stagingArea)) {
+        delete s.workingDirectory[file];
+        restored++;
+      }
+    }
+  }
+
+  if (restored === 0) return result(true, 'nothing to restore', s, 'restore');
+  return result(true, `Restored ${restored} path${restored === 1 ? '' : 's'}`, s, 'restore');
+}
+
+function handleClean(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const force = args.includes('-f') || args.includes('--force');
+  const dryRun = args.includes('-n') || args.includes('--dry-run');
+  const headFiles = getHeadCommit(state)?.files ?? {};
+  const untracked = Object.keys(state.workingDirectory).filter(file => !(file in headFiles) && !(file in state.stagingArea));
+
+  if (untracked.length === 0) return result(true, 'Nothing to clean', state, 'clean');
+  if (!force && !dryRun) {
+    return errorResult('fatal: clean.requireForce defaults to true and neither -i, -n, nor -f given', state);
+  }
+
+  if (dryRun) {
+    return result(true, untracked.map(file => `Would remove ${file}`).join('\n'), state, 'clean');
+  }
+
+  const s = cloneState(state);
+  for (const file of untracked) delete s.workingDirectory[file];
+  return result(true, untracked.map(file => `Removing ${file}`).join('\n'), s, 'clean');
+}
+
+function handleShow(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const ref = args[0] ?? 'HEAD';
+  const commitId = resolveCommitId(state, ref);
+  if (!commitId) return errorResult(`fatal: ambiguous argument '${ref}'`, state);
+  const commit = state.commits[commitId];
+  if (!commit) return errorResult(`fatal: bad object ${ref}`, state);
+
+  const parent = commit.parentIds[0] ? state.commits[commit.parentIds[0]] : null;
+  const parentFiles = parent?.files ?? {};
+  const changed = Object.keys(commit.files).filter(file => commit.files[file] !== parentFiles[file]);
+  const deleted = Object.keys(parentFiles).filter(file => !(file in commit.files));
+  const files = [...changed, ...deleted];
+
+  const output = [
+    `commit ${commit.id}`,
+    `Author: Visual Git User <learner@example.com>`,
+    `Date:   ${new Date(commit.timestamp).toLocaleString()}`,
+    '',
+    `    ${commit.message}`,
+    '',
+    files.length > 0 ? files.map(file => `diff --git a/${file} b/${file}`).join('\n') : 'No file changes',
+  ].join('\n');
+
+  return result(true, output, state, 'show');
+}
+
+function handleReflog(state: GitState): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const commits = [...state.commitOrder].reverse();
+  if (commits.length === 0) return result(true, 'No reflog entries yet', state, 'reflog');
+  const lines = commits.map((id, index) => {
+    const commit = state.commits[id];
+    return `${id} HEAD@{${index}}: commit: ${commit?.message ?? 'unknown'}`;
+  });
+  return result(true, lines.join('\n'), state, 'reflog');
+}
+
+function handleDescribe(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const ref = args[0] ?? 'HEAD';
+  const commitId = resolveCommitId(state, ref);
+  if (!commitId) return errorResult(`fatal: No names found, cannot describe anything.`, state);
+  const tag = state.tags.find(t => t.commitId === commitId);
+  if (tag) return result(true, tag.name, state, 'show');
+  return result(true, commitId, state, 'show');
+}
+
+function handleBlame(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const file = args[0];
+  if (!file) return errorResult('usage: git blame <file>', state);
+  const content = state.workingDirectory[file];
+  if (content === undefined) return errorResult(`fatal: no such path '${file}' in HEAD`, state);
+  const headId = getHeadCommitId(state) ?? '0000000';
+  const lines = content.split('\n');
+  return result(
+    true,
+    lines.map((line, i) => `${headId.slice(0, 7)} (Visual User ${i + 1}) ${line}`).join('\n'),
+    state,
+    'show',
+  );
+}
+
+function handleConfig(state: GitState, args: string[]): GitCommandResult {
+  if (args.length === 0 || args.includes('--list')) {
+    return result(true, [
+      'user.name=Visual Git User',
+      'user.email=learner@example.com',
+      'init.defaultBranch=main',
+      'core.editor=cursor',
+      'pull.rebase=false',
+    ].join('\n'), state, 'config');
+  }
+  if (args.length >= 2) {
+    return result(true, `Set ${args[0]}=${args.slice(1).join(' ')}`, state, 'config');
+  }
+  return result(true, `${args[0]}=Visual Git User`, state, 'config');
+}
+
+function handleGitRm(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  const file = args.find(arg => !arg.startsWith('-'));
+  if (!file) return errorResult('usage: git rm <file>', state);
+  if (!(file in state.workingDirectory)) return errorResult(`fatal: pathspec '${file}' did not match any files`, state);
+  const s = cloneState(state);
+  delete s.workingDirectory[file];
+  s.stagingArea[file] = '__DELETED__';
+  return result(true, `rm '${file}'`, s, 'add');
+}
+
+function handleGitMv(state: GitState, args: string[]): GitCommandResult {
+  if (!state.initialized) return errorResult('fatal: not a git repository', state);
+  return handleMv(state, args);
 }
 
 // ─── shell helpers: touch, edit, rm, ls, cat, mv, echo ─────────────────────────
@@ -1312,14 +1547,22 @@ function handleHelp(): GitCommandResult {
     git remote add <n> <u>  Add a remote
     git remote -v           List remotes
     git remote remove <n>   Remove a remote
+    git remote rename <o> <n>
+                            Rename a remote
+    git remote set-url <n> <u>
+                            Update a remote URL
 
   Staging & committing:
     git add <file|.>        Stage changes
     git commit -m "msg"     Create a commit
+    git commit -am "msg"    Stage tracked files and commit
     git status              Show working tree status
+    git status --short      Compact status output
     git diff [--staged]     Show working tree changes
     git log [--oneline] [--all] [--graph]
                             Show commit history
+    git show [commit]       Show commit details
+    git blame <file>        Show line attribution
 
   Branching:
     git branch [name]       List or create branches
@@ -1327,6 +1570,8 @@ function handleHelp(): GitCommandResult {
     git branch -r           List remote branches
     git checkout <branch>   Switch branches
     git checkout -b <name>  Create & switch to new branch
+    git switch <branch>     Switch branches
+    git switch -c <name>    Create & switch to new branch
 
   Merging & rebasing:
     git merge <branch>      Merge a branch
@@ -1343,11 +1588,19 @@ function handleHelp(): GitCommandResult {
   Undo:
     git reset [--soft|--mixed|--hard] [target]
                             Reset current HEAD
+    git restore [--staged] <file|.>
+                            Restore worktree or unstage files
+    git clean -n|-f         Preview or remove untracked files
     git revert <commit>     Revert a commit (creates new commit)
     git stash [push|pop|list|drop]
                             Stash working changes
     git tag [name] [commit] Create or list tags
     git tag -d <name>       Delete a tag
+    git describe [commit]   Show nearest tag or commit id
+    git reflog              Show HEAD movement history
+    git config --list       Show simulated Git config
+    git rm <file>           Remove and stage deletion
+    git mv <src> <dst>      Rename and stage change
 
     help                    Show this help message
     clear                   Clear the terminal`;
@@ -1400,12 +1653,21 @@ export function parseAndExecute(input: string, state: GitState): GitCommandResul
     case 'merge': return handleMerge(state, subArgs);
     case 'rebase': return handleRebase(state, subArgs);
     case 'reset': return handleReset(state, subArgs);
+    case 'restore': return handleRestore(state, subArgs);
+    case 'clean': return handleClean(state, subArgs);
     case 'revert': return handleRevert(state, subArgs);
     case 'stash': return handleStash(state, subArgs);
     case 'cherry-pick': return handleCherryPick(state, subArgs);
     case 'tag': return handleTag(state, subArgs);
     case 'log': return handleLog(state, subArgs);
-    case 'status': return handleStatus(state);
+    case 'show': return handleShow(state, subArgs);
+    case 'reflog': return handleReflog(state);
+    case 'describe': return handleDescribe(state, subArgs);
+    case 'blame': return handleBlame(state, subArgs);
+    case 'config': return handleConfig(state, subArgs);
+    case 'rm': return handleGitRm(state, subArgs);
+    case 'mv': return handleGitMv(state, subArgs);
+    case 'status': return handleStatus(state, subArgs);
     case 'diff': return handleDiff(state, subArgs);
     case 'remote': return handleRemote(state, subArgs);
     case 'push': return handlePush(state, subArgs);
