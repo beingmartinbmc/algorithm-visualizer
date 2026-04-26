@@ -10,10 +10,13 @@ const DEMO_COMMANDS = [
   'touch style.css body { margin: 0; }',
   'git add .',
   'git commit -m "Initial commit"',
+  'git status --short',
+  'git tag v1.0',
   'git checkout -b feature/login',
   'touch auth.js function login() {}',
   'git add auth.js',
   'git commit -m "Add login feature"',
+  'git show HEAD',
   'git checkout main',
   'touch README.md # My Project',
   'git add README.md',
@@ -27,6 +30,8 @@ const DEMO_COMMANDS = [
   'git commit -m "Add dashboard"',
   'git push -u origin feature/dashboard',
   'git checkout main',
+  'git describe v1.0',
+  'git reflog',
   'git log --oneline --all',
 ];
 

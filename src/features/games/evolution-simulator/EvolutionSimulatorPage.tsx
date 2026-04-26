@@ -2,6 +2,7 @@ import { Pause, Play, RotateCcw, Shuffle, Volume2, VolumeX } from 'lucide-react'
 import FitnessChart from './components/FitnessChart';
 import PopulationList from './components/PopulationList';
 import GeneComparison from './components/GeneComparison';
+import PopulationHabitat from './components/PopulationHabitat';
 import { useEvolutionSimulator } from './hooks/useEvolutionSimulator';
 
 const SPEED_PRESETS = [
@@ -54,16 +55,16 @@ export default function EvolutionSimulatorPage() {
   });
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.12),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(6,78,59,0.16))] p-4 md:p-6">
       <div className="mx-auto max-w-6xl space-y-4">
-        <section className="rounded-2xl border border-slate-700/50 bg-slate-900/60 p-4 md:p-5 backdrop-blur-sm">
-          <h2 className="text-lg md:text-xl font-bold text-white">Evolution Simulator — Genetic Algorithm</h2>
-          <p className="text-xs text-slate-400 mt-1">Evolve a population of strings toward a target using selection, crossover, and mutation.</p>
+        <section className="relative overflow-hidden rounded-2xl border border-emerald-700/30 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.18),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.96),rgba(6,78,59,0.36))] p-4 shadow-2xl shadow-black/30 backdrop-blur-sm md:p-5">
+          <div className="pointer-events-none absolute right-6 top-4 text-7xl opacity-10">🧬</div>
+          <h2 className="text-lg md:text-xl font-bold text-white">Evolution Lab — Genetic Algorithm</h2>
+          <p className="text-xs text-emerald-100/65 mt-1">Evolve a population of digital people toward a target phrase using selection, crossover, and mutation.</p>
 
-          <div className="mt-3 rounded-xl bg-indigo-500/5 ring-1 ring-indigo-500/15 px-3 py-2">
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              Each generation: evaluate fitness → select parents → crossover genes → mutate characters → keep the elite.
-              Watch best and average fitness curves to understand convergence dynamics.
+          <div className="mt-3 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20 px-3 py-2">
+            <p className="text-[11px] text-emerald-50/80 leading-relaxed">
+              Each generation is a lab cycle: evaluate every person → select stronger parents → combine DNA → mutate a few genes → keep the elite survivor.
             </p>
           </div>
 
@@ -227,8 +228,16 @@ export default function EvolutionSimulatorPage() {
           </div>
         </section>
 
+        <PopulationHabitat
+          population={topIndividuals}
+          target={target.toUpperCase()}
+          generation={state?.generation ?? 0}
+          convergence={convergence}
+          status={status}
+        />
+
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="rounded-2xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-xl shadow-black/20 backdrop-blur-sm">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Statistics</h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Stat label="Generation" value={state?.generation ?? 0} />

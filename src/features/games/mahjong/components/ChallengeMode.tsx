@@ -1,20 +1,10 @@
 import { Trophy, Flame, Timer, CheckCircle, XCircle, ArrowRight, RotateCcw, Volume2, VolumeX } from 'lucide-react';
-import type { TileCode, Suit } from '../types/mahjong';
-import { SUIT_COLORS } from '../types/mahjong';
+import type { TileCode } from '../types/mahjong';
 import { useMahjongChallenge } from '../hooks/useMahjongChallenge';
+import MahjongTile from './MahjongTile';
 
 function ChallengeTile({ code }: { code: TileCode }) {
-  const suit = code[0] as Suit;
-  const value = code[1];
-  const color = SUIT_COLORS[suit];
-  const sym = suit === 'B' ? '竹' : suit === 'C' ? '万' : '●';
-
-  return (
-    <span className="inline-flex flex-col items-center justify-center rounded-lg border border-slate-700/60 bg-slate-900/80 w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-[4.25rem] lg:w-16 lg:h-[4.75rem]">
-      <span style={{ color }} className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold leading-none">{value}</span>
-      <span className="text-[8px] md:text-[10px] text-slate-500 leading-none mt-0.5">{sym}</span>
-    </span>
-  );
+  return <MahjongTile code={code} size="lg" />;
 }
 
 export default function ChallengeMode() {
@@ -158,12 +148,12 @@ export default function ChallengeMode() {
 
       {/* Main Area — Hand */}
       <div className="order-last md:order-first flex md:flex-1 flex-col gap-4 min-h-0 md:overflow-auto">
-        <div className="rounded-xl border border-slate-700/50 bg-slate-950/80 p-4 md:p-5 backdrop-blur-sm">
+        <div className="rounded-2xl border border-emerald-900/40 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.96),rgba(6,78,59,0.32))] p-4 shadow-2xl shadow-black/30 md:p-5">
           <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h3 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-slate-400">Hand to Judge</h3>
+            <h3 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-emerald-200">Hand to Judge</h3>
             <span className="text-xs md:text-sm font-mono font-bold text-indigo-300">Round {round}</span>
           </div>
-          <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <div className="flex flex-wrap items-end gap-1.5 rounded-xl border border-emerald-950/40 bg-emerald-950/20 p-3 shadow-inner md:gap-2">
             {hand.map((code, i) => (
               <ChallengeTile key={`${code}-${i}`} code={code} />
             ))}

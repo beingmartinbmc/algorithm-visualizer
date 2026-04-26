@@ -98,6 +98,11 @@ export type GitAction =
   | 'clone'
   | 'revert'
   | 'remote'
+  | 'restore'
+  | 'clean'
+  | 'show'
+  | 'reflog'
+  | 'config'
   | 'error';
 
 export interface TerminalLine {

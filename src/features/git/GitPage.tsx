@@ -2,6 +2,7 @@ import { GitCanvas } from './components/GitCanvas';
 import { GitTerminal } from './components/GitTerminal';
 import { GitFileStatus } from './components/GitFileStatus';
 import { GitCommandRef } from './components/GitCommandRef';
+import { GitRepositoryPanel } from './components/GitRepositoryPanel';
 import { GuidedPanel, StepProgress } from './components/GuidedPanel';
 import { useGit } from './hooks/useGit';
 import type { DemoSpeed } from './hooks/useGit';
@@ -46,16 +47,19 @@ export default function GitPage() {
     : gitState.head;
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.12),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(99,102,241,0.12),transparent_30%)]">
       {/* Top toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800/50 px-4 py-2.5 sm:px-6">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800/70 bg-slate-950/70 px-4 py-2.5 shadow-lg shadow-black/20 backdrop-blur-sm sm:px-6">
         <div className="flex items-center gap-2">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-orange-400">
             <circle cx="18" cy="18" r="3" />
             <circle cx="6" cy="6" r="3" />
             <path d="M6 21V9a9 9 0 0 0 9 9" />
           </svg>
-          <h2 className="text-sm font-bold text-white">Git Visualizer</h2>
+          <div>
+            <h2 className="text-sm font-bold text-white">Git Visualizer</h2>
+            <p className="hidden text-[10px] text-slate-500 sm:block">Interactive local and remote repository simulator</p>
+          </div>
         </div>
 
         {/* Mode toggle */}
@@ -219,9 +223,11 @@ export default function GitPage() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col gap-3 overflow-auto p-3 sm:p-4 lg:flex-row lg:gap-4">
-        {/* Left column — Graph + File Status */}
-        <div className="flex flex-1 flex-col gap-3 min-w-0 lg:flex-[1.2]">
+      <div className="flex flex-1 flex-col gap-3 overflow-auto p-3 sm:p-4 xl:flex-row xl:gap-4">
+        <GitRepositoryPanel state={gitState} />
+
+        {/* Main column — Graph + File Status */}
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex-1 flex min-h-[250px]">
             <GitCanvas state={gitState} />
           </div>
@@ -229,7 +235,7 @@ export default function GitPage() {
         </div>
 
         {/* Right column — Terminal + Panels */}
-        <div className="flex flex-col gap-3 lg:w-[380px] xl:w-[420px]">
+        <div className="flex flex-col gap-3 xl:w-[410px] 2xl:w-[460px]">
           {mode === 'guided' && activeLesson && (
             <StepProgress
               lesson={activeLesson}
@@ -244,6 +250,7 @@ export default function GitPage() {
               commandHistory={commandHistory}
               onExecute={executeCommand}
               disabled={isRunningDemo}
+              promptBranch={currentBranch}
             />
           </div>
 

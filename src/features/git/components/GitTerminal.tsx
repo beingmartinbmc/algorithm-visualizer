@@ -6,9 +6,10 @@ interface Props {
   commandHistory: string[];
   onExecute: (cmd: string) => void;
   disabled?: boolean;
+  promptBranch?: string;
 }
 
-function GitTerminalInner({ history, commandHistory, onExecute, disabled }: Props) {
+function GitTerminalInner({ history, commandHistory, onExecute, disabled, promptBranch = 'main' }: Props) {
   const [input, setInput] = useState('');
   const [historyIndex, setHistoryIndex] = useState(-1);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -71,19 +72,20 @@ function GitTerminalInner({ history, commandHistory, onExecute, disabled }: Prop
 
   return (
     <div
-      className="flex flex-col rounded-xl border border-slate-700/50 bg-slate-950/80 backdrop-blur-sm overflow-hidden font-mono text-xs"
+      className="flex flex-col overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-950/90 font-mono text-xs shadow-2xl shadow-black/30 backdrop-blur-sm"
       onClick={() => inputRef.current?.focus()}
     >
-      <div className="flex items-center gap-2 border-b border-slate-700/50 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-900/80 px-4 py-2.5">
         <div className="flex gap-1.5">
           <div className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
           <div className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
           <div className="h-2.5 w-2.5 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-[10px] font-semibold text-slate-400 ml-2">Git Terminal</span>
+        <span className="ml-2 text-[10px] font-semibold text-slate-400">Git Terminal</span>
+        <span className="ml-auto rounded bg-slate-950/80 px-2 py-0.5 text-[9px] text-slate-500 ring-1 ring-slate-800">~/visual-repo</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-0.5 min-h-[200px] max-h-[50vh]">
+      <div className="min-h-[240px] flex-1 space-y-0.5 overflow-y-auto bg-[linear-gradient(rgba(148,163,184,0.03)_1px,transparent_1px)] bg-[length:100%_22px] p-3">
         {history.map((line, i) => (
           <div key={i} className={`whitespace-pre-wrap leading-relaxed ${lineColor(line.type)}`}>
             {line.text}
@@ -92,8 +94,10 @@ function GitTerminalInner({ history, commandHistory, onExecute, disabled }: Prop
         <div ref={bottomRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-800/60 px-3 py-2 bg-slate-900/40">
-        <span className="text-emerald-500 font-bold select-none">$</span>
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t border-slate-800/60 bg-slate-900/70 px-3 py-2">
+        <span className="select-none text-sky-400">visual-repo</span>
+        <span className="select-none text-slate-600">git:({promptBranch})</span>
+        <span className="select-none font-bold text-emerald-500">$</span>
         <input
           ref={inputRef}
           type="text"

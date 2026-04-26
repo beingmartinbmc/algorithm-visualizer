@@ -22,10 +22,19 @@ export default function FitnessChart({ best, avg, targetLength }: FitnessChartPr
   const maxY = Math.max(targetLength, ...best, ...avg, 1);
 
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Fitness Over Generations</h3>
+    <div className="rounded-2xl border border-slate-700/50 bg-slate-900/70 p-4 shadow-xl shadow-black/20 backdrop-blur-sm">
+      <div className="mb-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">Fitness Monitor</h3>
+        <p className="mt-0.5 text-[10px] text-slate-500">Lab readout for best and average population health</p>
+      </div>
       <div className="w-full overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[560px] h-56 rounded-lg bg-slate-950/70 ring-1 ring-slate-700/50">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[560px] h-56 rounded-xl bg-slate-950/80 ring-1 ring-slate-700/50">
+          <defs>
+            <linearGradient id="fitnessGlow" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="rgb(244 63 94)" />
+              <stop offset="100%" stopColor="rgb(52 211 153)" />
+            </linearGradient>
+          </defs>
           <line x1="0" y1={height} x2={width} y2={height} stroke="rgb(71 85 105 / 0.7)" strokeWidth="1" />
           <line x1="0" y1="0" x2="0" y2={height} stroke="rgb(71 85 105 / 0.7)" strokeWidth="1" />
           {targetLength > 0 && (
@@ -39,7 +48,7 @@ export default function FitnessChart({ best, avg, targetLength }: FitnessChartPr
               strokeWidth="1"
             />
           )}
-          <polyline fill="none" stroke="rgb(244 63 94)" strokeWidth="2" points={toPoints(best, width, height, maxY)} />
+          <polyline fill="none" stroke="url(#fitnessGlow)" strokeWidth="3" points={toPoints(best, width, height, maxY)} />
           <polyline fill="none" stroke="rgb(56 189 248)" strokeWidth="2" points={toPoints(avg, width, height, maxY)} />
         </svg>
       </div>

@@ -134,7 +134,7 @@ function GitCanvasInner({ state }: Props) {
 
   if (commitOrder.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-900/60 backdrop-blur-sm">
+      <div className="flex flex-1 items-center justify-center rounded-2xl border border-slate-700/50 bg-slate-950/70 shadow-2xl shadow-black/30 backdrop-blur-sm">
         <div className="text-center px-6">
           <div className="mb-3 text-4xl opacity-40">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto text-slate-500">
@@ -144,25 +144,28 @@ function GitCanvasInner({ state }: Props) {
             </svg>
           </div>
           <p className="text-sm text-slate-400">No commits yet</p>
-          <p className="text-xs text-slate-600 mt-1">Run <code className="text-indigo-400">git init</code> to get started</p>
+          <p className="text-xs text-slate-600 mt-1">Run <code className="text-indigo-400">git init</code>, then create and commit files</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col rounded-xl border border-slate-700/50 bg-slate-900/60 backdrop-blur-sm overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-slate-700/50 px-4 py-2.5">
+    <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-950/70 shadow-2xl shadow-black/30 backdrop-blur-sm">
+      <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-900/80 px-4 py-2.5">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-indigo-400">
           <circle cx="18" cy="18" r="3" />
           <circle cx="6" cy="6" r="3" />
           <path d="M6 21V9a9 9 0 0 0 9 9" />
         </svg>
         <span className="text-xs font-semibold text-slate-300">Commit Graph</span>
+        <span className="rounded bg-indigo-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-indigo-300 ring-1 ring-indigo-500/20">
+          live history
+        </span>
         <span className="ml-auto text-[10px] text-slate-500">{commitOrder.length} commit{commitOrder.length !== 1 ? 's' : ''}</span>
       </div>
 
-      <div className="flex-1 overflow-auto p-2">
+      <div className="flex-1 overflow-auto bg-[radial-gradient(circle_at_1px_1px,rgba(148,163,184,0.12)_1px,transparent_0)] bg-[length:24px_24px] p-2">
         <svg
           width={layout.width}
           height={layout.height}
@@ -179,7 +182,7 @@ function GitCanvasInner({ state }: Props) {
                   x2={edge.to.x}
                   y2={edge.to.y}
                   stroke={edge.color}
-                  strokeWidth={2}
+                  strokeWidth={3}
                   opacity={edge.isMerge ? 0.5 : 0.7}
                   strokeDasharray={edge.isMerge ? '6,3' : undefined}
                 />
@@ -191,7 +194,7 @@ function GitCanvasInner({ state }: Props) {
                 key={`e${i}`}
                 d={`M${edge.from.x},${edge.from.y} C${edge.from.x},${midY} ${edge.to.x},${midY} ${edge.to.x},${edge.to.y}`}
                 stroke={edge.color}
-                strokeWidth={2}
+                strokeWidth={3}
                 fill="none"
                 opacity={edge.isMerge ? 0.5 : 0.7}
                 strokeDasharray={edge.isMerge ? '6,3' : undefined}
@@ -224,6 +227,7 @@ function GitCanvasInner({ state }: Props) {
                   fill={isHead ? node.color : `${node.color}33`}
                   stroke={node.color}
                   strokeWidth={isHead ? 3 : 2}
+                  filter="drop-shadow(0 6px 8px rgba(0,0,0,0.35))"
                   className="transition-all duration-300"
                 />
                 <text
@@ -275,7 +279,7 @@ function GitCanvasInner({ state }: Props) {
                   fill={label.color}
                   fontSize={8}
                 >
-                  🏷
+                  tag
                 </text>
               )}
               {label.isHead && (

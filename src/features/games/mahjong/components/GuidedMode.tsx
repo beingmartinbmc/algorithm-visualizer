@@ -1,32 +1,21 @@
 import { CheckCircle, XCircle, ArrowRight, RotateCcw, Lightbulb, SkipForward, Volume2, VolumeX } from 'lucide-react';
-import type { TileCode, Suit } from '../types/mahjong';
-import { SUIT_COLORS } from '../types/mahjong';
+import type { TileCode } from '../types/mahjong';
 import { useMahjongGuided } from '../hooks/useMahjongGuided';
+import MahjongTile from './MahjongTile';
 
 function GuidedTile({ code, index, selected, onClick }: {
   code: TileCode; index: number; selected: boolean; onClick?: () => void;
 }) {
-  const suit = code[0] as Suit;
-  const value = code[1];
-  const color = SUIT_COLORS[suit];
-  const sym = suit === 'B' ? '竹' : suit === 'C' ? '万' : '●';
-
   return (
-    <button
-      onClick={onClick}
+    <MahjongTile
+      code={code}
+      index={index}
+      size="lg"
+      selected={selected}
+      interactive={Boolean(onClick)}
       disabled={!onClick}
-      className={`relative flex flex-col items-center justify-center rounded-lg border w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-[4.25rem] lg:w-16 lg:h-[4.75rem] transition-all duration-150 ${
-        selected
-          ? 'border-indigo-400 bg-indigo-500/20 ring-2 ring-indigo-400/50 scale-105'
-          : onClick
-            ? 'border-slate-700/60 bg-slate-900/80 hover:border-slate-600 hover:bg-slate-800/60 cursor-pointer active:scale-95'
-            : 'border-slate-700/60 bg-slate-900/80'
-      }`}
-    >
-      <span style={{ color }} className="text-sm sm:text-base md:text-lg lg:text-xl font-extrabold leading-none">{value}</span>
-      <span className="text-[8px] md:text-[10px] text-slate-500 leading-none mt-0.5">{sym}</span>
-      <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 text-[7px] md:text-[8px] text-slate-600 font-mono">{index + 1}</span>
-    </button>
+      onClick={onClick}
+    />
   );
 }
 
@@ -230,16 +219,16 @@ export default function GuidedMode() {
 
       {/* Main Area — Hand */}
       <div className="order-last md:order-first flex md:flex-1 flex-col gap-4 min-h-0 md:overflow-auto">
-        <div className="rounded-xl border border-slate-700/50 bg-slate-950/80 p-4 md:p-5 backdrop-blur-sm">
+        <div className="rounded-2xl border border-emerald-900/40 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.96),rgba(6,78,59,0.32))] p-4 shadow-2xl shadow-black/30 md:p-5">
           <div className="flex items-center justify-between mb-3 md:mb-4">
-            <h3 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-slate-400">Hand</h3>
+            <h3 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-emerald-200">Hand</h3>
             {foundPair && (
               <span className="text-xs md:text-sm font-mono text-emerald-300">
                 Pair ✓ | Melds {foundMelds.length}/4
               </span>
             )}
           </div>
-          <div className="flex flex-wrap gap-1.5 md:gap-2">
+          <div className="flex flex-wrap items-end gap-1.5 rounded-xl border border-emerald-950/40 bg-emerald-950/20 p-3 shadow-inner md:gap-2">
             {hand.map((code, i) => {
               const isUsed = usedIndices.has(i);
               const isSelected = selectedTiles.includes(i);
@@ -261,7 +250,7 @@ export default function GuidedMode() {
 
         {/* Found groups display */}
         {(foundPair || foundMelds.length > 0) && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 md:p-5 backdrop-blur-sm">
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 shadow-xl shadow-emerald-950/20 backdrop-blur-sm md:p-5">
             <h3 className="text-xs md:text-sm font-semibold uppercase tracking-wider text-emerald-400 mb-3">Found Groups</h3>
             {foundPair && (
               <div className="flex items-center gap-2 mb-2">
