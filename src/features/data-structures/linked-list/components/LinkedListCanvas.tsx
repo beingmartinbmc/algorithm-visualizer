@@ -1,8 +1,9 @@
-import type { ListNode, LLStep, LLHighlightColor } from '../hooks/useLinkedList';
+import type { ListNode, LLStep, LLHighlightColor, LinkedListVariant } from '../hooks/useLinkedList';
 
 interface LinkedListCanvasProps {
   nodes: ListNode[];
   currentStep: LLStep | null;
+  variant: LinkedListVariant;
 }
 
 const NODE_COLORS: Record<LLHighlightColor, { border: string; bg: string; text: string }> = {
@@ -20,7 +21,7 @@ const ARROW_W = 36;
 const NODE_STEP = NODE_W + ARROW_W;
 const NODES_PER_ROW = 5;
 
-export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanvasProps) {
+export default function LinkedListCanvas({ nodes, currentStep, variant }: LinkedListCanvasProps) {
   const highlightIds = currentStep?.highlightIds ?? new Set<number>();
   const highlightColor = currentStep?.highlightColor ?? null;
 
@@ -32,6 +33,11 @@ export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanva
   const totalWidth = Math.min(nodes.length, NODES_PER_ROW) * NODE_STEP + ARROW_W;
   const rowH = NODE_H + 40;
   const svgHeight = Math.max(rows.length * rowH + 20, 120);
+  const tailIndex = nodes.length - 1;
+  const tailRow = Math.floor(tailIndex / NODES_PER_ROW);
+  const tailCol = tailIndex % NODES_PER_ROW;
+  const tailX = tailCol * NODE_STEP + ARROW_W / 2;
+  const tailY = tailRow * rowH + 20;
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full min-h-[300px] gap-4 px-4 overflow-auto">
@@ -115,8 +121,22 @@ export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanva
                         fill="#64748b"
                         fontFamily="monospace"
                       >
-                        {isLast ? 'null' : '→'}
+                        {isLast ? (variant === 'circular' ? '↺' : 'null') : '→'}
                       </text>
+
+                      {/* Previous pointer cue for doubly linked lists */}
+                      {variant === 'doubly' && (
+                        <text
+                          x={x + NODE_W * 0.2}
+                          y={y + NODE_H - 7}
+                          textAnchor="middle"
+                          fontSize="8"
+                          fill="#93c5fd"
+                          fontFamily="monospace"
+                        >
+                          {isFirst ? 'null' : '←'}
+                        </text>
+                      )}
 
                       {/* Arrow to next node (same row) */}
                       {!isLast && !isLastInRow && (
@@ -132,6 +152,24 @@ export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanva
                           <polygon
                             points={`${x + NODE_STEP},${y + NODE_H / 2} ${x + NODE_STEP - 6},${y + NODE_H / 2 - 4} ${x + NODE_STEP - 6},${y + NODE_H / 2 + 4}`}
                             fill="#475569"
+                          />
+                        </g>
+                      )}
+
+                      {/* Backward arrow for doubly linked lists */}
+                      {variant === 'doubly' && !isLast && !isLastInRow && (
+                        <g opacity={0.75}>
+                          <line
+                            x1={x + NODE_STEP}
+                            y1={y + NODE_H / 2 + 12}
+                            x2={x + NODE_W}
+                            y2={y + NODE_H / 2 + 12}
+                            stroke="#60a5fa"
+                            strokeWidth={1.2}
+                          />
+                          <polygon
+                            points={`${x + NODE_W},${y + NODE_H / 2 + 12} ${x + NODE_W + 6},${y + NODE_H / 2 + 8} ${x + NODE_W + 6},${y + NODE_H / 2 + 16}`}
+                            fill="#60a5fa"
                           />
                         </g>
                       )}
@@ -157,6 +195,20 @@ export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanva
               </g>
             );
           })}
+          {variant === 'circular' && rows.length > 0 && nodes.length > 1 && (
+            <g>
+              <path
+                d={`M ${tailX + NODE_W} ${tailY + NODE_H / 2} C ${totalWidth + 40} ${svgHeight + 16}, -20 ${svgHeight + 16}, ${ARROW_W / 2 + NODE_W / 2} 78`}
+                fill="none"
+                stroke="#f59e0b"
+                strokeDasharray="5 5"
+                strokeWidth={1.5}
+              />
+              <text x={totalWidth / 2} y={svgHeight - 4} textAnchor="middle" fontSize="10" fill="#fbbf24" fontFamily="monospace">
+                tail.next → head
+              </text>
+            </g>
+          )}
         </svg>
       )}
 
@@ -169,7 +221,7 @@ export default function LinkedListCanvas({ nodes, currentStep }: LinkedListCanva
 
       {/* Size */}
       <div className="text-xs text-slate-500 font-mono">
-        length = {nodes.length}
+        {variant} list · length = {nodes.length}
       </div>
     </div>
   );

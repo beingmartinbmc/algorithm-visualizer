@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from '@/components/Layout/Header';
 import LandingPage from '@/pages/LandingPage';
+import AlgorithmsPage from '@/features/algorithms/AlgorithmsPage';
+import AlgorithmPlaygroundPage from '@/features/algorithms/AlgorithmPlaygroundPage';
 import GraphTraversalPage from '@/features/traversals/graph/GraphTraversalPage';
 import SortingPage from '@/features/sorting/SortingPage';
 import SudokuPage from '@/features/sudoku-solver/SudokuPage';
@@ -12,6 +14,7 @@ import StackPage from '@/features/data-structures/stack/StackPage';
 import QueuePage from '@/features/data-structures/queue/QueuePage';
 import ArrayPage from '@/features/data-structures/array/ArrayPage';
 import LinkedListPage from '@/features/data-structures/linked-list/LinkedListPage';
+import AdvancedStructurePage from '@/features/data-structures/advanced/AdvancedStructurePage';
 import DataStructuresPage from '@/features/data-structures/DataStructuresPage';
 import GamesPage from '@/features/games/GamesPage';
 import FibonacciGamePage from '@/features/games/fibonacci/FibonacciGamePage';
@@ -31,6 +34,19 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/algorithms" element={<AlgorithmsPage />} />
+          <Route path="/algorithms/sorting" element={<SortingPage />} />
+          <Route path="/algorithms/tree" element={<TreeTraversalPage />} />
+          <Route path="/algorithms/graph" element={<GraphTraversalPage />} />
+          <Route path="/algorithms/binary-search" element={<AlgorithmPlaygroundPage demo="binary-search" />} />
+          <Route path="/algorithms/ternary-search" element={<AlgorithmPlaygroundPage demo="ternary-search" />} />
+          <Route path="/algorithms/queue-using-stacks" element={<AlgorithmPlaygroundPage demo="queue-using-stacks" />} />
+          <Route path="/algorithms/stack-using-queues" element={<AlgorithmPlaygroundPage demo="stack-using-queues" />} />
+          <Route path="/algorithms/tower-of-hanoi" element={<AlgorithmPlaygroundPage demo="tower-of-hanoi" />} />
+          <Route path="/algorithms/rat-maze" element={<AlgorithmPlaygroundPage demo="rat-maze" />} />
+          <Route path="/algorithms/grid-search" element={<AlgorithmPlaygroundPage demo="grid-search" />} />
+          <Route path="/algorithms/dutch-national-flag" element={<AlgorithmPlaygroundPage demo="dutch-national-flag" />} />
+          <Route path="/algorithms/top-k-frequent" element={<AlgorithmPlaygroundPage demo="top-k-frequent" />} />
           <Route path="/traversals" element={<TraversalsPage />} />
           <Route path="/traversals/graph" element={<GraphTraversalPage />} />
           <Route path="/traversals/tree" element={<TreeTraversalPage />} />
@@ -43,6 +59,9 @@ function App() {
           <Route path="/data-structures/queue" element={<QueuePage />} />
           <Route path="/data-structures/array" element={<ArrayPage />} />
           <Route path="/data-structures/linked-list" element={<LinkedListPage />} />
+          <Route path="/data-structures/trie" element={<AdvancedStructurePage structure="trie" />} />
+          <Route path="/data-structures/segment-tree" element={<AdvancedStructurePage structure="segment-tree" />} />
+          <Route path="/data-structures/fenwick-tree" element={<AdvancedStructurePage structure="fenwick-tree" />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/games/fibonacci" element={<FibonacciGamePage />} />
           <Route path="/games/dijkstra" element={<DijkstraGamePage />} />
