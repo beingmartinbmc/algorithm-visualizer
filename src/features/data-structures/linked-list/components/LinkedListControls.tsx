@@ -13,7 +13,7 @@ interface LinkedListControlsProps {
 
 export default function LinkedListControls({ hook }: LinkedListControlsProps) {
   const {
-    nodes, steps, stepIndex, inputValue, setInputValue,
+    nodes, variant, changeVariant, steps, stepIndex, inputValue, setInputValue,
     indexValue, setIndexValue, history, speed, setSpeed, isPlaying,
     prepend, append, insertAt, deleteAt, search, clear, generateRandom,
     nextStep, prevStep, canGoNext, canGoPrev, soundEnabled, toggleSound,
@@ -47,13 +47,36 @@ export default function LinkedListControls({ hook }: LinkedListControlsProps) {
       <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
         <h3 className="text-sm font-bold text-indigo-300 mb-1">Linked List</h3>
         <p className="text-xs text-slate-400 leading-relaxed">
-          A chain of <strong className="text-slate-300">nodes</strong>, each holding a value and a pointer to the next node. No random access — traversal is required for index-based operations.
+          A chain of <strong className="text-slate-300">nodes</strong>. Switch between singly, doubly, and circular pointer layouts while keeping the same operations.
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {['Prepend O(1)', 'Append O(n)', 'Insert O(n)', 'Delete O(n)', 'Search O(n)'].map((t) => (
             <span key={t} className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-medium text-violet-400 ring-1 ring-violet-500/20">{t}</span>
           ))}
         </div>
+      </div>
+
+      {/* Variant */}
+      <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-4 backdrop-blur-sm">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">List Type</h3>
+        <div className="grid grid-cols-3 gap-1">
+          {(['singly', 'doubly', 'circular'] as const).map((item) => (
+            <button
+              key={item}
+              onClick={() => changeVariant(item)}
+              className={`rounded-lg px-2 py-2 text-[10px] font-semibold capitalize transition-all ${
+                variant === item
+                  ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/40'
+                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-700/60'
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+          Doubly lists show backward pointers; circular lists connect the tail back to the head.
+        </p>
       </div>
 
       {/* Operations */}
