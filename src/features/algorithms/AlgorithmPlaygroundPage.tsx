@@ -101,6 +101,7 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
   const [input, setInput] = useState(info.defaultInput);
   const [steps, setSteps] = useState<DemoStep[]>(() => buildSteps(demo, info.defaultInput));
   const [stepIndex, setStepIndex] = useState(0);
+  const [animationDelay, setAnimationDelay] = useState(650);
   const { soundEnabled, toggleSound, playEvent } = useAlgorithmSound();
   const currentStep = steps[stepIndex] ?? steps[0];
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0;
@@ -133,7 +134,7 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
         setStepIndex(index);
         const step = steps[index];
         if (step) playEvent(step.event, index, steps.length);
-      }, (index - stepIndex) * 260);
+      }, (index - stepIndex) * animationDelay);
     }
   };
 
@@ -176,6 +177,26 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-slate-800">
             <div className="h-full rounded-full bg-indigo-400 transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-950/40 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Animation Speed</span>
+              <span className="font-mono text-[10px] text-indigo-300">{animationDelay}ms</span>
+            </div>
+            <input
+              type="range"
+              min={120}
+              max={1200}
+              step={40}
+              value={animationDelay}
+              onChange={(event) => setAnimationDelay(Number(event.target.value))}
+              className="w-full accent-indigo-400"
+              aria-label="Animation step delay"
+            />
+            <div className="mt-1 flex justify-between text-[9px] uppercase tracking-wide text-slate-600">
+              <span>Fast</span>
+              <span>Slow</span>
+            </div>
           </div>
           <p className="mt-3 min-h-12 text-xs leading-relaxed text-slate-300">{currentStep?.description}</p>
           {currentStep?.meta && (
@@ -544,7 +565,12 @@ function randomInput(demo: AlgorithmDemo) {
     case 'binary-search':
     case 'ternary-search': {
       const sorted = [...values].sort((a, b) => a - b);
-      return `${sorted.join(',')};${sorted[Math.floor(sorted.length / 2)]}`;
+      const middleIndex = Math.floor(sorted.length / 2);
+      let targetIndex = Math.floor(Math.random() * sorted.length);
+      if (demo === 'binary-search' && sorted.length > 1 && targetIndex === middleIndex) {
+        targetIndex = (targetIndex + 1) % sorted.length;
+      }
+      return `${sorted.join(',')};${sorted[targetIndex]}`;
     }
     case 'dutch-national-flag':
       return Array.from({ length: 10 }, () => Math.floor(Math.random() * 3)).join(',');
