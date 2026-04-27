@@ -71,6 +71,8 @@ export default function RubiksCubeGamePage() {
             solution={cube.solution}
             solutionIndex={cube.solutionIndex}
             solutionDone={cube.solutionDone}
+            solverPlaybackMode={cube.solverPlaybackMode}
+            solverSpeed={cube.solverSpeed}
             manualMove={cube.manualMove}
             customScramble={cube.customScramble}
             simulationRuns={cube.simulationRuns}
@@ -93,6 +95,7 @@ export default function RubiksCubeGamePage() {
             onGenerateSolution={cube.generateSolution}
             onStepSolution={cube.stepSolution}
             onAutoSolve={cube.autoSolve}
+            onSolverSpeedChange={cube.setSolverSpeed}
             onUndo={cube.undoLastMove}
             onReset={cube.resetCube}
             onNextGuidedStep={cube.nextGuidedStep}

@@ -12,6 +12,16 @@ export type CubeMove = `${TurnFace}${TurnSuffix}`;
 
 export type RubiksMode = 'guided' | 'freeplay' | 'challenge';
 
+export type SolverPlaybackMode = 'manual' | 'auto';
+
+export const SOLVER_SPEED_OPTIONS = [
+  { id: 'slow', label: 'Slow', delayMs: 900 },
+  { id: 'normal', label: 'Normal', delayMs: 450 },
+  { id: 'fast', label: 'Fast', delayMs: 160 },
+] as const;
+
+export type SolverSpeed = (typeof SOLVER_SPEED_OPTIONS)[number]['id'];
+
 export type SolvePhase = 'Cross' | 'F2L' | '2-Look OLL' | '2-Look PLL';
 
 export interface SolutionStep {
