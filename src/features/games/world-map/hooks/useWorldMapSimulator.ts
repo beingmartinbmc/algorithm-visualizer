@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AIRPORTS, FLIGHT_ROUTES, TRAVEL_SCENARIOS } from '../data/airportNetwork';
 import { getRouteBetween, runTravelAlgorithm } from '../engine/routeAlgorithms';
 import type { AlgorithmResult, FlightProgress, SimulationPhase, TravelAlgorithm } from '../types/worldMap';
+import { useWorldMapSound } from './useWorldMapSound';
 
 export function useWorldMapSimulator() {
   const [source, setSource] = useState('JFK');
@@ -13,6 +14,7 @@ export function useWorldMapSimulator() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [flightProgress, setFlightProgress] = useState<FlightProgress | null>(null);
   const timerRef = useRef<number | null>(null);
+  const sound = useWorldMapSound();
 
   const currentStep = result.steps[stepIndex] ?? null;
 
@@ -23,6 +25,8 @@ export function useWorldMapSimulator() {
     }
   }, []);
 
+  useEffect(() => clearTimer, [clearTimer]);
+
   const planRoute = useCallback((nextSource = source, nextDestination = destination, nextAlgorithm = algorithm) => {
     clearTimer();
     const nextResult = runTravelAlgorithm(AIRPORTS, FLIGHT_ROUTES, nextSource, nextDestination, nextAlgorithm);
@@ -31,43 +35,56 @@ export function useWorldMapSimulator() {
     setPhase('planning');
     setIsPlaying(false);
     setFlightProgress(null);
-  }, [algorithm, clearTimer, destination, source]);
+    sound.playRoutePlanned();
+  }, [algorithm, clearTimer, destination, sound, source]);
 
   const changeSource = useCallback((code: string) => {
     if (code === destination) return;
+    sound.playAirportSelect();
     setSource(code);
     planRoute(code, destination, algorithm);
-  }, [algorithm, destination, planRoute]);
+  }, [algorithm, destination, planRoute, sound]);
 
   const changeDestination = useCallback((code: string) => {
     if (code === source) return;
+    sound.playAirportSelect();
     setDestination(code);
     planRoute(source, code, algorithm);
-  }, [algorithm, planRoute, source]);
+  }, [algorithm, planRoute, sound, source]);
 
   const changeAlgorithm = useCallback((nextAlgorithm: TravelAlgorithm) => {
+    sound.playAirportSelect();
     setAlgorithm(nextAlgorithm);
     planRoute(source, destination, nextAlgorithm);
-  }, [destination, planRoute, source]);
+  }, [destination, planRoute, sound, source]);
 
   const loadScenario = useCallback((id: string) => {
     const scenario = TRAVEL_SCENARIOS.find((item) => item.id === id);
     if (!scenario) return;
+    sound.playAirportSelect();
     setSource(scenario.source);
     setDestination(scenario.destination);
     setAlgorithm(scenario.algorithm);
     planRoute(scenario.source, scenario.destination, scenario.algorithm);
-  }, [planRoute]);
+  }, [planRoute, sound]);
 
   const stepForward = useCallback(() => {
     setPhase('planning');
-    setStepIndex((index) => Math.min(index + 1, result.steps.length - 1));
-  }, [result.steps.length]);
+    setStepIndex((index) => {
+      const nextIndex = Math.min(index + 1, result.steps.length - 1);
+      if (nextIndex !== index) sound.playScanStep(nextIndex);
+      return nextIndex;
+    });
+  }, [result.steps.length, sound]);
 
   const stepBack = useCallback(() => {
     setPhase('planning');
-    setStepIndex((index) => Math.max(index - 1, 0));
-  }, []);
+    setStepIndex((index) => {
+      const nextIndex = Math.max(index - 1, 0);
+      if (nextIndex !== index) sound.playScanStep(nextIndex);
+      return nextIndex;
+    });
+  }, [sound]);
 
   const animateFlight = useCallback(() => {
     clearTimer();
@@ -75,6 +92,7 @@ export function useWorldMapSimulator() {
     if (path.length < 2) return;
     setPhase('flying');
     setIsPlaying(true);
+    sound.playFlightStart();
 
     let segment = 0;
     let progress = 0;
@@ -90,22 +108,26 @@ export function useWorldMapSimulator() {
           setFlightProgress(null);
           setIsPlaying(false);
           setPhase('complete');
+          sound.playArrive();
           return;
         }
+        sound.playWaypoint(segment);
       }
       setFlightProgress({ from: path[segment], to: path[segment + 1], progress });
     }, 80);
-  }, [clearTimer, result.plan.path]);
+  }, [clearTimer, result.plan.path, sound]);
 
   const playPlanning = useCallback(() => {
     if (isPlaying) {
       clearTimer();
       setIsPlaying(false);
+      sound.playPause();
       return;
     }
 
     setPhase('planning');
     setIsPlaying(true);
+    sound.playScanStep(stepIndex);
     timerRef.current = window.setInterval(() => {
       setStepIndex((index) => {
         if (index >= result.steps.length - 1) {
@@ -114,10 +136,12 @@ export function useWorldMapSimulator() {
           animateFlight();
           return index;
         }
-        return index + 1;
+        const nextIndex = index + 1;
+        sound.playScanStep(nextIndex);
+        return nextIndex;
       });
     }, 420);
-  }, [animateFlight, clearTimer, isPlaying, result.steps.length]);
+  }, [animateFlight, clearTimer, isPlaying, result.steps.length, sound, stepIndex]);
 
   const activeRoute = useMemo(() => {
     const path = currentStep?.route ?? result.plan.path;
@@ -138,6 +162,8 @@ export function useWorldMapSimulator() {
     isPlaying,
     flightProgress,
     activeRoute,
+    soundEnabled: sound.soundEnabled,
+    toggleSound: sound.toggleSound,
     changeSource,
     changeDestination,
     changeAlgorithm,

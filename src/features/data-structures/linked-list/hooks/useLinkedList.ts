@@ -6,6 +6,8 @@ export interface ListNode {
   value: number;
 }
 
+export type LinkedListVariant = 'singly' | 'doubly' | 'circular';
+
 export type LLHighlightColor = 'green' | 'red' | 'yellow' | 'blue';
 
 export interface LLStep {
@@ -25,6 +27,7 @@ const INITIAL_NODES: ListNode[] = [3, 7, 1, 9].map((v) => ({
 
 export function useLinkedList() {
   const [nodes, setNodes] = useState<ListNode[]>(INITIAL_NODES);
+  const [variant, setVariant] = useState<LinkedListVariant>('singly');
   const [steps, setSteps] = useState<LLStep[]>([]);
   const [stepIndex, setStepIndex] = useState(-1);
   const [inputValue, setInputValue] = useState('');
@@ -70,7 +73,16 @@ export function useLinkedList() {
   const displayNodes = stepIndex >= 0 && steps[stepIndex] ? steps[stepIndex].nodes : nodes;
   const currentStep = stepIndex >= 0 ? steps[stepIndex] : null;
 
+  const variantLabel = variant === 'singly' ? 'singly linked list' : variant === 'doubly' ? 'doubly linked list' : 'circular linked list';
   const addHistory = (msg: string) => setHistory((h) => [msg, ...h].slice(0, 20));
+
+  const changeVariant = useCallback((nextVariant: LinkedListVariant) => {
+    setVariant(nextVariant);
+    setSteps([]);
+    setStepIndex(-1);
+    setIsPlaying(false);
+    setHistory((h) => [`Switch to ${nextVariant}`, ...h].slice(0, 20));
+  }, []);
 
   const makeStep = (
     description: string,
@@ -91,8 +103,8 @@ export function useLinkedList() {
     setNodes((prev) => {
       const next = [newNode, ...prev];
       const built: LLStep[] = [
-        makeStep(`Prepend ${val}: creating new node at head...`, prev, [], null, newNode.id),
-        makeStep(`${val} inserted at position 0 (head). Updating head pointer.`, next, [newNode.id], 'green', newNode.id),
+        makeStep(`Prepend ${val}: creating new node at head in the ${variantLabel}...`, prev, [], null, newNode.id),
+        makeStep(`${val} inserted at position 0. Updating ${variant === 'doubly' ? 'prev/next pointers' : variant === 'circular' ? 'tail.next back to head' : 'head pointer'}.`, next, [newNode.id], 'green', newNode.id),
       ];
       setSteps(built);
       setStepIndex(0);
@@ -101,7 +113,7 @@ export function useLinkedList() {
       addHistory(`Prepend ${val}`);
       return next;
     });
-  }, [playInsert]);
+  }, [playInsert, variant, variantLabel]);
 
   const append = useCallback((val: number) => {
     const newNode: ListNode = { id: nextId++, value: val };
@@ -119,7 +131,7 @@ export function useLinkedList() {
         ));
       }
       built.push(makeStep(
-        `Append ${val}: attaching new node at tail.`,
+        `Append ${val}: attaching new node at tail and updating ${variant === 'circular' ? 'tail.next → head' : variant === 'doubly' ? 'new.prev and oldTail.next' : 'oldTail.next'}.`,
         next,
         [newNode.id],
         'green',
@@ -132,7 +144,7 @@ export function useLinkedList() {
       addHistory(`Append ${val}`);
       return next;
     });
-  }, [playInsert]);
+  }, [playInsert, variant]);
 
   const insertAt = useCallback((val: number, idx: number) => {
     const newNode: ListNode = { id: nextId++, value: val };
@@ -150,7 +162,7 @@ export function useLinkedList() {
         ));
       }
       built.push(makeStep(
-        `Insert ${val} at index ${idx}: re-linking pointers.`,
+        `Insert ${val} at index ${idx}: re-linking ${variant === 'doubly' ? 'prev and next pointers on both sides' : variant === 'circular' ? 'next pointers while preserving the cycle' : 'next pointers'}.`,
         next,
         [newNode.id],
         'green',
@@ -163,7 +175,7 @@ export function useLinkedList() {
       addHistory(`Insert ${val} at [${idx}]`);
       return next;
     });
-  }, [playInsert]);
+  }, [playInsert, variant]);
 
   const deleteAt = useCallback((idx: number) => {
     setNodes((prev) => {
@@ -180,7 +192,7 @@ export function useLinkedList() {
         ));
       }
       built.push(makeStep(
-        `Deleting node ${target.value} at index ${idx}: re-linking pointers.`,
+        `Deleting node ${target.value} at index ${idx}: re-linking ${variant === 'doubly' ? 'prev and next pointers' : variant === 'circular' ? 'cycle pointers' : 'next pointer'}.`,
         prev,
         [target.id],
         'red',
@@ -199,7 +211,7 @@ export function useLinkedList() {
       addHistory(`Delete [${idx}] → ${target.value}`);
       return next;
     });
-  }, [playDelete]);
+  }, [playDelete, variant]);
 
   const search = useCallback((val: number) => {
     setNodes((prev) => {
@@ -278,6 +290,8 @@ export function useLinkedList() {
 
   return {
     nodes,
+    variant,
+    changeVariant,
     displayNodes,
     steps,
     stepIndex,

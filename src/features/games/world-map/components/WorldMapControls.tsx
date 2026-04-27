@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Plane, Play, Radar, Route, Shuffle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plane, Play, Radar, Route, Shuffle, Volume2, VolumeX } from 'lucide-react';
 import type { Airport, AlgorithmStep, FlightPlan, SimulationPhase, TravelAlgorithm, TravelScenario } from '../types/worldMap';
 import { ALGORITHM_INFO } from '../types/worldMap';
 
@@ -14,6 +14,7 @@ interface Props {
   totalSteps: number;
   phase: SimulationPhase;
   isPlaying: boolean;
+  soundEnabled: boolean;
   onSourceChange: (code: string) => void;
   onDestinationChange: (code: string) => void;
   onAlgorithmChange: (algorithm: TravelAlgorithm) => void;
@@ -23,6 +24,7 @@ interface Props {
   onStepForward: () => void;
   onPlay: () => void;
   onFly: () => void;
+  onToggleSound: (enabled: boolean) => void;
 }
 
 const algorithms: TravelAlgorithm[] = ['dijkstra', 'astar', 'bfs', 'greedy'];
@@ -39,6 +41,7 @@ export default function WorldMapControls({
   totalSteps,
   phase,
   isPlaying,
+  soundEnabled,
   onSourceChange,
   onDestinationChange,
   onAlgorithmChange,
@@ -48,6 +51,7 @@ export default function WorldMapControls({
   onStepForward,
   onPlay,
   onFly,
+  onToggleSound,
 }: Props) {
   return (
     <aside className="flex w-full shrink-0 flex-col gap-4 overflow-y-auto xl:w-88">
@@ -152,6 +156,24 @@ export default function WorldMapControls({
           <Route size={13} /> Animate airplane
         </button>
         {currentStep && <p className="mt-3 text-xs leading-relaxed text-slate-400">{currentStep.description}</p>}
+      </section>
+
+      <section className="rounded-2xl border border-slate-700/50 bg-slate-950/75 p-4 shadow-xl shadow-black/20 backdrop-blur-sm">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Audio</h3>
+        <button
+          onClick={() => onToggleSound(!soundEnabled)}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold ring-1 transition ${
+            soundEnabled
+              ? 'bg-sky-500/15 text-sky-300 ring-sky-500/30 hover:bg-sky-500/25'
+              : 'bg-slate-900/70 text-slate-400 ring-slate-800/80 hover:bg-slate-800/80'
+          }`}
+        >
+          {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+          {soundEnabled ? 'Sound On' : 'Sound Off'}
+        </button>
+        <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+          Radar pings mark search steps, with takeoff, waypoint, and arrival tones during flight.
+        </p>
       </section>
     </aside>
   );
