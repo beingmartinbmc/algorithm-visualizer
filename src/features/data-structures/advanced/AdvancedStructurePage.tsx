@@ -52,6 +52,7 @@ export default function AdvancedStructurePage({ structure }: { structure: Advanc
   const [input, setInput] = useState(info.defaultInput);
   const [steps, setSteps] = useState<StructureStep[]>(() => buildStructureSteps(structure, info.defaultInput));
   const [stepIndex, setStepIndex] = useState(0);
+  const [animationDelay, setAnimationDelay] = useState(650);
   const { soundEnabled, toggleSound, playInsert, playDelete, playAccess, playTraverse, playFound, playNotFound } = useDSSound();
   const currentStep = steps[stepIndex] ?? steps[0];
 
@@ -92,7 +93,7 @@ export default function AdvancedStructurePage({ structure }: { structure: Advanc
         setStepIndex(index);
         const step = steps[index];
         if (step) playStepSound(step, index);
-      }, (index - stepIndex) * 300);
+      }, (index - stepIndex) * animationDelay);
     }
   };
 
@@ -139,6 +140,26 @@ export default function AdvancedStructurePage({ structure }: { structure: Advanc
           <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
             <span>Step</span>
             <span className="font-mono text-rose-300">{Math.min(stepIndex + 1, steps.length)} / {steps.length}</span>
+          </div>
+          <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-950/40 p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Animation Speed</span>
+              <span className="font-mono text-[10px] text-rose-300">{animationDelay}ms</span>
+            </div>
+            <input
+              type="range"
+              min={120}
+              max={1200}
+              step={40}
+              value={animationDelay}
+              onChange={(event) => setAnimationDelay(Number(event.target.value))}
+              className="w-full accent-rose-400"
+              aria-label="Animation step delay"
+            />
+            <div className="mt-1 flex justify-between text-[9px] uppercase tracking-wide text-slate-600">
+              <span>Fast</span>
+              <span>Slow</span>
+            </div>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">
             <button onClick={() => goToStep(stepIndex - 1)} disabled={stepIndex <= 0} className="inline-flex items-center justify-center gap-1 rounded-xl bg-slate-800/70 px-2 py-2 text-xs text-slate-300 ring-1 ring-slate-700/50 disabled:opacity-30">
