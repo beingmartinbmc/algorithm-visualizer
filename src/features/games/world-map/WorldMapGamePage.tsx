@@ -47,6 +47,7 @@ export default function WorldMapGamePage() {
           totalSteps={simulator.result.steps.length}
           phase={simulator.phase}
           isPlaying={simulator.isPlaying}
+          soundEnabled={simulator.soundEnabled}
           onSourceChange={simulator.changeSource}
           onDestinationChange={simulator.changeDestination}
           onAlgorithmChange={simulator.changeAlgorithm}
@@ -56,6 +57,7 @@ export default function WorldMapGamePage() {
           onStepForward={simulator.stepForward}
           onPlay={simulator.playPlanning}
           onFly={simulator.animateFlight}
+          onToggleSound={simulator.toggleSound}
         />
       </div>
     </div>

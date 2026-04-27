@@ -1,34 +1,25 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Database, Gamepad2, Waypoints, GitBranch, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { Database, Gamepad2, Waypoints, GitBranch, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
 
 const modules = [
   {
-    path: '/traversals',
-    title: 'Traversals',
-    description: 'Explore graph and tree traversal algorithms with interactive visualizations. Pathfind through grids with BFS, DFS, Dijkstra & A*, or step through binary tree traversals.',
+    path: '/algorithms',
+    title: 'Algorithms',
+    description: 'Explore sorting, searching, tree, graph, recursion, stack/queue, and frequency algorithms with interactive visualizations and audio effects.',
     icon: Waypoints,
     gradient: 'from-indigo-500 to-blue-500',
     shadowColor: 'shadow-indigo-500/20',
-    tags: ['BFS', 'DFS', 'Dijkstra', 'A*', 'Tree', 'Trie'],
-  },
-  {
-    path: '/sorting',
-    title: 'Sorting Algorithms',
-    description: 'Watch sorting algorithms in action with animated bar charts and sound. Compare Bubble, Selection, Insertion, Quick, Heap, and Merge Sort side by side.',
-    icon: BarChart3,
-    gradient: 'from-violet-500 to-fuchsia-500',
-    shadowColor: 'shadow-violet-500/20',
-    tags: ['Bubble', 'Selection', 'Insertion', 'Quick', 'Heap', 'Merge'],
+    tags: ['Sorting', 'BFS', 'DFS', 'Binary Search', 'Hanoi', 'Top K'],
   },
   {
     path: '/data-structures',
     title: 'Data Structures',
-    description: 'Visualize how data structures organize and retrieve information. Explore balanced trees with live rotations, recoloring, and rebalancing — with more structures coming soon.',
+    description: 'Visualize how data structures organize and retrieve information. Explore trees, arrays, linked lists, tries, segment trees, and Fenwick trees.',
     icon: Database,
     gradient: 'from-rose-500 to-red-500',
     shadowColor: 'shadow-rose-500/20',
-    tags: ['BST', 'AVL', 'Red-Black', 'Rotations'],
+    tags: ['BST', 'AVL', 'Trie', 'Segment Tree', 'Fenwick', 'Linked List'],
   },
   {
     path: '/games',

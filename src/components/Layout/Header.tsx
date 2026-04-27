@@ -1,10 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Network, BarChart3, Database, Gamepad2, Waypoints, GitBranch, Menu, X } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Network, Database, Gamepad2, Waypoints, GitBranch, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
-  { path: '/traversals', label: 'Traversals', icon: Waypoints },
-  { path: '/sorting', label: 'Sorting', icon: BarChart3 },
+  { path: '/algorithms', label: 'Algorithms', icon: Waypoints },
   { path: '/data-structures', label: 'Data Structures', icon: Database },
   { path: '/games', label: 'Games', icon: Gamepad2 },
   { path: '/git', label: 'Git', icon: GitBranch },
@@ -15,11 +14,6 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = useCallback(() => setMenuOpen((p) => !p), []);
-
-  // Close menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
 
   return (
     <header className="relative border-b border-slate-800/50">
@@ -35,13 +29,15 @@ export default function Header() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navItems.map(({ path, label, icon: Icon }) => {
-            const isActive = ['/games', '/traversals', '/data-structures', '/git'].includes(path)
-              ? location.pathname.startsWith(path)
+            const isLegacyAlgorithmRoute = path === '/algorithms' && (location.pathname.startsWith('/traversals') || location.pathname === '/sorting');
+            const isActive = ['/games', '/algorithms', '/data-structures', '/git'].includes(path)
+              ? location.pathname.startsWith(path) || isLegacyAlgorithmRoute
               : location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
+                onClick={() => setMenuOpen(false)}
                 className={`
                   flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200
                   ${isActive
@@ -71,13 +67,15 @@ export default function Header() {
       {menuOpen && (
         <nav className="md:hidden border-t border-slate-800/50 bg-slate-950/95 backdrop-blur-md px-4 pb-3 pt-2 flex flex-col gap-1">
           {navItems.map(({ path, label, icon: Icon }) => {
-            const isActive = ['/games', '/traversals', '/data-structures', '/git'].includes(path)
-              ? location.pathname.startsWith(path)
+            const isLegacyAlgorithmRoute = path === '/algorithms' && (location.pathname.startsWith('/traversals') || location.pathname === '/sorting');
+            const isActive = ['/games', '/algorithms', '/data-structures', '/git'].includes(path)
+              ? location.pathname.startsWith(path) || isLegacyAlgorithmRoute
               : location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
+                onClick={() => setMenuOpen(false)}
                 className={`
                   flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200
                   ${isActive

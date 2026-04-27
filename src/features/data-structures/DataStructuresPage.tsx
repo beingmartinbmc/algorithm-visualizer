@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { GitBranch, ArrowRight, Database, Layers, AlignJustify, List, Link2 } from 'lucide-react';
+import { GitBranch, ArrowRight, Database, Layers, AlignJustify, List, Link2, Type, Split, Sigma } from 'lucide-react';
 
 const structures = [
   {
@@ -51,6 +51,36 @@ const structures = [
     gradient: 'from-amber-500 to-orange-500',
     shadowColor: 'shadow-amber-500/20',
     icon: Link2,
+  },
+  {
+    path: '/data-structures/trie',
+    title: 'Tries',
+    subtitle: 'Prefix tree for strings',
+    description: 'Insert, delete, search, and prefix-match words in a trie. Watch characters branch into reusable prefixes with step playback and audio.',
+    skills: ['Insert', 'Delete', 'Search', 'Prefix'],
+    gradient: 'from-teal-500 to-cyan-500',
+    shadowColor: 'shadow-teal-500/20',
+    icon: Type,
+  },
+  {
+    path: '/data-structures/segment-tree',
+    title: 'Segment Tree',
+    subtitle: 'Range query tree',
+    description: 'Build range aggregates, run sum queries, and apply point updates while highlighting the intervals that contribute to the answer.',
+    skills: ['Build O(n)', 'Range Query', 'Point Update', 'Intervals'],
+    gradient: 'from-indigo-500 to-violet-500',
+    shadowColor: 'shadow-indigo-500/20',
+    icon: Split,
+  },
+  {
+    path: '/data-structures/fenwick-tree',
+    title: 'Fenwick Tree',
+    subtitle: 'Binary indexed tree',
+    description: 'Visualize prefix and range sums with lowbit jumps. Step through update and query paths over the compressed BIT array.',
+    skills: ['Lowbit', 'Prefix Sum', 'Range Sum', 'O(log n)'],
+    gradient: 'from-lime-500 to-emerald-500',
+    shadowColor: 'shadow-lime-500/20',
+    icon: Sigma,
   },
 ];
 
