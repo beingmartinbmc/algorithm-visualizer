@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import type { ReactNode } from 'react';
 import { RotateCcw, Shuffle, SkipForward, Volume2, VolumeX, Wand2 } from 'lucide-react';
-import type { Challenge, CubeMove, RubiksMode, SimulationResult, SolutionStep } from '../types/rubiksCube';
+import type { Challenge, CubeMove, RubiksMode, SimulationResult, SolutionStep, SolverPlaybackMode, SolverSpeed } from '../types/rubiksCube';
+import { SOLVER_SPEED_OPTIONS } from '../types/rubiksCube';
 import { formatMoves } from '../engine/scramble';
 
 interface Props {
@@ -12,6 +13,8 @@ interface Props {
   solution: SolutionStep[];
   solutionIndex: number;
   solutionDone: boolean;
+  solverPlaybackMode: SolverPlaybackMode;
+  solverSpeed: SolverSpeed;
   manualMove: string;
   customScramble: string;
   simulationRuns: number;
@@ -34,6 +37,7 @@ interface Props {
   onGenerateSolution: () => void;
   onStepSolution: () => void;
   onAutoSolve: () => void;
+  onSolverSpeedChange: (speed: SolverSpeed) => void;
   onUndo: () => void;
   onReset: () => void;
   onNextGuidedStep: () => void;
@@ -50,6 +54,8 @@ function RubiksCubeControlsInner({
   solution,
   solutionIndex,
   solutionDone,
+  solverPlaybackMode,
+  solverSpeed,
   manualMove,
   customScramble,
   simulationRuns,
@@ -72,6 +78,7 @@ function RubiksCubeControlsInner({
   onGenerateSolution,
   onStepSolution,
   onAutoSolve,
+  onSolverSpeedChange,
   onUndo,
   onReset,
   onNextGuidedStep,
@@ -79,6 +86,9 @@ function RubiksCubeControlsInner({
   onStartChallenge,
   onToggleSound,
 }: Props) {
+  const solverSpeedIndex = Math.max(0, SOLVER_SPEED_OPTIONS.findIndex((option) => option.id === solverSpeed));
+  const selectedSolverSpeed = SOLVER_SPEED_OPTIONS[solverSpeedIndex] ?? SOLVER_SPEED_OPTIONS[1];
+
   return (
     <aside className="w-full space-y-4 md:w-80 md:shrink-0">
       <Panel title="Status">
@@ -136,7 +146,7 @@ function RubiksCubeControlsInner({
             <ActionButton onClick={() => onScramble(12)} icon={<Shuffle size={13} />} label="12-Move Scramble" />
             <ActionButton onClick={() => onScramble(25)} icon={<Shuffle size={13} />} label="25-Move Scramble" />
             <ActionButton onClick={onGenerateSolution} icon={<Wand2 size={13} />} label="Find Solution" />
-            <ActionButton onClick={onAutoSolve} icon={<SkipForward size={13} />} label="Auto Solve" />
+            <ActionButton onClick={onAutoSolve} icon={<SkipForward size={13} />} label="Auto Run" />
             <ActionButton onClick={onUndo} label="Undo" />
             <ActionButton onClick={onReset} icon={<RotateCcw size={13} />} label="Reset" />
           </div>
@@ -205,6 +215,51 @@ function RubiksCubeControlsInner({
           <p><span className="text-slate-500">Scramble:</span> {formatMoves(scrambleMoves)}</p>
           <p><span className="text-slate-500">History:</span> {formatMoves(moveHistory.slice(-12))}</p>
         </div>
+        <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-950/40 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Playback</span>
+            <span className="text-[10px] text-slate-500">{selectedSolverSpeed.label}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <PlaybackButton
+              label="Manual Step"
+              active={solverPlaybackMode === 'manual'}
+              disabled={solutionDone || solution.length === 0}
+              onClick={onStepSolution}
+            />
+            <PlaybackButton
+              label="Auto"
+              active={solverPlaybackMode === 'auto'}
+              disabled={solutionDone || (solution.length === 0 && moveHistory.length === 0)}
+              onClick={onAutoSolve}
+            />
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={SOLVER_SPEED_OPTIONS.length - 1}
+            step={1}
+            value={solverSpeedIndex}
+            onChange={(event) => {
+              const nextSpeed = SOLVER_SPEED_OPTIONS[Number(event.target.value)]?.id;
+              if (nextSpeed) onSolverSpeedChange(nextSpeed);
+            }}
+            className="mt-3 w-full accent-indigo-400"
+            aria-label="Solver auto playback speed"
+          />
+          <div className="mt-1 flex justify-between">
+            {SOLVER_SPEED_OPTIONS.map((option) => (
+              <span
+                key={option.id}
+                className={`text-[9px] uppercase tracking-wide ${
+                  option.id === solverSpeed ? 'text-indigo-300' : 'text-slate-600'
+                }`}
+              >
+                {option.label}
+              </span>
+            ))}
+          </div>
+        </div>
         {solution.length > 0 && (
           <div className="mt-3 max-h-28 overflow-y-auto rounded-lg bg-slate-950/50 p-2">
             {solution.map((step, index) => (
@@ -229,8 +284,8 @@ function RubiksCubeControlsInner({
           </div>
         )}
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <ActionButton onClick={onGenerateSolution} icon={<Wand2 size={13} />} label="Solve" />
-          <ActionButton onClick={onStepSolution} disabled={solutionDone || solution.length === 0} label="Step" />
+          <ActionButton onClick={onGenerateSolution} icon={<Wand2 size={13} />} label="Prepare Solve" />
+          <ActionButton onClick={onAutoSolve} disabled={solutionDone || (solution.length === 0 && moveHistory.length === 0)} icon={<SkipForward size={13} />} label="Auto Run" />
         </div>
       </Panel>
 
@@ -306,6 +361,32 @@ function ActionButton({
       className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-800/70 px-3 py-2 text-[11px] font-semibold text-slate-300 ring-1 ring-slate-700/50 hover:bg-slate-700/70 disabled:cursor-not-allowed disabled:opacity-40"
     >
       {icon}
+      {label}
+    </button>
+  );
+}
+
+function PlaybackButton({
+  label,
+  active,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-lg px-3 py-2 text-[11px] font-semibold ring-1 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+        active
+          ? 'bg-indigo-500/20 text-indigo-300 ring-indigo-500/40'
+          : 'bg-slate-800/70 text-slate-300 ring-slate-700/50 hover:bg-slate-700/70'
+      }`}
+    >
       {label}
     </button>
   );

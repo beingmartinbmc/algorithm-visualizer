@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import type { Challenge, CubeMove, RubiksMode, SimulationResult, SolutionStep } from '../types/rubiksCube';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Challenge, CubeMove, RubiksMode, SimulationResult, SolutionStep, SolverSpeed } from '../types/rubiksCube';
+import { SOLVER_SPEED_OPTIONS } from '../types/rubiksCube';
 import { applyMove, applyMoves, createSolvedCube, isSolved, solveFromHistory } from '../engine/cube';
 import { CHALLENGES, formatMoves, generateScramble, parseMove, parseMoveSequence, runSimulation } from '../engine/scramble';
 import { useRubiksCubeSound } from './useRubiksCubeSound';
@@ -10,6 +11,10 @@ const GUIDED_SCRIPT = [
   'Ask the solver for the inverse sequence.',
   'Step through solution moves and watch the cube return to solved state.',
 ];
+
+function getSolverDelay(speed: SolverSpeed) {
+  return SOLVER_SPEED_OPTIONS.find((option) => option.id === speed)?.delayMs ?? 450;
+}
 
 export function useRubiksCube() {
   const [mode, setMode] = useState<RubiksMode>('guided');
@@ -23,12 +28,15 @@ export function useRubiksCube() {
   const [simulationRuns, setSimulationRuns] = useState(10);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   const [message, setMessage] = useState('Choose a mode and start turning the cube.');
+  const [solverPlaybackMode, setSolverPlaybackMode] = useState<'manual' | 'auto'>('manual');
+  const [solverSpeed, setSolverSpeed] = useState<SolverSpeed>('normal');
   const [guidedStep, setGuidedStep] = useState(0);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge>(CHALLENGES[0]);
   const [challengeStarted, setChallengeStarted] = useState(false);
   const [challengeMoves, setChallengeMoves] = useState(0);
   const [challengeSolved, setChallengeSolved] = useState(false);
   const autoTimerRef = useRef<number | null>(null);
+  const solverSpeedRef = useRef<SolverSpeed>('normal');
   const sound = useRubiksCubeSound();
 
   const solved = useMemo(() => isSolved(cube), [cube]);
@@ -41,6 +49,13 @@ export function useRubiksCube() {
     }
   }, []);
 
+  useEffect(() => clearAutoTimer, [clearAutoTimer]);
+
+  const updateSolverSpeed = useCallback((speed: SolverSpeed) => {
+    solverSpeedRef.current = speed;
+    setSolverSpeed(speed);
+  }, []);
+
   const resetCube = useCallback(() => {
     clearAutoTimer();
     setCube(createSolvedCube());
@@ -49,6 +64,7 @@ export function useRubiksCube() {
     setSolution([]);
     setSolutionIndex(0);
     setSimulationResult(null);
+    setSolverPlaybackMode('manual');
     setGuidedStep(0);
     setChallengeStarted(false);
     setChallengeMoves(0);
@@ -65,6 +81,7 @@ export function useRubiksCube() {
     setSolution([]);
     setSolutionIndex(0);
     setSimulationResult(null);
+    setSolverPlaybackMode('manual');
     setGuidedStep(0);
     setChallengeStarted(false);
     setChallengeMoves(0);
@@ -79,6 +96,8 @@ export function useRubiksCube() {
   }, [clearAutoTimer]);
 
   const makeMove = useCallback((move: CubeMove, record = true) => {
+    clearAutoTimer();
+    setSolverPlaybackMode('manual');
     setCube((current) => {
       const next = applyMove(current, move);
       if (record) {
@@ -98,7 +117,7 @@ export function useRubiksCube() {
     setSolutionIndex(0);
     setSimulationResult(null);
     sound.playMove(move.charCodeAt(0));
-  }, [challengeSolved, challengeStarted, mode, sound]);
+  }, [challengeSolved, challengeStarted, clearAutoTimer, mode, sound]);
 
   const runScramble = useCallback((length = 12) => {
     clearAutoTimer();
@@ -108,6 +127,7 @@ export function useRubiksCube() {
     setScrambleMoves(scramble);
     setSolution([]);
     setSolutionIndex(0);
+    setSolverPlaybackMode('manual');
     setChallengeStarted(false);
     setChallengeMoves(0);
     setChallengeSolved(false);
@@ -130,6 +150,7 @@ export function useRubiksCube() {
     setSolution([]);
     setSolutionIndex(0);
     setSimulationResult(null);
+    setSolverPlaybackMode('manual');
     setChallengeStarted(false);
     setChallengeMoves(0);
     setChallengeSolved(false);
@@ -146,6 +167,7 @@ export function useRubiksCube() {
     setSolution([]);
     setSolutionIndex(0);
     setSimulationResult(null);
+    setSolverPlaybackMode('manual');
     setChallengeStarted(true);
     setChallengeMoves(0);
     setChallengeSolved(false);
@@ -154,19 +176,23 @@ export function useRubiksCube() {
   }, [clearAutoTimer, selectedChallenge, sound]);
 
   const generateSolution = useCallback(() => {
+    clearAutoTimer();
     const steps = solveFromHistory(moveHistory);
     setSolution(steps);
     setSolutionIndex(0);
     setSimulationResult(null);
+    setSolverPlaybackMode('manual');
     setMessage(
       steps.length > 0
         ? `Solver found ${steps.length} inverse move${steps.length === 1 ? '' : 's'}.`
         : 'Cube is already solved.',
     );
     if (steps.length === 0) sound.playSolved();
-  }, [moveHistory, sound]);
+  }, [clearAutoTimer, moveHistory, sound]);
 
   const stepSolution = useCallback(() => {
+    clearAutoTimer();
+    setSolverPlaybackMode('manual');
     const step = solution[solutionIndex];
     if (!step) return;
 
@@ -182,40 +208,71 @@ export function useRubiksCube() {
     });
     setSolutionIndex((index) => index + 1);
     sound.playMove(solutionIndex);
-  }, [solution, solutionIndex, sound]);
+  }, [clearAutoTimer, solution, solutionIndex, sound]);
 
   const autoSolve = useCallback(() => {
     clearAutoTimer();
-    if (solution.length === 0) {
-      const steps = solveFromHistory(moveHistory);
-      setSolution(steps);
+
+    const steps = solution.length > 0 ? solution : solveFromHistory(moveHistory);
+    const startIndex = solution.length > 0 ? solutionIndex : 0;
+
+    if (steps.length === 0) {
+      setSolution([]);
       setSolutionIndex(0);
-      if (steps.length === 0) return;
+      setSolverPlaybackMode('manual');
+      setMessage('Cube is already solved.');
+      sound.playSolved();
+      return;
     }
 
-    autoTimerRef.current = window.setInterval(() => {
+    if (startIndex >= steps.length) {
+      setSolverPlaybackMode('manual');
+      setMessage('Solution playback is already complete.');
+      return;
+    }
+
+    if (solution.length === 0) {
+      setSolution(steps);
+      setSolutionIndex(0);
+    }
+    setSimulationResult(null);
+    setSolverPlaybackMode('auto');
+    setMessage(`Auto-solving ${steps.length - startIndex} remaining move${steps.length - startIndex === 1 ? '' : 's'}.`);
+
+    const runNextStep = () => {
       setSolutionIndex((currentIndex) => {
-        const currentSolution = solution.length > 0 ? solution : solveFromHistory(moveHistory);
-        const step = currentSolution[currentIndex];
+        const step = steps[currentIndex];
         if (!step) {
-          clearAutoTimer();
+          autoTimerRef.current = null;
+          setSolverPlaybackMode('manual');
           return currentIndex;
         }
+
         setCube((currentCube) => {
           const next = applyMove(currentCube, step.move);
           if (isSolved(next)) {
             setMessage('Auto-solve complete.');
             sound.playSolved();
-            clearAutoTimer();
           } else {
+            setMessage(step.description);
             sound.playMove(currentIndex);
           }
           return next;
         });
-        return currentIndex + 1;
+
+        const nextIndex = currentIndex + 1;
+        if (nextIndex < steps.length) {
+          autoTimerRef.current = window.setTimeout(runNextStep, getSolverDelay(solverSpeedRef.current));
+        } else {
+          autoTimerRef.current = null;
+          setSolverPlaybackMode('manual');
+        }
+        return nextIndex;
       });
-    }, 450);
-  }, [clearAutoTimer, moveHistory, solution, sound]);
+    };
+
+    autoTimerRef.current = window.setTimeout(runNextStep, getSolverDelay(solverSpeedRef.current));
+  }, [clearAutoTimer, moveHistory, solution, solutionIndex, sound]);
 
   const applyManualMove = useCallback(() => {
     const parsed = parseMove(manualMove);
@@ -242,6 +299,7 @@ export function useRubiksCube() {
     setCube(applyMoves(createSolvedCube(), previous));
     setSolution([]);
     setSolutionIndex(0);
+    setSolverPlaybackMode('manual');
     setMessage('Undid the last recorded move.');
   }, [moveHistory]);
 
@@ -276,6 +334,9 @@ export function useRubiksCube() {
     solution,
     solutionIndex,
     solutionDone,
+    solverPlaybackMode,
+    solverSpeed,
+    setSolverSpeed: updateSolverSpeed,
     manualMove,
     setManualMove,
     customScramble,
