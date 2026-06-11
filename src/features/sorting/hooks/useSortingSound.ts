@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import { getAudioContext } from '@/lib/audioContext';
 import type { VisualizationSpeed } from '../types/sorting';
 
 const NOTE_DURATION: Record<VisualizationSpeed, number> = {
@@ -16,24 +17,17 @@ const VOLUME: Record<VisualizationSpeed, number> = {
 };
 
 export function useSortingSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getContext = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
-  }, []);
+  const getContext = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback(
     (value: number, maxValue: number, speed: VisualizationSpeed, type: 'compare' | 'swap' | 'sorted') => {
       if (!enabledRef.current || speed === 'instant') return;
 
       const ctx = getContext();
+
+      if (!ctx) return;
       const duration = NOTE_DURATION[speed];
       const volume = VOLUME[speed];
 
@@ -73,6 +67,8 @@ export function useSortingSound() {
       if (!enabledRef.current) return;
 
       const ctx = getContext();
+
+      if (!ctx) return;
       const minFreq = 200;
       const maxFreq = 800;
 

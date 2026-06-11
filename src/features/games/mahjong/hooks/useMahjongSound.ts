@@ -1,21 +1,13 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 // Pentatonic scale mapped to tile values 1–9
 const TILE_NOTES = [261.63, 293.66, 329.63, 392.0, 440.0, 493.88, 523.25, 587.33, 659.25];
 
 export function useMahjongSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((value: boolean) => {
     enabledRef.current = value;
@@ -25,6 +17,7 @@ export function useMahjongSound() {
   const playTilePlaced = useCallback((tileValue: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const freq = TILE_NOTES[Math.max(0, Math.min(tileValue - 1, 8))];
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -54,6 +47,7 @@ export function useMahjongSound() {
   const playTileRemoved = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -71,6 +65,7 @@ export function useMahjongSound() {
   const playWinSound = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const notes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -90,6 +85,7 @@ export function useMahjongSound() {
   const playLoseSound = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const notes = [400, 340, 280];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -109,6 +105,7 @@ export function useMahjongSound() {
   const playErrorSound = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sawtooth';
@@ -126,6 +123,7 @@ export function useMahjongSound() {
   const playStepTick = useCallback((index: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const freq = 400 + (index % 8) * 50;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -143,6 +141,7 @@ export function useMahjongSound() {
   const playBacktrackSound = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';

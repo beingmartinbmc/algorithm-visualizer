@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Binary, Boxes, Flag, GitFork, Grid3X3, Layers, ListFilter, Network, Search, TreePine, Waypoints } from 'lucide-react';
+import { ArrowRight, Binary, Boxes, Flag, GitFork, Grid3X3, Layers, Link2, ListFilter, Network, Search, TreePine, Waypoints } from 'lucide-react';
 
 const algorithmCards = [
   {
@@ -121,6 +121,16 @@ const algorithmCards = [
     gradient: 'from-purple-500 to-indigo-500',
     shadowColor: 'shadow-purple-500/20',
     icon: ListFilter,
+  },
+  {
+    path: '/algorithms/linked-list',
+    title: 'Linked List Algorithms',
+    subtitle: 'Two pointers, Floyd, merge sort, LRU',
+    description: 'Find middle, palindrome check, LRU cache, even/odd segregation, cycle detection, and merge sort — six visualizers in one collection.',
+    tags: ['Two Pointers', 'Floyd', 'Merge Sort', 'LRU'],
+    gradient: 'from-sky-500 to-cyan-500',
+    shadowColor: 'shadow-sky-500/20',
+    icon: Link2,
   },
 ];
 

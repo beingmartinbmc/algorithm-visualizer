@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Play, RotateCcw, Shuffle, Volume2, VolumeX } from 'lucide-react';
 import { useAlgorithmSound } from './hooks/useAlgorithmSound';
+import AlgorithmCodePanel from './shared/AlgorithmCodePanel';
 
 export type AlgorithmDemo =
   | 'binary-search'
@@ -28,15 +29,27 @@ interface DemoStep {
   path?: number[];
   visited?: number[];
   meta?: string[];
+  /** 0-based index into the demo's `pseudocode` array (line being executed). */
+  codeLine?: number;
 }
 
-const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputLabel: string; defaultInput: string; helper: string }> = {
+const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputLabel: string; defaultInput: string; helper: string; pseudocode: string[] }> = {
   'binary-search': {
     title: 'Binary Search',
     subtitle: 'Search a sorted array in logarithmic time',
     inputLabel: 'Sorted numbers; target',
     defaultInput: '2,5,8,12,16,23,38,56,72;23',
     helper: 'Format: sorted comma-separated numbers; target',
+    pseudocode: [
+      'function binarySearch(arr, target):',
+      '  low = 0; high = arr.length - 1',
+      '  while low <= high:',
+      '    mid = (low + high) / 2',
+      '    if arr[mid] == target: return mid',
+      '    if arr[mid] < target: low = mid + 1',
+      '    else:                  high = mid - 1',
+      '  return -1   // not found',
+    ],
   },
   'ternary-search': {
     title: 'Ternary Search',
@@ -44,6 +57,19 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Sorted numbers; target',
     defaultInput: '1,4,8,11,15,19,23,27,31,35,39;31',
     helper: 'Format: sorted comma-separated numbers; target',
+    pseudocode: [
+      'function ternarySearch(arr, target):',
+      '  low = 0; high = arr.length - 1',
+      '  while low <= high:',
+      '    mid1 = low + (high - low) / 3',
+      '    mid2 = high - (high - low) / 3',
+      '    if arr[mid1] == target: return mid1',
+      '    if arr[mid2] == target: return mid2',
+      '    if target < arr[mid1]: high = mid1 - 1',
+      '    elif target > arr[mid2]: low = mid2 + 1',
+      '    else: low = mid1 + 1; high = mid2 - 1',
+      '  return -1   // not found',
+    ],
   },
   'dutch-national-flag': {
     title: 'Sort Colors',
@@ -51,6 +77,18 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Colors as 0, 1, 2',
     defaultInput: '2,0,2,1,1,0,2,0,1',
     helper: 'Use only 0, 1, and 2.',
+    pseudocode: [
+      'function sortColors(arr):',
+      '  low = 0; mid = 0; high = arr.length - 1',
+      '  while mid <= high:',
+      '    if arr[mid] == 0:',
+      '      swap(arr[low], arr[mid]); low++; mid++',
+      '    elif arr[mid] == 1:',
+      '      mid++',
+      '    else: // arr[mid] == 2',
+      '      swap(arr[mid], arr[high]); high--',
+      '  return arr',
+    ],
   },
   'top-k-frequent': {
     title: 'Top K Frequent Elements',
@@ -58,6 +96,14 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Numbers; k',
     defaultInput: '1,1,1,2,2,3,3,3,3,4,5,5;3',
     helper: 'Format: comma-separated numbers; k',
+    pseudocode: [
+      'function topKFrequent(arr, k):',
+      '  counts = {}',
+      '  for value in arr:',
+      '    counts[value] += 1   // tally frequency',
+      '  ranked = sortByCountDescending(counts)',
+      '  return ranked[0 .. k]',
+    ],
   },
   'queue-using-stacks': {
     title: 'Queue Using Two Stacks',
@@ -65,6 +111,16 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Enqueue values',
     defaultInput: '10,20,30,40',
     helper: 'Values are enqueued, then all are dequeued.',
+    pseudocode: [
+      'enqueue(x):',
+      '  input.push(x)',
+      '',
+      'dequeue():',
+      '  if output.isEmpty():',
+      '    while not input.isEmpty():',
+      '      output.push(input.pop())   // reverse order',
+      '  return output.pop()',
+    ],
   },
   'stack-using-queues': {
     title: 'Stack Using Two Queues',
@@ -72,6 +128,16 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Push values',
     defaultInput: '10,20,30,40',
     helper: 'Values are pushed, then all are popped.',
+    pseudocode: [
+      'push(x):',
+      '  helper.enqueue(x)',
+      '  while not primary.isEmpty():',
+      '    helper.enqueue(primary.dequeue())',
+      '  swap(primary, helper)   // x now at front',
+      '',
+      'pop():',
+      '  return primary.dequeue()',
+    ],
   },
   'tower-of-hanoi': {
     title: 'Tower of Hanoi',
@@ -79,6 +145,13 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Disk count',
     defaultInput: '4',
     helper: 'Use 2 to 5 disks for readable playback.',
+    pseudocode: [
+      'function hanoi(n, from, to, aux):',
+      '  if n == 0: return',
+      '  hanoi(n - 1, from, aux, to)   // move top n-1 aside',
+      '  move disk n: from -> to',
+      '  hanoi(n - 1, aux, to, from)   // move them onto target',
+    ],
   },
   'rat-maze': {
     title: 'Rat in a Maze',
@@ -86,6 +159,18 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Mode',
     defaultInput: 'dfs',
     helper: 'Use dfs or bfs. The maze is generated in the visualizer.',
+    pseudocode: [
+      'function solve(grid, mode):',
+      '  frontier = [start]; visited = {start}',
+      '  while frontier not empty:',
+      '    cell = mode == DFS ? frontier.pop() : frontier.shift()',
+      '    if cell == target: break',
+      '    for n in freeNeighbors(cell):',
+      '      if n not visited:',
+      '        visited.add(n); parent[n] = cell',
+      '        frontier.push(n)',
+      '  return reconstructPath(parent, target)',
+    ],
   },
   'grid-search': {
     title: 'Grid Search',
@@ -93,6 +178,18 @@ const DEMO_INFO: Record<AlgorithmDemo, { title: string; subtitle: string; inputL
     inputLabel: 'Mode',
     defaultInput: 'bfs',
     helper: 'Use bfs or dfs over free/occupied grid cells.',
+    pseudocode: [
+      'function search(grid, mode):',
+      '  frontier = [start]; visited = {start}',
+      '  while frontier not empty:',
+      '    cell = mode == DFS ? frontier.pop() : frontier.shift()',
+      '    if cell == target: break',
+      '    for n in freeNeighbors(cell):',
+      '      if n not visited:',
+      '        visited.add(n); parent[n] = cell',
+      '        frontier.push(n)',
+      '  return reconstructPath(parent, target)',
+    ],
   },
 };
 
@@ -101,7 +198,7 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
   const [input, setInput] = useState(info.defaultInput);
   const [steps, setSteps] = useState<DemoStep[]>(() => buildSteps(demo, info.defaultInput));
   const [stepIndex, setStepIndex] = useState(0);
-  const [animationDelay, setAnimationDelay] = useState(650);
+  const [animationDelay, setAnimationDelay] = useState(800);
   const { soundEnabled, toggleSound, playEvent } = useAlgorithmSound();
   const currentStep = steps[stepIndex] ?? steps[0];
   const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 0;
@@ -147,6 +244,7 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
           <p className="mt-1 text-sm text-slate-400">{info.subtitle}</p>
         </section>
         <Visualizer step={currentStep} demo={demo} />
+        <AlgorithmCodePanel pseudocode={info.pseudocode} activeLine={currentStep?.codeLine ?? null} />
       </main>
 
       <aside className="w-full space-y-4 xl:w-80 xl:shrink-0">
@@ -181,21 +279,22 @@ export default function AlgorithmPlaygroundPage({ demo }: { demo: AlgorithmDemo 
           <div className="mt-3 rounded-xl border border-slate-700/40 bg-slate-950/40 p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Animation Speed</span>
-              <span className="font-mono text-[10px] text-indigo-300">{animationDelay}ms</span>
+              <span className="font-mono text-[10px] text-indigo-300">{(animationDelay / 1000).toFixed(2)}s</span>
             </div>
+            {/* slider is reversed so dragging right = faster */}
             <input
               type="range"
               min={120}
-              max={1200}
-              step={40}
-              value={animationDelay}
-              onChange={(event) => setAnimationDelay(Number(event.target.value))}
+              max={3000}
+              step={20}
+              value={3120 - animationDelay}
+              onChange={(event) => setAnimationDelay(3120 - Number(event.target.value))}
               className="w-full accent-indigo-400"
-              aria-label="Animation step delay"
+              aria-label="Animation speed"
             />
             <div className="mt-1 flex justify-between text-[9px] uppercase tracking-wide text-slate-600">
-              <span>Fast</span>
               <span>Slow</span>
+              <span>Fast</span>
             </div>
           </div>
           <p className="mt-3 min-h-12 text-xs leading-relaxed text-slate-300">{currentStep?.description}</p>
@@ -376,15 +475,15 @@ function binarySteps(input: string): DemoStep[] {
   let high = values.length - 1;
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
-    steps.push({ description: `Compare target ${target} with middle value ${values[mid]} at index ${mid}.`, event: 'compare', values, highlights: [mid], pointers: { low, mid, high } });
+    steps.push({ description: `Compare target ${target} with middle value ${values[mid]} at index ${mid}.`, event: 'compare', values, highlights: [mid], pointers: { low, mid, high }, codeLine: 4 });
     if (values[mid] === target) {
-      steps.push({ description: `Found ${target} at index ${mid}.`, event: 'found', values, highlights: [mid], pointers: { low, mid, high } });
+      steps.push({ description: `Found ${target} at index ${mid}.`, event: 'found', values, highlights: [mid], pointers: { low, mid, high }, codeLine: 4 });
       return steps;
     }
     if (values[mid] < target) low = mid + 1;
     else high = mid - 1;
   }
-  return [...steps, { description: `${target} is not present in the sorted array.`, event: 'not-found', values }];
+  return [...steps, { description: `${target} is not present in the sorted array.`, event: 'not-found', values, codeLine: 7 }];
 }
 
 function ternarySteps(input: string): DemoStep[] {
@@ -396,9 +495,9 @@ function ternarySteps(input: string): DemoStep[] {
     const third = Math.floor((high - low) / 3);
     const mid1 = low + third;
     const mid2 = high - third;
-    steps.push({ description: `Compare ${target} with midpoints ${values[mid1]} and ${values[mid2]}.`, event: 'compare', values, highlights: [mid1, mid2], pointers: { low, mid1, mid2, high } });
-    if (values[mid1] === target) return [...steps, { description: `Found ${target} at first midpoint ${mid1}.`, event: 'found', values, highlights: [mid1] }];
-    if (values[mid2] === target) return [...steps, { description: `Found ${target} at second midpoint ${mid2}.`, event: 'found', values, highlights: [mid2] }];
+    steps.push({ description: `Compare ${target} with midpoints ${values[mid1]} and ${values[mid2]}.`, event: 'compare', values, highlights: [mid1, mid2], pointers: { low, mid1, mid2, high }, codeLine: 4 });
+    if (values[mid1] === target) return [...steps, { description: `Found ${target} at first midpoint ${mid1}.`, event: 'found', values, highlights: [mid1], codeLine: 5 }];
+    if (values[mid2] === target) return [...steps, { description: `Found ${target} at second midpoint ${mid2}.`, event: 'found', values, highlights: [mid2], codeLine: 6 }];
     if (target < values[mid1]) high = mid1 - 1;
     else if (target > values[mid2]) low = mid2 + 1;
     else {
@@ -406,32 +505,32 @@ function ternarySteps(input: string): DemoStep[] {
       high = mid2 - 1;
     }
   }
-  return [...steps, { description: `${target} is not present in the sorted array.`, event: 'not-found', values }];
+  return [...steps, { description: `${target} is not present in the sorted array.`, event: 'not-found', values, codeLine: 10 }];
 }
 
 function dnfSteps(input: string): DemoStep[] {
   const values = parseNumbers(input).filter((value) => value === 0 || value === 1 || value === 2);
   const arr = [...values];
-  const steps: DemoStep[] = [{ description: 'Start with low, mid, and high pointers.', event: 'visit', values: [...arr], pointers: { low: 0, mid: 0, high: arr.length - 1 } }];
+  const steps: DemoStep[] = [{ description: 'Start with low, mid, and high pointers.', event: 'visit', values: [...arr], pointers: { low: 0, mid: 0, high: arr.length - 1 }, codeLine: 1 }];
   let low = 0;
   let mid = 0;
   let high = arr.length - 1;
   while (mid <= high) {
     if (arr[mid] === 0) {
       [arr[low], arr[mid]] = [arr[mid], arr[low]];
-      steps.push({ description: `Swap 0 at mid ${mid} with low ${low}.`, event: 'swap', values: [...arr], highlights: [low, mid], pointers: { low, mid, high } });
+      steps.push({ description: `Swap 0 at mid ${mid} with low ${low}.`, event: 'swap', values: [...arr], highlights: [low, mid], pointers: { low, mid, high }, codeLine: 4 });
       low += 1;
       mid += 1;
     } else if (arr[mid] === 1) {
-      steps.push({ description: `Value 1 at mid ${mid} is already in the middle partition.`, event: 'compare', values: [...arr], highlights: [mid], pointers: { low, mid, high } });
+      steps.push({ description: `Value 1 at mid ${mid} is already in the middle partition.`, event: 'compare', values: [...arr], highlights: [mid], pointers: { low, mid, high }, codeLine: 6 });
       mid += 1;
     } else {
       [arr[mid], arr[high]] = [arr[high], arr[mid]];
-      steps.push({ description: `Swap 2 at mid ${mid} with high ${high}.`, event: 'swap', values: [...arr], highlights: [mid, high], pointers: { low, mid, high } });
+      steps.push({ description: `Swap 2 at mid ${mid} with high ${high}.`, event: 'swap', values: [...arr], highlights: [mid, high], pointers: { low, mid, high }, codeLine: 8 });
       high -= 1;
     }
   }
-  return [...steps, { description: 'Colors are sorted: all 0s, then 1s, then 2s.', event: 'complete', values: [...arr] }];
+  return [...steps, { description: 'Colors are sorted: all 0s, then 1s, then 2s.', event: 'complete', values: [...arr], codeLine: 9 }];
 }
 
 function topKSteps(input: string): DemoStep[] {
@@ -442,10 +541,10 @@ function topKSteps(input: string): DemoStep[] {
   const steps: DemoStep[] = [];
   values.forEach((value, index) => {
     counts.set(value, (counts.get(value) ?? 0) + 1);
-    steps.push({ description: `Count ${value}: frequency is now ${counts.get(value)}.`, event: 'visit', values, highlights: [index], meta: [...counts.entries()].map(([n, c]) => `${n}:${c}`) });
+    steps.push({ description: `Count ${value}: frequency is now ${counts.get(value)}.`, event: 'visit', values, highlights: [index], meta: [...counts.entries()].map(([n, c]) => `${n}:${c}`), codeLine: 3 });
   });
   const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([value]) => value);
-  return [...steps, { description: `Top ${k} frequent elements: ${ranked.slice(0, k).join(', ')}.`, event: 'complete', values: ranked, highlights: ranked.slice(0, k).map((_, i) => i), meta: [...counts.entries()].map(([n, c]) => `${n}:${c}`) }];
+  return [...steps, { description: `Top ${k} frequent elements: ${ranked.slice(0, k).join(', ')}.`, event: 'complete', values: ranked, highlights: ranked.slice(0, k).map((_, i) => i), meta: [...counts.entries()].map(([n, c]) => `${n}:${c}`), codeLine: 5 }];
 }
 
 function queueUsingStacksSteps(input: string): DemoStep[] {
@@ -455,16 +554,16 @@ function queueUsingStacksSteps(input: string): DemoStep[] {
   const steps: DemoStep[] = [];
   values.forEach((value) => {
     inputStack.push(value);
-    steps.push({ description: `Enqueue ${value}: push onto input stack.`, event: 'push', stacks: { input: [...inputStack], output: [...outputStack] } });
+    steps.push({ description: `Enqueue ${value}: push onto input stack.`, event: 'push', stacks: { input: [...inputStack], output: [...outputStack] }, codeLine: 1 });
   });
   while (inputStack.length > 0) {
     const value = inputStack.pop() as number;
     outputStack.push(value);
-    steps.push({ description: `Move ${value} from input to output stack to expose queue front.`, event: 'pop', stacks: { input: [...inputStack], output: [...outputStack] } });
+    steps.push({ description: `Move ${value} from input to output stack to expose queue front.`, event: 'pop', stacks: { input: [...inputStack], output: [...outputStack] }, codeLine: 6 });
   }
   while (outputStack.length > 0) {
     const value = outputStack.pop() as number;
-    steps.push({ description: `Dequeue ${value} from output stack.`, event: 'dequeue', stacks: { input: [...inputStack], output: [...outputStack] } });
+    steps.push({ description: `Dequeue ${value} from output stack.`, event: 'dequeue', stacks: { input: [...inputStack], output: [...outputStack] }, codeLine: 7 });
   }
   return steps;
 }
@@ -476,14 +575,14 @@ function stackUsingQueuesSteps(input: string): DemoStep[] {
   const steps: DemoStep[] = [];
   values.forEach((value) => {
     q2.push(value);
-    steps.push({ description: `Push ${value}: enqueue into helper queue.`, event: 'enqueue', queues: { primary: [...q1], helper: [...q2] } });
+    steps.push({ description: `Push ${value}: enqueue into helper queue.`, event: 'enqueue', queues: { primary: [...q1], helper: [...q2] }, codeLine: 1 });
     while (q1.length > 0) q2.push(q1.shift() as number);
     [q1, q2] = [q2, []];
-    steps.push({ description: `Rotate queues so ${value} becomes the next pop.`, event: 'visit', queues: { primary: [...q1], helper: [...q2] } });
+    steps.push({ description: `Rotate queues so ${value} becomes the next pop.`, event: 'visit', queues: { primary: [...q1], helper: [...q2] }, codeLine: 4 });
   });
   while (q1.length > 0) {
     const value = q1.shift() as number;
-    steps.push({ description: `Pop ${value} from primary queue front.`, event: 'dequeue', queues: { primary: [...q1], helper: [...q2] } });
+    steps.push({ description: `Pop ${value} from primary queue front.`, event: 'dequeue', queues: { primary: [...q1], helper: [...q2] }, codeLine: 7 });
   }
   return steps;
 }
@@ -491,18 +590,18 @@ function stackUsingQueuesSteps(input: string): DemoStep[] {
 function hanoiSteps(input: string): DemoStep[] {
   const diskCount = Math.max(2, Math.min(5, Number(input) || 4));
   const pegs = [Array.from({ length: diskCount }, (_, i) => diskCount - i), [], []] as number[][];
-  const steps: DemoStep[] = [{ description: `Start with ${diskCount} disks on peg 1.`, event: 'recurse', pegs: clonePegs(pegs) }];
+  const steps: DemoStep[] = [{ description: `Start with ${diskCount} disks on peg 1.`, event: 'recurse', pegs: clonePegs(pegs), codeLine: 0 }];
   const move = (n: number, from: number, to: number, aux: number) => {
     if (n === 0) return;
-    steps.push({ description: `Solve subproblem: move ${n - 1} disk(s) from peg ${from + 1} to peg ${aux + 1}.`, event: 'recurse', pegs: clonePegs(pegs) });
+    steps.push({ description: `Solve subproblem: move ${n - 1} disk(s) from peg ${from + 1} to peg ${aux + 1}.`, event: 'recurse', pegs: clonePegs(pegs), codeLine: 2 });
     move(n - 1, from, aux, to);
     const disk = pegs[from].pop();
     if (disk) pegs[to].push(disk);
-    steps.push({ description: `Move disk ${disk} from peg ${from + 1} to peg ${to + 1}.`, event: 'visit', pegs: clonePegs(pegs) });
+    steps.push({ description: `Move disk ${disk} from peg ${from + 1} to peg ${to + 1}.`, event: 'visit', pegs: clonePegs(pegs), codeLine: 3 });
     move(n - 1, aux, to, from);
   };
   move(diskCount, 0, 2, 1);
-  return [...steps, { description: 'Tower complete.', event: 'complete', pegs: clonePegs(pegs) }];
+  return [...steps, { description: 'Tower complete.', event: 'complete', pegs: clonePegs(pegs), codeLine: 4 }];
 }
 
 function clonePegs(pegs: number[][]) {
@@ -530,14 +629,14 @@ function mazeSteps(input: string, ratMaze: boolean): DemoStep[] {
   visited.add(0);
   while (frontier.length > 0) {
     const current = mode === 'dfs' ? frontier.pop() as number : frontier.shift() as number;
-    steps.push({ description: `${ratMaze ? 'Rat maze' : 'Grid search'} ${mode.toUpperCase()}: visit cell (${Math.floor(current / cols)}, ${current % cols}).`, event: mode === 'dfs' ? 'recurse' : 'visit', grid, visited: [...visited], path: [current] });
+    steps.push({ description: `${ratMaze ? 'Rat maze' : 'Grid search'} ${mode.toUpperCase()}: visit cell (${Math.floor(current / cols)}, ${current % cols}).`, event: mode === 'dfs' ? 'recurse' : 'visit', grid, visited: [...visited], path: [current], codeLine: 3 });
     if (current === target) break;
     for (const next of neighbors(current, grid)) {
       if (visited.has(next)) continue;
       visited.add(next);
       parent.set(next, current);
       frontier.push(next);
-      steps.push({ description: `Add allowed neighbor (${Math.floor(next / cols)}, ${next % cols}) to ${mode === 'dfs' ? 'stack' : 'queue'}.`, event: mode === 'dfs' ? 'push' : 'enqueue', grid, visited: [...visited], path: [next] });
+      steps.push({ description: `Add allowed neighbor (${Math.floor(next / cols)}, ${next % cols}) to ${mode === 'dfs' ? 'stack' : 'queue'}.`, event: mode === 'dfs' ? 'push' : 'enqueue', grid, visited: [...visited], path: [next], codeLine: 8 });
     }
   }
   const path: number[] = [];
@@ -547,7 +646,7 @@ function mazeSteps(input: string, ratMaze: boolean): DemoStep[] {
     if (cur === 0) break;
     cur = parent.get(cur) as number;
   }
-  return [...steps, { description: path[0] === 0 ? `Found path with ${path.length} cells.` : 'No path found.', event: path[0] === 0 ? 'found' : 'not-found', grid, visited: [...visited], path }];
+  return [...steps, { description: path[0] === 0 ? `Found path with ${path.length} cells.` : 'No path found.', event: path[0] === 0 ? 'found' : 'not-found', grid, visited: [...visited], path, codeLine: 9 }];
 }
 
 function neighbors(index: number, grid: number[][]) {

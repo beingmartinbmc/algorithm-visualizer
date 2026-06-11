@@ -1,21 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 export function useRubiksCubeSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback((freq: number, duration: number, type: OscillatorType = 'sine', volume = 0.045) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;

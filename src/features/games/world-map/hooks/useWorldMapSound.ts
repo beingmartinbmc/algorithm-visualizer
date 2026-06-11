@@ -1,23 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 const RADAR_SCALE = [261.63, 329.63, 392.0, 493.88, 587.33, 659.25, 783.99];
 
 export function useWorldMapSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback((freq: number, duration: number, type: OscillatorType = 'sine', volume = 0.045) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;
@@ -33,6 +28,7 @@ export function useWorldMapSound() {
   const playArpeggio = useCallback((freqs: number[], type: OscillatorType, noteLength: number, volume = 0.04) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     freqs.forEach((freq, index) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();

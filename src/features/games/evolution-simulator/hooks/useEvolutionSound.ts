@@ -1,16 +1,12 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 const SCALE = [220.0, 261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 659.25, 783.99];
 
 export function useEvolutionSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') ctxRef.current = new AudioContext();
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((v: boolean) => {
     enabledRef.current = v;
@@ -19,6 +15,7 @@ export function useEvolutionSound() {
   const playTone = useCallback((freq: number, type: OscillatorType, duration: number, volume = 0.05) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;
@@ -44,6 +41,7 @@ export function useEvolutionSound() {
   const playComplete = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     [523.25, 659.25, 783.99].forEach((f, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();

@@ -95,7 +95,7 @@ export function useArrayDS() {
       addHistory(`Access [${idx}] → ${prev[idx].value}`);
       return prev;
     });
-  }, []);
+  }, [playAccess]);
 
   const insertAt = useCallback((val: number, idx: number) => {
     const newCell: ArrayCell = { id: nextId++, value: val };
@@ -126,7 +126,7 @@ export function useArrayDS() {
       addHistory(`Insert ${val} at [${idx}]`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const deleteAt = useCallback((idx: number) => {
     setArray((prev) => {
@@ -160,7 +160,7 @@ export function useArrayDS() {
       addHistory(`Delete [${idx}] → ${val}`);
       return next;
     });
-  }, []);
+  }, [playDelete]);
 
   const search = useCallback((val: number) => {
     setArray((prev) => {
@@ -199,7 +199,7 @@ export function useArrayDS() {
       pendingAutoPlay.current = true;
       return prev;
     });
-  }, []);
+  }, [playFound, playNotFound]);
 
   const pushBack = useCallback((val: number) => {
     const newCell: ArrayCell = { id: nextId++, value: val };
@@ -226,7 +226,7 @@ export function useArrayDS() {
       addHistory(`Push ${val}`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const clear = useCallback(() => {
     setArray([]);

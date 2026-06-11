@@ -1,25 +1,20 @@
 import { useCallback, useRef, useState } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 type SoundEvent = 'compare' | 'swap' | 'visit' | 'push' | 'pop' | 'enqueue' | 'dequeue' | 'recurse' | 'found' | 'not-found' | 'complete';
 
 const SCALE = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 659.25, 783.99];
 
 export function useAlgorithmSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback((freq: number, duration = 0.08, type: OscillatorType = 'sine', volume = 0.04) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = type;

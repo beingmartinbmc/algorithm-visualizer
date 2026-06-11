@@ -1,4 +1,5 @@
 import { useRef, useCallback } from 'react';
+import { getAudioContext } from '@/lib/audioContext';
 import type { VisualizationSpeed } from '@/features/traversals/graph/types/graph';
 
 const PENTATONIC_SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
@@ -18,24 +19,17 @@ const VOLUME: Record<VisualizationSpeed, number> = {
 };
 
 export function useSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getContext = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
-  }, []);
+  const getContext = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playVisitedTone = useCallback(
     (row: number, col: number, totalRows: number, totalCols: number, speed: VisualizationSpeed) => {
       if (!enabledRef.current || speed === 'instant') return;
 
       const ctx = getContext();
+
+      if (!ctx) return;
       const duration = NOTE_DURATION[speed];
       const volume = VOLUME[speed];
 
@@ -66,6 +60,8 @@ export function useSound() {
       if (!enabledRef.current || speed === 'instant') return;
 
       const ctx = getContext();
+
+      if (!ctx) return;
       const duration = NOTE_DURATION[speed] * 3;
       const volume = VOLUME[speed] * 1.5;
 
@@ -95,6 +91,8 @@ export function useSound() {
       if (!enabledRef.current) return;
 
       const ctx = getContext();
+
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 

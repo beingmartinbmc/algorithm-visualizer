@@ -1,73 +1,106 @@
-# React + TypeScript + Vite
+# Algorithm Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive, browser-based playground for learning algorithms, data structures, and Git through animation. Every algorithm runs in the browser as pure TypeScript — no backend, no telemetry, no tracking.
 
-Currently, two official plugins are available:
+**Live demo:** https://anksharma11.github.io/algorithm-visualizer/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## What's inside
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Sorting** — bubble, selection, insertion, quick, heap, merge with step-by-step bar animation and audio.
+- **Graph traversals** — BFS, DFS, Dijkstra, A* on an interactive grid; draw walls, place start/end, generate mazes.
+- **Tree traversals** — in/pre/post/level-order on a randomized binary tree.
+- **Trie** — word and prefix search with character-by-character traversal.
+- **Data structures** — Stack, Queue, Array, Linked List, BST/AVL/Red-Black trees, Trie, Segment Tree, Fenwick Tree.
+- **Algorithm playground** — binary/ternary search, Tower of Hanoi, rat-in-a-maze, Dutch national flag, Top-K, queue-via-stacks, stack-via-queues, grid search.
+- **Games**
+  - Fibonacci Spiral Builder
+  - Dijkstra Delivery Simulator
+  - World Map Flight Planner (Dijkstra, A*, BFS, greedy)
+  - Algorithm Battles (head-to-head sort & pathfind races)
+  - Sudoku Solver (4×4 / 9×9 / 16×16, with uniqueness-checked puzzles)
+  - Mahjong Hand Solver (backtracking)
+  - Evolution Simulator (genetic algorithm)
+  - Rubik's Cube Solver
+- **Git Visualizer** — a 1.7k-LOC pure-TS Git simulator with terminal, commit-DAG canvas, freeplay mode, and guided lessons (init/add/commit, branching, merging, rebase, reset, stash, cherry-pick, remotes, push/pull, etc.).
 
-## Expanding the ESLint configuration
+## Quick start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Requires Node 20+.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # Vite dev server with HMR
+npm run lint     # ESLint (strict; CI blocks on errors)
+npm run build    # tsc + vite build → docs/ for GitHub Pages
+npm run preview  # serve the production build locally
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The codebase follows a strict feature-folder pattern. Every visualization lives in `src/features/<feature>/` and is composed of:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+features/<feature>/
+├── <Feature>Page.tsx          # thin composition: <Canvas /> + <Controls />
+├── components/                # presentational React components
+├── hooks/use<Feature>.ts      # state machine + step playback
+├── algorithms/ (or engine/)   # pure, framework-free TS — the actual algorithm
+└── types/<feature>.ts         # shared types and constants
+```
+
+The pure-TS layer (`algorithms/` or `engine/`) returns arrays of `Step` objects (step descriptions + visualization payloads). The hook drives forward/backward/auto-play through that array. The components render whatever the current step says. This:
+
+- keeps algorithm code unit-testable and reusable across features (e.g. `games/battles` reuses `traversals/graph/algorithms` directly),
+- makes step-back / scrubbing / replay free,
+- separates "what the algorithm does" from "how it animates."
+
+### Adding a new visualization
+
+1. Create `src/features/myThing/`.
+2. Write `algorithms/myThing.ts` — a pure function from input → `MyThingStep[]`.
+3. Write `hooks/useMyThing.ts` — `useState` for the step pointer, `setTimeout` (or shared `useTones`) for playback.
+4. Write `components/MyThingCanvas.tsx` and `MyThingControls.tsx`.
+5. Add a `MyThingPage.tsx` that composes the above.
+6. Lazy-import the page in `src/App.tsx` and add a `<Route>`.
+
+### Cross-cutting helpers
+
+- `src/lib/MinHeap.ts` — generic binary heap. Used by Dijkstra and A*.
+- `src/lib/audioContext.ts` — single shared, lazy `AudioContext` with autoplay-policy and Safari-interrupted-state handling.
+- `src/components/ErrorBoundary.tsx` — wraps the route tree; one crashing visualization can't blank the app.
+- `src/components/RouteFallback.tsx` — Suspense fallback for lazy-loaded routes.
+
+## Tech stack
+
+| Area       | Choice                                      |
+|------------|---------------------------------------------|
+| Build      | Vite 7, React 19, TypeScript 5 (strict)     |
+| Styling    | Tailwind CSS v4 (`@tailwindcss/vite`)       |
+| Routing    | `react-router-dom` v7 with code-split routes |
+| Icons      | `lucide-react`                              |
+| Audio      | Web Audio API (single shared `AudioContext`) |
+| Lint       | ESLint flat config + `typescript-eslint` + `react-hooks` |
+
+## Deploy
+
+Production build outputs to `docs/`, ready for GitHub Pages:
+
+```bash
+npm run build
+# docs/index.html, docs/assets/*, docs/.nojekyll, docs/404.html
+```
+
+`docs/404.html` is a copy of `index.html` so GitHub Pages serves the SPA on deep links (the `BrowserRouter` `basename="/algorithm-visualizer"` matches the repo name). `.nojekyll` disables Jekyll processing of underscore-prefixed assets.
+
+## Project status
+
+- **TypeScript:** `tsc -b` passes with zero errors. Strict mode, `verbatimModuleSyntax`, `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`.
+- **ESLint:** zero errors, zero warnings.
+- **Tests:** none yet — pure step-builders in `engine/` and `algorithms/` are the natural targets when added.
+- **Bundle:** initial route loads only landing-page + section-index chunks; feature pages are code-split.
+
+## License
+
+MIT.
