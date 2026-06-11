@@ -44,14 +44,9 @@ export function useFibonacciGame() {
     }));
   })();
 
-  useEffect(() => {
-    if (mode === 'challenge' && !isComplete) {
-      setIsTimerRunning(true);
-    } else {
-      setIsTimerRunning(false);
-    }
-  }, [mode, isComplete]);
-
+  // The interval timer is started/stopped from event handlers (mode change,
+  // placeBlock-on-completion, reset). Keeping it out of an effect avoids
+  // the cascading re-render the React Compiler lints flag.
   useEffect(() => {
     if (isTimerRunning) {
       timerRef.current = window.setInterval(() => {

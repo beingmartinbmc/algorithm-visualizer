@@ -1,23 +1,18 @@
 import { useRef, useCallback, useState } from 'react';
+import { getAudioContext } from '@/lib/audioContext';
 import type { GitAction } from '../types/git';
 
 export function useGitSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback(
     (freq: number, type: OscillatorType, duration: number, volume = 0.06) => {
       if (!enabledRef.current) return;
       const ctx = getCtx();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
@@ -44,6 +39,7 @@ export function useGitSound() {
     (freqs: number[], type: OscillatorType, noteLen: number, volume = 0.05) => {
       if (!enabledRef.current) return;
       const ctx = getCtx();
+      if (!ctx) return;
       freqs.forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();

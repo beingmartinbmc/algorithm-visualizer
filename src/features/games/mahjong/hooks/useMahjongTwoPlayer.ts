@@ -89,7 +89,7 @@ export function useMahjongTwoPlayer() {
       newPlayers[prev.currentPlayer] = p;
       return { ...prev, players: newPlayers };
     });
-  }, [state.phase, state.currentPlayer, sound]);
+  }, [state.phase, sound]);
 
   const checkBothHands = useCallback(() => {
     if (!bothFull) return;

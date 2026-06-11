@@ -32,7 +32,6 @@ function SandboxMode() {
   return (
     <div className="flex flex-1 flex-col md:flex-row gap-4 md:gap-6 overflow-auto bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.08),transparent_34%),linear-gradient(180deg,rgba(15,23,42,0),rgba(6,78,59,0.16))] p-4 md:p-6">
       <MahjongControls
-        handCount={hand.length}
         handIsFull={handIsFull}
         result={result}
         showAnimation={showAnimation}

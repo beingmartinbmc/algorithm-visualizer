@@ -1,20 +1,12 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 const PENTATONIC = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
 
 export function useFibonacciSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((value: boolean) => {
     enabledRef.current = value;
@@ -23,6 +15,7 @@ export function useFibonacciSound() {
   const playPlacementTone = useCallback((fibIndex: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const noteIdx = fibIndex % PENTATONIC.length;
     const freq = PENTATONIC[noteIdx];
 
@@ -52,6 +45,7 @@ export function useFibonacciSound() {
   const playErrorTone = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sawtooth';
@@ -68,6 +62,7 @@ export function useFibonacciSound() {
   const playCompleteSweep = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const notes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -86,6 +81,7 @@ export function useFibonacciSound() {
   const playStreakTone = useCallback((streak: number) => {
     if (!enabledRef.current || streak < 3) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const baseFreq = 600 + streak * 40;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();

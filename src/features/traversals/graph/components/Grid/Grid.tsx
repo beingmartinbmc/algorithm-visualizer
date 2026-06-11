@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import type { GridMatrix } from '../../types/graph';
 import type { DrawMode } from '../../hooks/useGrid';
 import Node from './Node';
@@ -43,6 +43,7 @@ export default function Grid({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [contentHeight, setContentHeight] = useState<number | 'auto'>('auto');
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -65,10 +66,17 @@ export default function Grid({
     return () => observer.disconnect();
   }, [grid]);
 
+  // Measure scaled content height after layout so we don't read refs during render.
+  useLayoutEffect(() => {
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    setContentHeight(gridEl.scrollHeight * scale);
+  }, [scale, grid]);
+
   return (
     <div ref={wrapperRef} className="w-full overflow-hidden">
       <div
-        style={{ transform: `scale(${scale})`, transformOrigin: 'top left', height: gridRef.current ? gridRef.current.scrollHeight * scale : 'auto' }}
+        style={{ transform: `scale(${scale})`, transformOrigin: 'top left', height: contentHeight }}
       >
         <div
           ref={gridRef}
