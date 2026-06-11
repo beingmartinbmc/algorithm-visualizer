@@ -146,19 +146,20 @@ export default function AdvancedStructurePage({ structure }: { structure: Advanc
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Animation Speed</span>
               <span className="font-mono text-[10px] text-rose-300">{animationDelay}ms</span>
             </div>
+            {/* slider is reversed so dragging right = faster */}
             <input
               type="range"
               min={120}
               max={1200}
               step={40}
-              value={animationDelay}
-              onChange={(event) => setAnimationDelay(Number(event.target.value))}
+              value={1320 - animationDelay}
+              onChange={(event) => setAnimationDelay(1320 - Number(event.target.value))}
               className="w-full accent-rose-400"
-              aria-label="Animation step delay"
+              aria-label="Animation speed"
             />
             <div className="mt-1 flex justify-between text-[9px] uppercase tracking-wide text-slate-600">
-              <span>Fast</span>
               <span>Slow</span>
+              <span>Fast</span>
             </div>
           </div>
           <div className="mt-3 grid grid-cols-3 gap-2">

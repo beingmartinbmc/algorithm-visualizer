@@ -4,7 +4,7 @@ import { SUITS, SUIT_NAMES, SUIT_COLORS, TILE_VALUES, HAND_SIZE } from '../types
 import { useMahjongTwoPlayer } from '../hooks/useMahjongTwoPlayer';
 import MahjongTile from './MahjongTile';
 
-function TpTile({ code, index: _index, onRemove }: { code: TileCode; index: number; onRemove?: () => void }) {
+function TpTile({ code, onRemove }: { code: TileCode; onRemove?: () => void }) {
   return (
     <MahjongTile
       code={code}
@@ -217,7 +217,6 @@ export default function TwoPlayerMode() {
                 <TpTile
                   key={`${code}-${i}`}
                   code={code}
-                  index={i}
                   onRemove={phase === 'building' && currentPlayer === pIdx ? () => removeTile(i) : undefined}
                 />
               ))}

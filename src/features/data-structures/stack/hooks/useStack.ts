@@ -92,7 +92,7 @@ export function useStack() {
       addHistory(`Push ${val}`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const pop = useCallback(() => {
     setStack((prev) => {
@@ -125,7 +125,7 @@ export function useStack() {
       addHistory(`Pop → ${top.value}`);
       return prev.slice(0, -1);
     });
-  }, []);
+  }, [playDelete]);
 
   const peek = useCallback(() => {
     setStack((prev) => {
@@ -152,7 +152,7 @@ export function useStack() {
       addHistory(`Peek → ${top.value}`);
       return prev;
     });
-  }, []);
+  }, [playAccess]);
 
   const clear = useCallback(() => {
     setStack([]);

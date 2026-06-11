@@ -1,22 +1,17 @@
 import { useRef, useCallback, useState } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 export function useDSSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current || ctxRef.current.state === 'closed') {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const playTone = useCallback(
     (freq: number, type: OscillatorType, duration: number, volume = 0.06) => {
       if (!enabledRef.current) return;
       const ctx = getCtx();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = type;
@@ -59,6 +54,7 @@ export function useDSSound() {
   const playFound = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     [523.25, 659.25, 783.99].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();

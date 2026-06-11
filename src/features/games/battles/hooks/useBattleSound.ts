@@ -1,22 +1,19 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 const SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99, 880.0];
 
 export function useBattleSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) ctxRef.current = new AudioContext();
-    if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((v: boolean) => { enabledRef.current = v; }, []);
 
   const playCompareTone = useCallback((index: number, total: number, pan: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const norm = index / Math.max(total - 1, 1);
     const freq = SCALE[Math.floor(norm * (SCALE.length - 1))];
     const osc = ctx.createOscillator();
@@ -37,6 +34,7 @@ export function useBattleSound() {
   const playSwapTone = useCallback((index: number, total: number, pan: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const norm = index / Math.max(total - 1, 1);
     const freq = 200 + norm * 600;
     const osc = ctx.createOscillator();
@@ -57,6 +55,7 @@ export function useBattleSound() {
   const playWinTone = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     [523.25, 659.25, 783.99].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();

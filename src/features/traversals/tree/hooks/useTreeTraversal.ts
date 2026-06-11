@@ -124,7 +124,7 @@ export function useTreeTraversal() {
       setStepIndex(idx);
       applyStep(allSteps, idx, true);
     }, speed);
-  }, [initSteps, stepIndex, speed, applyStep]);
+  }, [initSteps, stepIndex, speed, applyStep, playCompleteSweep]);
 
   const reset = useCallback(() => {
     stopPlaying();

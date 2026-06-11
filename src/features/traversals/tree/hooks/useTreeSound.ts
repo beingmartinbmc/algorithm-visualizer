@@ -1,15 +1,10 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 export function useTreeSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((value: boolean) => {
     enabledRef.current = value;
@@ -18,6 +13,7 @@ export function useTreeSound() {
   const playTone = useCallback((freq: number, duration: number, type: OscillatorType = 'sine', gain = 0.12) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
     osc.type = type;
@@ -45,6 +41,7 @@ export function useTreeSound() {
   const playCompleteSweep = useCallback((count: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const steps = Math.min(count, 20);
     for (let i = 0; i < steps; i++) {
       const osc = ctx.createOscillator();

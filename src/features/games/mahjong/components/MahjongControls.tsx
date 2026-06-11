@@ -17,7 +17,6 @@ import type { SolverStep } from '../types/mahjong';
 import { GAME_DESCRIPTION } from '../types/mahjong';
 
 interface MahjongControlsProps {
-  handCount: number;
   handIsFull: boolean;
   result: { isWin: boolean } | null;
   showAnimation: boolean;
@@ -48,7 +47,6 @@ const speeds = [
 ];
 
 export default function MahjongControls({
-  handCount: _handCount,
   handIsFull,
   result,
   showAnimation,
