@@ -18,23 +18,45 @@ function balanceFactor(node: BTreeNode): number {
   return height(node.left) - height(node.right);
 }
 
-function rotateRight(y: BTreeNode, steps: TreeStep[], _root: BTreeNode | null): BTreeNode {
+interface RootRef {
+  current: BTreeNode | null;
+}
+
+/**
+ * Push a snapshot of the current tree state onto the steps array.
+ * Snapshots are taken at the moment the step occurs so animation can show
+ * intermediate trees (mid-rotation) rather than only the final shape.
+ */
+function pushSnapshot(steps: TreeStep[], description: string, highlightIds: number[], rootRef: RootRef) {
+  const snap = snapshot(rootRef.current);
+  steps.push({
+    description,
+    highlightIds,
+    snapshotValues: collectValues(snap),
+    snapshotRoot: snap,
+  });
+}
+
+function rotateRight(y: BTreeNode, steps: TreeStep[], rootRef: RootRef): BTreeNode {
   const x = y.left!;
-  steps.push({ description: `Right rotate at ${y.value}`, highlightIds: [y.id, x.id], snapshotValues: [], snapshotRoot: null });
   y.left = x.right;
   x.right = y;
   updateHeight(y);
   updateHeight(x);
+  // If y was the root, x is now the root — keep rootRef in sync before snapshotting.
+  if (rootRef.current === y) rootRef.current = x;
+  pushSnapshot(steps, `Right rotate at ${y.value}`, [y.id, x.id], rootRef);
   return x;
 }
 
-function rotateLeft(x: BTreeNode, steps: TreeStep[], _root: BTreeNode | null): BTreeNode {
+function rotateLeft(x: BTreeNode, steps: TreeStep[], rootRef: RootRef): BTreeNode {
   const y = x.right!;
-  steps.push({ description: `Left rotate at ${x.value}`, highlightIds: [x.id, y.id], snapshotValues: [], snapshotRoot: null });
   x.right = y.left;
   y.left = x;
   updateHeight(x);
   updateHeight(y);
+  if (rootRef.current === x) rootRef.current = y;
+  pushSnapshot(steps, `Left rotate at ${x.value}`, [x.id, y.id], rootRef);
   return y;
 }
 
@@ -75,21 +97,21 @@ function findMin(node: BTreeNode): BTreeNode {
   return node;
 }
 
-function balance(node: BTreeNode, steps: TreeStep[], root: BTreeNode | null): BTreeNode {
+function balance(node: BTreeNode, steps: TreeStep[], rootRef: RootRef): BTreeNode {
   updateHeight(node);
   const bf = balanceFactor(node);
 
   if (bf > 1) {
     if (balanceFactor(node.left!) < 0) {
-      node.left = rotateLeft(node.left!, steps, root);
+      node.left = rotateLeft(node.left!, steps, rootRef);
     }
-    return rotateRight(node, steps, root);
+    return rotateRight(node, steps, rootRef);
   }
   if (bf < -1) {
     if (balanceFactor(node.right!) > 0) {
-      node.right = rotateRight(node.right!, steps, root);
+      node.right = rotateRight(node.right!, steps, rootRef);
     }
-    return rotateLeft(node, steps, root);
+    return rotateLeft(node, steps, rootRef);
   }
   return node;
 }
@@ -97,15 +119,18 @@ function balance(node: BTreeNode, steps: TreeStep[], root: BTreeNode | null): BT
 export function avlInsert(root: BTreeNode | null, value: number): { root: BTreeNode; steps: TreeStep[] } {
   idCounter = root ? maxId(root) + 1 : 0;
   const steps: TreeStep[] = [];
+  const rootRef: RootRef = { current: root ? cloneTree(root) : null };
 
   function insert(node: BTreeNode | null): BTreeNode {
     if (!node) {
       const n = newNode(value);
-      steps.push({ description: `Insert ${value}`, highlightIds: [n.id], snapshotValues: [], snapshotRoot: null });
+      // Tentatively splice in to keep snapshots accurate; caller will overwrite if needed.
+      if (!rootRef.current) rootRef.current = n;
+      pushSnapshot(steps, `Insert ${value}`, [n.id], rootRef);
       return n;
     }
 
-    steps.push({ description: `Compare ${value} with ${node.value}`, highlightIds: [node.id], snapshotValues: [], snapshotRoot: null });
+    pushSnapshot(steps, `Compare ${value} with ${node.value}`, [node.id], rootRef);
 
     if (value < node.value) {
       node.left = insert(node.left);
@@ -115,14 +140,14 @@ export function avlInsert(root: BTreeNode | null, value: number): { root: BTreeN
       return node;
     }
 
-    return balance(node, steps, root);
+    return balance(node, steps, rootRef);
   }
 
-  const newRoot = insert(root ? cloneTree(root) : null)!;
+  const newRoot = insert(rootRef.current)!;
+  rootRef.current = newRoot;
   assignPositions(newRoot, 0, 0, 300);
 
-  steps.forEach((s) => { s.snapshotRoot = snapshot(newRoot); s.snapshotValues = collectValues(newRoot); });
-  steps.push({ description: `Inserted ${value} — balanced`, highlightIds: [], snapshotValues: collectValues(newRoot), snapshotRoot: snapshot(newRoot) });
+  pushSnapshot(steps, `Inserted ${value} — balanced`, [], rootRef);
 
   return { root: newRoot, steps };
 }
@@ -132,38 +157,38 @@ export function avlDelete(root: BTreeNode | null, value: number): { root: BTreeN
 
   idCounter = maxId(root) + 1;
   const steps: TreeStep[] = [];
+  const rootRef: RootRef = { current: cloneTree(root) };
 
   function remove(node: BTreeNode | null): BTreeNode | null {
     if (!node) {
-      steps.push({ description: `${value} not found`, highlightIds: [], snapshotValues: [], snapshotRoot: null });
+      pushSnapshot(steps, `${value} not found`, [], rootRef);
       return null;
     }
 
-    steps.push({ description: `Compare ${value} with ${node.value}`, highlightIds: [node.id], snapshotValues: [], snapshotRoot: null });
+    pushSnapshot(steps, `Compare ${value} with ${node.value}`, [node.id], rootRef);
 
     if (value < node.value) {
       node.left = remove(node.left);
     } else if (value > node.value) {
       node.right = remove(node.right);
     } else {
-      steps.push({ description: `Found ${value}, removing`, highlightIds: [node.id], snapshotValues: [], snapshotRoot: null });
+      pushSnapshot(steps, `Found ${value}, removing`, [node.id], rootRef);
       if (!node.left) return node.right;
       if (!node.right) return node.left;
       const successor = findMin(node.right);
-      steps.push({ description: `Replace with successor ${successor.value}`, highlightIds: [successor.id], snapshotValues: [], snapshotRoot: null });
+      pushSnapshot(steps, `Replace with successor ${successor.value}`, [successor.id], rootRef);
       node.value = successor.value;
       node.right = remove(node.right);
     }
 
-    if (!node) return null;
-    return balance(node, steps, root);
+    return balance(node, steps, rootRef);
   }
 
-  const newRoot = remove(cloneTree(root));
+  const newRoot = remove(rootRef.current);
+  rootRef.current = newRoot;
   if (newRoot) assignPositions(newRoot, 0, 0, 300);
 
-  steps.forEach((s) => { s.snapshotRoot = snapshot(newRoot); s.snapshotValues = collectValues(newRoot); });
-  steps.push({ description: `Deleted ${value} — balanced`, highlightIds: [], snapshotValues: collectValues(newRoot), snapshotRoot: snapshot(newRoot) });
+  pushSnapshot(steps, `Deleted ${value} — balanced`, [], rootRef);
 
   return { root: newRoot, steps };
 }

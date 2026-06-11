@@ -380,7 +380,7 @@ export function runRecursionAlgorithm(alg: RecursionAlgorithm, n: number, proble
   switch (problem) {
     case 'fibonacci':
       switch (alg) { case 'naive': return runNaiveFibonacci(n); case 'memoized': return runMemoizedFibonacci(n); case 'iterative': return runIterativeFibonacci(n); }
-      break; // eslint-disable-line no-fallthrough
+      break;
     case 'factorial':
       switch (alg) { case 'naive': return runNaiveFactorial(n); case 'memoized': return runMemoizedFactorial(n); case 'iterative': return runIterativeFactorial(n); }
       break;

@@ -1,5 +1,6 @@
 import type { GridMatrix, AlgorithmResult, GridNode } from '../types/graph';
 import { getNeighbors, reconstructPath, cloneGrid } from './helpers';
+import { MinHeap } from '@/lib/MinHeap';
 
 export function dijkstra(
   sourceGrid: GridMatrix,
@@ -12,12 +13,15 @@ export function dijkstra(
   const endNode = grid[endPos.row][endPos.col];
 
   startNode.distance = 0;
-  const unvisited: GridNode[] = grid.flat();
+  const heap = new MinHeap<GridNode>((a, b) => a.distance - b.distance);
+  heap.push(startNode);
 
-  while (unvisited.length > 0) {
-    unvisited.sort((a, b) => a.distance - b.distance);
-    const current = unvisited.shift()!;
+  while (heap.size > 0) {
+    const current = heap.pop()!;
 
+    // The heap can contain stale entries (we push duplicates rather than
+    // doing a decrease-key); skip any node we've already finalized.
+    if (current.isVisited) continue;
     if (current.distance === Infinity) break;
 
     current.isVisited = true;
@@ -36,6 +40,7 @@ export function dijkstra(
       if (newDist < neighbor.distance) {
         neighbor.distance = newDist;
         neighbor.parent = current;
+        heap.push(neighbor);
       }
     }
   }

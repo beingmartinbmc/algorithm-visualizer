@@ -42,6 +42,21 @@ function colorOf(node: BTreeNode | null): RBColor {
   return node ? node.color : 'black';
 }
 
+interface RootRef {
+  current: BTreeNode | null;
+}
+
+/** Snapshot the working tree at the moment a step occurs (mid-operation). */
+function pushSnapshot(steps: TreeStep[], description: string, highlightIds: number[], rootRef: RootRef) {
+  const snap = snapshot(rootRef.current);
+  steps.push({
+    description,
+    highlightIds,
+    snapshotValues: collectValues(snap),
+    snapshotRoot: snap,
+  });
+}
+
 function rotateLeft(root: BTreeNode, x: BTreeNode): BTreeNode {
   const y = x.right!;
   x.right = y.left;
@@ -68,7 +83,8 @@ function rotateRight(root: BTreeNode, x: BTreeNode): BTreeNode {
   return root;
 }
 
-function fixInsert(root: BTreeNode, node: BTreeNode, steps: TreeStep[]): BTreeNode {
+function fixInsert(rootRef: RootRef, node: BTreeNode, steps: TreeStep[]): BTreeNode {
+  let root = rootRef.current!;
   let z = node;
   while (z.parent && z.parent.color === 'red') {
     const gp = z.parent.parent;
@@ -77,75 +93,83 @@ function fixInsert(root: BTreeNode, node: BTreeNode, steps: TreeStep[]): BTreeNo
     if (z.parent === gp.left) {
       const uncle = gp.right;
       if (colorOf(uncle) === 'red') {
-        steps.push({ description: `Recolor: parent ${z.parent.value} & uncle ${uncle!.value} → black, grandparent ${gp.value} → red`, highlightIds: [z.parent.id, uncle!.id, gp.id], snapshotValues: [], snapshotRoot: null });
         z.parent.color = 'black';
         uncle!.color = 'black';
         gp.color = 'red';
+        rootRef.current = root;
+        pushSnapshot(steps, `Recolor: parent ${z.parent.value} & uncle ${uncle!.value} → black, grandparent ${gp.value} → red`, [z.parent.id, uncle!.id, gp.id], rootRef);
         z = gp;
       } else {
         if (z === z.parent.right) {
           z = z.parent;
-          steps.push({ description: `Left rotate at ${z.value}`, highlightIds: [z.id], snapshotValues: [], snapshotRoot: null });
           root = rotateLeft(root, z);
+          rootRef.current = root;
+          pushSnapshot(steps, `Left rotate at ${z.value}`, [z.id], rootRef);
         }
         z.parent!.color = 'black';
         gp.color = 'red';
-        steps.push({ description: `Right rotate at ${gp.value}`, highlightIds: [gp.id], snapshotValues: [], snapshotRoot: null });
         root = rotateRight(root, gp);
+        rootRef.current = root;
+        pushSnapshot(steps, `Right rotate at ${gp.value}`, [gp.id], rootRef);
       }
     } else {
       const uncle = gp.left;
       if (colorOf(uncle) === 'red') {
-        steps.push({ description: `Recolor: parent ${z.parent.value} & uncle ${uncle!.value} → black, grandparent ${gp.value} → red`, highlightIds: [z.parent.id, uncle!.id, gp.id], snapshotValues: [], snapshotRoot: null });
         z.parent.color = 'black';
         uncle!.color = 'black';
         gp.color = 'red';
+        rootRef.current = root;
+        pushSnapshot(steps, `Recolor: parent ${z.parent.value} & uncle ${uncle!.value} → black, grandparent ${gp.value} → red`, [z.parent.id, uncle!.id, gp.id], rootRef);
         z = gp;
       } else {
         if (z === z.parent.left) {
           z = z.parent;
-          steps.push({ description: `Right rotate at ${z.value}`, highlightIds: [z.id], snapshotValues: [], snapshotRoot: null });
           root = rotateRight(root, z);
+          rootRef.current = root;
+          pushSnapshot(steps, `Right rotate at ${z.value}`, [z.id], rootRef);
         }
         z.parent!.color = 'black';
         gp.color = 'red';
-        steps.push({ description: `Left rotate at ${gp.value}`, highlightIds: [gp.id], snapshotValues: [], snapshotRoot: null });
         root = rotateLeft(root, gp);
+        rootRef.current = root;
+        pushSnapshot(steps, `Left rotate at ${gp.value}`, [gp.id], rootRef);
       }
     }
   }
   root.color = 'black';
+  rootRef.current = root;
   return root;
 }
 
 export function rbInsert(root: BTreeNode | null, value: number): { root: BTreeNode; steps: TreeStep[] } {
   idCounter = root ? maxId(root) + 1 : 0;
   const steps: TreeStep[] = [];
-  let workRoot = root ? cloneTree(root)! : null;
+  const rootRef: RootRef = { current: root ? cloneTree(root) : null };
 
   const node = newNode(value, 'red');
-  steps.push({ description: `Insert ${value} (red)`, highlightIds: [node.id], snapshotValues: [], snapshotRoot: null });
 
-  if (!workRoot) {
+  if (!rootRef.current) {
     node.color = 'black';
+    rootRef.current = node;
     assignPositions(node, 0, 0, 300);
-    steps.forEach((s) => { s.snapshotRoot = snapshot(node); s.snapshotValues = collectValues(node); });
-    steps.push({ description: `${value} is root — color black`, highlightIds: [node.id], snapshotValues: collectValues(node), snapshotRoot: snapshot(node) });
+    pushSnapshot(steps, `Insert ${value} (red)`, [node.id], rootRef);
+    pushSnapshot(steps, `${value} is root — color black`, [node.id], rootRef);
     return { root: node, steps };
   }
 
-  let current: BTreeNode | null = workRoot;
+  pushSnapshot(steps, `Insert ${value} (red)`, [node.id], rootRef);
+
+  let current: BTreeNode | null = rootRef.current;
   let parent: BTreeNode | null = null;
   while (current) {
     parent = current;
-    steps.push({ description: `Compare ${value} with ${current.value}`, highlightIds: [current.id], snapshotValues: [], snapshotRoot: null });
+    pushSnapshot(steps, `Compare ${value} with ${current.value}`, [current.id], rootRef);
     if (value < current.value) current = current.left;
     else if (value > current.value) current = current.right;
     else {
-      assignPositions(workRoot, 0, 0, 300);
-      steps.forEach((s) => { s.snapshotRoot = snapshot(workRoot); s.snapshotValues = collectValues(workRoot); });
-      steps.push({ description: `${value} already exists`, highlightIds: [], snapshotValues: collectValues(workRoot), snapshotRoot: snapshot(workRoot) });
-      return { root: workRoot, steps };
+      assignPositions(rootRef.current, 0, 0, 300);
+      pushSnapshot(steps, `${value} already exists`, [], rootRef);
+      return { root: rootRef.current, steps };
     }
   }
 
@@ -153,13 +177,13 @@ export function rbInsert(root: BTreeNode | null, value: number): { root: BTreeNo
   if (value < parent!.value) parent!.left = node;
   else parent!.right = node;
 
-  workRoot = fixInsert(workRoot, node, steps);
-  assignPositions(workRoot, 0, 0, 300);
+  const newRoot = fixInsert(rootRef, node, steps);
+  assignPositions(newRoot, 0, 0, 300);
+  rootRef.current = newRoot;
 
-  steps.forEach((s) => { s.snapshotRoot = snapshot(workRoot); s.snapshotValues = collectValues(workRoot); });
-  steps.push({ description: `Inserted ${value} — RB properties restored`, highlightIds: [], snapshotValues: collectValues(workRoot), snapshotRoot: snapshot(workRoot) });
+  pushSnapshot(steps, `Inserted ${value} — RB properties restored`, [], rootRef);
 
-  return { root: workRoot, steps };
+  return { root: newRoot, steps };
 }
 
 export function rbDelete(root: BTreeNode | null, value: number): { root: BTreeNode | null; steps: TreeStep[] } {
@@ -167,7 +191,7 @@ export function rbDelete(root: BTreeNode | null, value: number): { root: BTreeNo
 
   idCounter = maxId(root) + 1;
   const steps: TreeStep[] = [];
-  let workRoot = cloneTree(root)!;
+  const rootRef: RootRef = { current: cloneTree(root) };
 
   function findNode(node: BTreeNode | null, val: number): BTreeNode | null {
     if (!node) return null;
@@ -176,43 +200,42 @@ export function rbDelete(root: BTreeNode | null, value: number): { root: BTreeNo
     return node;
   }
 
-  const target = findNode(workRoot, value);
+  const target = findNode(rootRef.current, value);
   if (!target) {
-    steps.push({ description: `${value} not found`, highlightIds: [], snapshotValues: collectValues(workRoot), snapshotRoot: snapshot(workRoot) });
-    return { root: workRoot, steps };
+    pushSnapshot(steps, `${value} not found`, [], rootRef);
+    return { root: rootRef.current, steps };
   }
 
-  steps.push({ description: `Found ${value}, deleting`, highlightIds: [target.id], snapshotValues: [], snapshotRoot: null });
+  pushSnapshot(steps, `Found ${value}, deleting`, [target.id], rootRef);
 
   let nodeToRemove = target;
   if (target.left && target.right) {
     let successor = target.right;
     while (successor.left) successor = successor.left;
-    steps.push({ description: `Replace with successor ${successor.value}`, highlightIds: [successor.id], snapshotValues: [], snapshotRoot: null });
     target.value = successor.value;
     nodeToRemove = successor;
+    pushSnapshot(steps, `Replace with successor ${successor.value}`, [successor.id], rootRef);
   }
 
   const child = nodeToRemove.left || nodeToRemove.right;
   if (child) child.parent = nodeToRemove.parent;
 
   if (!nodeToRemove.parent) {
-    workRoot = child as BTreeNode;
+    rootRef.current = child as BTreeNode | null;
   } else if (nodeToRemove === nodeToRemove.parent.left) {
     nodeToRemove.parent.left = child;
   } else {
     nodeToRemove.parent.right = child;
   }
 
-  if (workRoot) {
-    workRoot.color = 'black';
-    assignPositions(workRoot, 0, 0, 300);
+  if (rootRef.current) {
+    rootRef.current.color = 'black';
+    assignPositions(rootRef.current, 0, 0, 300);
   }
 
-  steps.forEach((s) => { s.snapshotRoot = snapshot(workRoot); s.snapshotValues = collectValues(workRoot); });
-  steps.push({ description: `Deleted ${value} — done`, highlightIds: [], snapshotValues: collectValues(workRoot), snapshotRoot: snapshot(workRoot) });
+  pushSnapshot(steps, `Deleted ${value} — done`, [], rootRef);
 
-  return { root: workRoot, steps };
+  return { root: rootRef.current, steps };
 }
 
 export function createRBFromValues(values: number[]): BTreeNode | null {

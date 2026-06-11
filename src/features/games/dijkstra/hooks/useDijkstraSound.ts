@@ -1,20 +1,12 @@
 import { useCallback, useRef } from 'react';
 
+import { getAudioContext } from '@/lib/audioContext';
 const NOTES = [329.63, 392.0, 440.0, 493.88, 523.25, 587.33, 659.25, 783.99];
 
 export function useDijkstraSound() {
-  const ctxRef = useRef<AudioContext | null>(null);
   const enabledRef = useRef(true);
 
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
-  }, []);
+  const getCtx = useCallback((): AudioContext | null => getAudioContext(), []);
 
   const setEnabled = useCallback((value: boolean) => {
     enabledRef.current = value;
@@ -23,6 +15,7 @@ export function useDijkstraSound() {
   const playVisitTone = useCallback((index: number) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const freq = NOTES[index % NOTES.length];
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -39,6 +32,7 @@ export function useDijkstraSound() {
   const playRelaxTone = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
@@ -55,6 +49,7 @@ export function useDijkstraSound() {
   const playClickTone = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -70,6 +65,7 @@ export function useDijkstraSound() {
   const playErrorTone = useCallback(() => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sawtooth';
@@ -86,6 +82,7 @@ export function useDijkstraSound() {
   const playCompleteSweep = useCallback((success: boolean) => {
     if (!enabledRef.current) return;
     const ctx = getCtx();
+    if (!ctx) return;
     const notes = success
       ? [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5]
       : [400, 350, 300];

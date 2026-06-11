@@ -1,0 +1,1 @@
+let t=null,e=!1;function u(){if(typeof window>"u")return null;const n=window;return window.AudioContext??n.webkitAudioContext??null}function o(){if(e)return null;if(!t||t.state==="closed"){const n=u();if(!n)return e=!0,null;try{t=new n}catch{return t=null,null}}return t.state!=="running"&&t.resume().catch(()=>{}),t}export{o as g};

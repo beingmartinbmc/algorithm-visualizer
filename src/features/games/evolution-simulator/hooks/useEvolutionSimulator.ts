@@ -19,7 +19,7 @@ function sanitizeTarget(value: string): string {
 }
 
 export function useEvolutionSimulator() {
-  const [mode, setMode] = useState<'guided' | 'free-play'>('guided');
+  const [mode, setModeState] = useState<'guided' | 'free-play'>('guided');
   const [target, setTarget] = useState(DEFAULT_CONFIG.target);
   const [populationSize, setPopulationSize] = useState(DEFAULT_CONFIG.populationSize);
   const [mutationRatePercent, setMutationRatePercent] = useState(Math.round(DEFAULT_CONFIG.mutationRate * 100));
@@ -37,8 +37,12 @@ export function useEvolutionSimulator() {
   const prevBestRef = useRef(0);
   const { setEnabled, playGenerationTick, playImprove, playComplete } = useEvolutionSound();
 
-  useEffect(() => {
-    if (mode === 'guided') {
+  // Switching to "guided" applies a curated set of defaults. Done in the
+  // setter (an event handler) rather than an effect so we don't trigger
+  // cascading renders on every mode change.
+  const setMode = useCallback((next: 'guided' | 'free-play') => {
+    setModeState(next);
+    if (next === 'guided') {
       setTarget('HELLO WORLD');
       setPopulationSize(300);
       setMutationRatePercent(3);
@@ -47,7 +51,7 @@ export function useEvolutionSimulator() {
       setSelectionStrategy('roulette');
       setSpeedMs(35);
     }
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     setEnabled(soundEnabled);
@@ -84,10 +88,13 @@ export function useEvolutionSimulator() {
         playImprove();
       }
       prevBestRef.current = next.bestIndividual.fitness;
-      if (next.done) setStatus('finished');
+      if (next.done) {
+        playComplete();
+        setStatus('finished');
+      }
       return next;
     });
-  }, [playGenerationTick, playImprove]);
+  }, [playGenerationTick, playImprove, playComplete]);
 
   useEffect(() => {
     if (status !== 'running') {
@@ -103,13 +110,6 @@ export function useEvolutionSimulator() {
     timerRef.current = setTimeout(loop, speedMs);
     return clearTimer;
   }, [status, speedMs, step, clearTimer]);
-
-  useEffect(() => {
-    if (state?.done && status === 'running') {
-      playComplete();
-      setStatus('finished');
-    }
-  }, [state, status, playComplete]);
 
   const start = useCallback(() => {
     const cfg = buildConfig();

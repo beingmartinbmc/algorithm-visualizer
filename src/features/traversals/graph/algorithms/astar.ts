@@ -1,5 +1,6 @@
 import type { GridMatrix, AlgorithmResult, GridNode } from '../types/graph';
 import { getNeighbors, reconstructPath, cloneGrid, manhattanDistance } from './helpers';
+import { MinHeap } from '@/lib/MinHeap';
 
 export function astar(
   sourceGrid: GridMatrix,
@@ -15,11 +16,11 @@ export function astar(
   startNode.heuristic = manhattanDistance(startPos, endPos);
   startNode.totalCost = startNode.heuristic;
 
-  const openSet: GridNode[] = [startNode];
+  const openSet = new MinHeap<GridNode>((a, b) => a.totalCost - b.totalCost);
+  openSet.push(startNode);
 
-  while (openSet.length > 0) {
-    openSet.sort((a, b) => a.totalCost - b.totalCost);
-    const current = openSet.shift()!;
+  while (openSet.size > 0) {
+    const current = openSet.pop()!;
 
     if (current.isVisited) continue;
     current.isVisited = true;

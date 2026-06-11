@@ -857,8 +857,8 @@ function handlePush(state: GitState, args: string[]): GitCommandResult {
   const setUpstream = args.includes('-u') || args.includes('--set-upstream');
   const filteredArgs = args.filter(a => a !== '-u' && a !== '--set-upstream');
 
-  let remoteName = filteredArgs[0] ?? state.remotes[0]?.name;
-  let branchName = filteredArgs[1] ?? getCurrentBranch(state);
+  const remoteName = filteredArgs[0] ?? state.remotes[0]?.name;
+  const branchName = filteredArgs[1] ?? getCurrentBranch(state);
 
   if (!remoteName) {
     return errorResult("fatal: No configured push destination.\nRun `git remote add origin <url>` first.", state);

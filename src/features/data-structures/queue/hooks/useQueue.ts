@@ -92,7 +92,7 @@ export function useQueue() {
       addHistory(`Enqueue ${val}`);
       return next;
     });
-  }, []);
+  }, [playInsert]);
 
   const dequeue = useCallback(() => {
     setQueue((prev) => {
@@ -125,7 +125,7 @@ export function useQueue() {
       addHistory(`Dequeue → ${front.value}`);
       return prev.slice(1);
     });
-  }, []);
+  }, [playDelete]);
 
   const peekFront = useCallback(() => {
     setQueue((prev) => {
@@ -152,7 +152,7 @@ export function useQueue() {
       addHistory(`Peek → ${front.value}`);
       return prev;
     });
-  }, []);
+  }, [playAccess]);
 
   const clear = useCallback(() => {
     setQueue([]);
