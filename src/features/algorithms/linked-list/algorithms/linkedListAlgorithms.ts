@@ -60,7 +60,16 @@ function findMiddleSteps(values: number[]): LLStep[] {
   }
 
   steps.push({
-    description: 'Start: place both slow and fast pointers on the head node.',
+    description: 'Set slow = head (index 0).',
+    event: 'visit',
+    nodes: snap(nodes),
+    pointers: [{ name: 'slow', index: 0, color: 'green' }],
+    highlights: [{ index: 0, color: 'blue' }],
+    meta: ['slow = head'],
+    codeLine: 1,
+  });
+  steps.push({
+    description: 'Set fast = head (index 0). Both pointers start together.',
     event: 'visit',
     nodes: snap(nodes),
     pointers: [
@@ -69,18 +78,31 @@ function findMiddleSteps(values: number[]): LLStep[] {
     ],
     highlights: [{ index: 0, color: 'blue' }],
     meta: ['slow = head', 'fast = head'],
-    codeLine: 1,
+    codeLine: 2,
   });
 
   let slow = 0;
   let fast = 0;
   // Tortoise & hare: advance while fast can take two real steps.
   while (fast + 2 <= n - 1) {
-    slow += 1;
-    fast += 2;
+    // line 3 — loop condition holds
     steps.push({
-      description: `Move slow → index ${slow} (value ${nodes[slow].value}), fast → index ${fast} (value ${nodes[fast].value}). slow walks 1, fast walks 2.`,
+      description: `Loop check: fast can move two nodes ahead (fast at index ${fast}). Enter the loop.`,
       event: 'compare',
+      nodes: snap(nodes),
+      pointers: [
+        { name: 'slow', index: slow, color: 'green' },
+        { name: 'fast', index: fast, color: 'red' },
+      ],
+      highlights: [{ index: slow, color: 'green' }, { index: fast, color: 'red' }],
+      meta: [`slow = ${slow}`, `fast = ${fast}`],
+      codeLine: 3,
+    });
+    // line 4 — slow advances one
+    slow += 1;
+    steps.push({
+      description: `slow = slow.next → index ${slow} (value ${nodes[slow].value}). slow walks 1 step.`,
+      event: 'visit',
       nodes: snap(nodes),
       pointers: [
         { name: 'slow', index: slow, color: 'green' },
@@ -90,13 +112,39 @@ function findMiddleSteps(values: number[]): LLStep[] {
       meta: [`slow = ${slow}`, `fast = ${fast}`],
       codeLine: 4,
     });
+    // line 5 — fast advances two
+    fast += 2;
+    steps.push({
+      description: `fast = fast.next.next → index ${fast} (value ${nodes[fast].value}). fast walks 2 steps.`,
+      event: 'compare',
+      nodes: snap(nodes),
+      pointers: [
+        { name: 'slow', index: slow, color: 'green' },
+        { name: 'fast', index: fast, color: 'red' },
+      ],
+      highlights: [{ index: slow, color: 'green' }, { index: fast, color: 'red' }],
+      meta: [`slow = ${slow}`, `fast = ${fast}`],
+      codeLine: 5,
+    });
   }
   // One more slow step if fast still has a single node ahead (even length).
   if (fast + 1 === n - 1) {
+    steps.push({
+      description: `Loop check: fast has a single node ahead — take one more paired step.`,
+      event: 'compare',
+      nodes: snap(nodes),
+      pointers: [
+        { name: 'slow', index: slow, color: 'green' },
+        { name: 'fast', index: fast, color: 'red' },
+      ],
+      highlights: [{ index: slow, color: 'green' }, { index: fast, color: 'red' }],
+      meta: [`slow = ${slow}`, `fast = ${fast}`],
+      codeLine: 3,
+    });
     slow += 1;
     fast += 1;
     steps.push({
-      description: `fast has one node left → take a final step: slow → ${slow} (${nodes[slow].value}), fast → ${fast} (${nodes[fast].value}).`,
+      description: `slow → ${slow} (${nodes[slow].value}); fast → ${fast} (${nodes[fast].value}).`,
       event: 'compare',
       nodes: snap(nodes),
       pointers: [
@@ -143,13 +191,22 @@ function reverseListSteps(values: number[]): LLStep[] {
 
   const steps: LLStep[] = [];
   steps.push({
-    description: 'Start: prev = null, curr = head. We walk the list once, flipping each next pointer to point backwards.',
+    description: 'Set prev = null. This will become the new head once we finish.',
+    event: 'visit',
+    nodes: snap(nodes),
+    pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
+    highlights: [{ index: 0, color: 'blue' }],
+    meta: ['prev = null'],
+    codeLine: 1,
+  });
+  steps.push({
+    description: 'Set curr = head. We walk the list once, flipping each next pointer to point backwards.',
     event: 'visit',
     nodes: snap(nodes),
     pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
     highlights: [{ index: 0, color: 'blue' }],
     meta: ['prev = null', 'curr = head'],
-    codeLine: 1,
+    codeLine: 2,
   });
 
   // `processed` holds the already-reversed nodes (head-first = most-recent first).
@@ -160,15 +217,39 @@ function reverseListSteps(values: number[]): LLStep[] {
     // visual order BEFORE flip: reversed(processed) ++ remaining(nodes[i..])
     const before = [...processed].reverse().concat(nodes.slice(i));
     const currIdxBefore = processed.length; // curr sits right after the reversed prefix
+    const prevPointer = processed.length
+      ? [{ name: 'prev', index: currIdxBefore - 1, color: 'green' as const }]
+      : [];
+    const nextPointer = i + 1 < n
+      ? [{ name: 'next', index: currIdxBefore + 1, color: 'red' as const }]
+      : [];
+
+    // line 3 — loop condition (curr is non-null)
     steps.push({
-      description: `Remember next = ${i + 1 < n ? nodes[i + 1].value : 'null'}; flip curr (${node.value}) → point at prev (${processed.length ? processed[processed.length - 1].value : 'null'}).`,
+      description: `Loop check: curr = ${node.value} (not null) → enter the loop.`,
+      event: 'compare',
+      nodes: snap(before),
+      pointers: [...prevPointer, { name: 'curr', index: currIdxBefore, color: 'yellow' as const }],
+      highlights: [{ index: currIdxBefore, color: 'yellow' }],
+      meta: [`reversed = [${[...processed].reverse().map((p) => p.value).join(', ')}]`],
+      codeLine: 3,
+    });
+    // line 4 — remember next
+    steps.push({
+      description: `Remember next = ${i + 1 < n ? nodes[i + 1].value : 'null'} before we overwrite curr.next.`,
+      event: 'visit',
+      nodes: snap(before),
+      pointers: [...prevPointer, { name: 'curr', index: currIdxBefore, color: 'yellow' as const }, ...nextPointer],
+      highlights: [{ index: currIdxBefore, color: 'yellow' }],
+      meta: [`reversed = [${[...processed].reverse().map((p) => p.value).join(', ')}]`],
+      codeLine: 4,
+    });
+    // line 5 — flip the link
+    steps.push({
+      description: `Flip curr (${node.value}) → point at prev (${processed.length ? processed[processed.length - 1].value : 'null'}).`,
       event: 'swap',
       nodes: snap(before),
-      pointers: [
-        ...(processed.length ? [{ name: 'prev', index: currIdxBefore - 1, color: 'green' as const }] : []),
-        { name: 'curr', index: currIdxBefore, color: 'yellow' as const },
-        ...(i + 1 < n ? [{ name: 'next', index: currIdxBefore + 1, color: 'red' as const }] : []),
-      ],
+      pointers: [...prevPointer, { name: 'curr', index: currIdxBefore, color: 'yellow' as const }, ...nextPointer],
       highlights: [{ index: currIdxBefore, color: 'yellow' }],
       meta: [`reversed = [${[...processed].reverse().map((p) => p.value).join(', ')}]`],
       codeLine: 5,
@@ -177,8 +258,22 @@ function reverseListSteps(values: number[]): LLStep[] {
     // perform the flip: node becomes the new front of the reversed chain
     processed.push(node);
     const after = [...processed].reverse().concat(nodes.slice(i + 1));
+    // line 6 — advance prev
     steps.push({
-      description: `Advance: prev = ${node.value}, curr = ${i + 1 < n ? nodes[i + 1].value : 'null'}. Reversed prefix is now [${[...processed].reverse().map((p) => p.value).join(', ')}].`,
+      description: `Advance prev = ${node.value}. Reversed prefix is now [${[...processed].reverse().map((p) => p.value).join(', ')}].`,
+      event: 'visit',
+      nodes: snap(after),
+      pointers: [
+        { name: 'prev', index: 0, color: 'green' },
+        ...(i + 1 < n ? [{ name: 'curr', index: processed.length, color: 'yellow' as const }] : []),
+      ],
+      highlights: [{ index: 0, color: 'green' }],
+      meta: [`reversed = [${[...processed].reverse().map((p) => p.value).join(', ')}]`],
+      codeLine: 6,
+    });
+    // line 7 — advance curr
+    steps.push({
+      description: `Advance curr = ${i + 1 < n ? nodes[i + 1].value : 'null'}.`,
       event: 'visit',
       nodes: snap(after),
       pointers: [
@@ -230,6 +325,15 @@ function addTwoNumbersSteps(input: string): LLStep[] {
     pointers: [],
     highlights: [],
     meta: [aStr, bStr, 'carry = 0'],
+    codeLine: 1,
+  });
+  steps.push({
+    description: 'Initialise carry = 0 before walking both digit lists.',
+    event: 'visit',
+    nodes: [],
+    pointers: [],
+    highlights: [],
+    meta: [aStr, bStr, 'carry = 0'],
     codeLine: 2,
   });
 
@@ -238,18 +342,98 @@ function addTwoNumbersSteps(input: string): LLStep[] {
   for (let i = 0; i < len || carry > 0; i += 1) {
     const da = a[i] ?? 0;
     const db = b[i] ?? 0;
-    const sum = da + db + carry;
-    const digit = sum % 10;
+    const carryIn = carry;
+    const hasA = i < a.length;
+    const hasB = i < b.length;
+    const tailIndex = result.length - 1; // tail position so far (-1 before first push)
+    const tailPointer = tailIndex >= 0 ? [{ name: 'tail', index: tailIndex, color: 'green' as const }] : [];
+    const tailHighlight = tailIndex >= 0 ? [{ index: tailIndex, color: 'blue' as const }] : [];
+
+    // line 3 — loop condition check
+    steps.push({
+      description: `Loop check: ${hasA ? 'A has a digit' : 'A exhausted'}, ${hasB ? 'B has a digit' : 'B exhausted'}, carry = ${carryIn}. Continue.`,
+      event: 'visit',
+      nodes: snap(result),
+      pointers: tailPointer,
+      highlights: tailHighlight,
+      meta: [aStr, bStr, `carry = ${carryIn}`],
+      codeLine: 3,
+    });
+
+    // line 4 — sum = carry
+    let sum = carryIn;
+    steps.push({
+      description: `Start this position's sum with the incoming carry: sum = ${carryIn}.`,
+      event: 'visit',
+      nodes: snap(result),
+      pointers: tailPointer,
+      highlights: tailHighlight,
+      meta: [aStr, bStr, `sum = ${sum}`, `carry = ${carryIn}`],
+      codeLine: 4,
+    });
+
+    // line 5 — add A's digit
+    sum += da;
+    steps.push({
+      description: hasA
+        ? `A has digit ${da} at this position → sum += ${da} = ${sum}; advance A.`
+        : `A is exhausted at this position → nothing to add. sum = ${sum}.`,
+      event: 'compare',
+      nodes: snap(result),
+      pointers: tailPointer,
+      highlights: tailHighlight,
+      meta: [aStr, bStr, `sum = ${sum}`, `carry = ${carryIn}`],
+      codeLine: 5,
+    });
+
+    // line 6 — add B's digit
+    sum += db;
+    steps.push({
+      description: hasB
+        ? `B has digit ${db} at this position → sum += ${db} = ${sum}; advance B.`
+        : `B is exhausted at this position → nothing to add. sum = ${sum}.`,
+      event: 'compare',
+      nodes: snap(result),
+      pointers: tailPointer,
+      highlights: tailHighlight,
+      meta: [aStr, bStr, `sum = ${sum}`, `carry = ${carryIn}`],
+      codeLine: 6,
+    });
+
+    // line 7 — compute new carry
     carry = Math.floor(sum / 10);
+    const digit = sum % 10;
+    steps.push({
+      description: `carry = floor(${sum} / 10) = ${carry}.`,
+      event: 'compare',
+      nodes: snap(result),
+      pointers: tailPointer,
+      highlights: tailHighlight,
+      meta: [aStr, bStr, `sum = ${sum}`, `carry = ${carry}`],
+      codeLine: 7,
+    });
+
+    // line 8 — append the new digit node
     result.push({ id: nodeSeq++, value: digit });
     steps.push({
-      description: `Position ${i}: ${da} + ${db} + carry ${sum - da - db} = ${sum} → write digit ${digit}, carry ${carry}.`,
-      event: carry > 0 ? 'compare' : 'push',
+      description: `Append a node with digit sum % 10 = ${digit}.`,
+      event: 'push',
       nodes: snap(result),
       pointers: [{ name: 'tail', index: result.length - 1, color: 'green' }],
-      highlights: [{ index: result.length - 1, color: carry > 0 ? 'yellow' : 'green' }],
+      highlights: [{ index: result.length - 1, color: 'green' }],
       meta: [aStr, bStr, `sum = ${sum}`, `carry = ${carry}`],
-      codeLine: carry > 0 ? 7 : 8,
+      codeLine: 8,
+    });
+
+    // line 9 — advance tail
+    steps.push({
+      description: `Advance tail to the node just appended (digit ${digit}).`,
+      event: 'visit',
+      nodes: snap(result),
+      pointers: [{ name: 'tail', index: result.length - 1, color: 'green' }],
+      highlights: [{ index: result.length - 1, color: 'blue' }],
+      meta: [aStr, bStr, `carry = ${carry}`],
+      codeLine: 9,
     });
   }
 
@@ -300,10 +484,20 @@ function reverseKGroupSteps(input: string): LLStep[] {
   let groupNo = 0;
   while (g + k <= n) {
     groupNo += 1;
-    // Highlight the group we're about to reverse.
+    // line 3 — while true (we have a group to process)
     steps.push({
-      description: `Group ${groupNo}: indices ${g}…${g + k - 1} form a full block of ${k} — reverse it in place.`,
+      description: `Group ${groupNo}: look k = ${k} nodes ahead from index ${g}.`,
       event: 'recurse',
+      nodes: snap(order),
+      pointers: [{ name: 'start', index: g, color: 'green' }],
+      highlights: range(g, Math.min(g + k, n)).map((i) => ({ index: i, color: 'blue' as const })),
+      meta: [`group ${groupNo}`],
+      codeLine: 3,
+    });
+    // line 4 — find kth node
+    steps.push({
+      description: `kth node of this group is at index ${g + k - 1} (value ${order[g + k - 1].value}).`,
+      event: 'compare',
       nodes: snap(order),
       pointers: [
         { name: 'start', index: g, color: 'green' },
@@ -313,14 +507,39 @@ function reverseKGroupSteps(input: string): LLStep[] {
       meta: [`group ${groupNo}`],
       codeLine: 4,
     });
+    // line 8 — begin reversing the group in place
+    steps.push({
+      description: `Full block of ${k} found → reverse indices ${g}…${g + k - 1} in place.`,
+      event: 'visit',
+      nodes: snap(order),
+      pointers: [
+        { name: 'start', index: g, color: 'green' },
+        { name: 'kth', index: g + k - 1, color: 'red' },
+      ],
+      highlights: range(g, g + k).map((i) => ({ index: i, color: 'yellow' as const })),
+      codeLine: 8,
+    });
 
     // Iterative two-pointer reversal of order[g .. g+k), one swap per step.
     let i = g;
     let j = g + k - 1;
     while (i < j) {
+      // line 9 — inner loop condition
+      steps.push({
+        description: `Reverse loop: pointers at indices ${i} and ${j} have not met — keep going.`,
+        event: 'compare',
+        nodes: snap(order),
+        pointers: [
+          { name: 'i', index: i, color: 'green' },
+          { name: 'j', index: j, color: 'red' },
+        ],
+        highlights: [{ index: i, color: 'yellow' }, { index: j, color: 'yellow' }],
+        codeLine: 9,
+      });
       const tmp = order[i];
       order[i] = order[j];
       order[j] = tmp;
+      // line 10 — flip the links (modelled as a swap of the two ends)
       steps.push({
         description: `Reverse step: swap nodes at indices ${i} (${order[i].value}) and ${j} (${order[j].value}).`,
         event: 'swap',
@@ -330,14 +549,26 @@ function reverseKGroupSteps(input: string): LLStep[] {
           { name: 'j', index: j, color: 'red' },
         ],
         highlights: [{ index: i, color: 'green' }, { index: j, color: 'red' }],
-        codeLine: 11,
+        codeLine: 10,
       });
       i += 1;
       j -= 1;
+      // line 11 — advance the reversal pointers
+      steps.push({
+        description: `Advance reversal pointers inward → indices ${i} and ${j}.`,
+        event: 'visit',
+        nodes: snap(order),
+        pointers: i <= j
+          ? [{ name: 'i', index: i, color: 'green' }, { name: 'j', index: j, color: 'red' }]
+          : [],
+        highlights: range(g, g + k).map((idx) => ({ index: idx, color: 'yellow' as const })),
+        codeLine: 11,
+      });
     }
 
+    // line 13 — relink the reversed group into the result
     steps.push({
-      description: `Group ${groupNo} reversed → [${order.slice(g, g + k).map((o) => o.value).join(', ')}].`,
+      description: `Group ${groupNo} reversed → [${order.slice(g, g + k).map((o) => o.value).join(', ')}]. Relink it and move groupPrev forward.`,
       event: 'visit',
       nodes: snap(order),
       pointers: [],
@@ -349,8 +580,17 @@ function reverseKGroupSteps(input: string): LLStep[] {
   }
 
   if (g < n) {
+    // line 3 — loop check, then line 5 — kth is null, break
     steps.push({
-      description: `Remaining indices ${g}…${n - 1} are fewer than k = ${k} — leave this trailing group as-is.`,
+      description: `Look k = ${k} nodes ahead from index ${g}…`,
+      event: 'compare',
+      nodes: snap(order),
+      pointers: [{ name: 'rest', index: g, color: 'yellow' }],
+      highlights: range(g, n).map((idx) => ({ index: idx, color: 'blue' as const })),
+      codeLine: 4,
+    });
+    steps.push({
+      description: `Remaining indices ${g}…${n - 1} are fewer than k = ${k} — kth is null, so break and leave them as-is.`,
       event: 'compare',
       nodes: snap(order),
       pointers: [{ name: 'rest', index: g, color: 'yellow' }],
@@ -397,6 +637,19 @@ function palindromeSteps(values: number[]): LLStep[] {
   let slow = 0;
   let fast = 0;
   while (fast + 2 <= n - 1) {
+    // line 3 — loop condition
+    steps.push({
+      description: `Loop check: fast can move two nodes ahead (fast at index ${fast}). Continue scanning for the middle.`,
+      event: 'compare',
+      nodes: snap(nodes),
+      pointers: [
+        { name: 'slow', index: slow, color: 'green' },
+        { name: 'fast', index: fast, color: 'red' },
+      ],
+      highlights: [{ index: slow, color: 'green' }, { index: fast, color: 'red' }],
+      codeLine: 3,
+    });
+    // line 4 — advance both
     slow += 1;
     fast += 2;
     steps.push({
@@ -431,12 +684,12 @@ function palindromeSteps(values: number[]): LLStep[] {
   const reordered = [...head, ...tail];
 
   steps.push({
-    description: 'Second half reversed. Now compare the front half and the reversed back half moving inward.',
+    description: 'Second half reversed. Set p = head, q = second (start of reversed half). Compare moving inward.',
     event: 'swap',
     nodes: snap(reordered),
     pointers: [
-      { name: 'left', index: 0, color: 'green' },
-      { name: 'right', index: n - 1, color: 'red' },
+      { name: 'p', index: 0, color: 'green' },
+      { name: 'q', index: secondStart, color: 'red' },
     ],
     highlights: Array.from({ length: tail.length }, (_, i) => ({ index: head.length + i, color: 'purple' as const })),
     codeLine: 8,
@@ -452,13 +705,26 @@ function palindromeSteps(values: number[]): LLStep[] {
     const a = reordered[left].value;
     const b = reordered[right].value;
     const match = a === b;
+    // line 9 — loop condition (q still valid)
     steps.push({
-      description: `Compare front[${left}] = ${a} with reversed-back[${right}] = ${b} → ${match ? 'match ✓' : 'mismatch ✗'}.`,
+      description: `Loop check: q points at index ${right} (still within the reversed half) — compare this pair.`,
+      event: 'compare',
+      nodes: snap(reordered),
+      pointers: [
+        { name: 'p', index: left, color: 'green' },
+        { name: 'q', index: right, color: 'red' },
+      ],
+      highlights: [{ index: left, color: 'yellow' }, { index: right, color: 'yellow' }],
+      codeLine: 9,
+    });
+    // line 10 — compare values
+    steps.push({
+      description: `Compare p[${left}] = ${a} with q[${right}] = ${b} → ${match ? 'match ✓' : 'mismatch ✗ → return false'}.`,
       event: match ? 'compare' : 'not-found',
       nodes: snap(reordered),
       pointers: [
-        { name: 'left', index: left, color: 'green' },
-        { name: 'right', index: right, color: 'red' },
+        { name: 'p', index: left, color: 'green' },
+        { name: 'q', index: right, color: 'red' },
       ],
       highlights: [
         { index: left, color: match ? 'green' : 'red' },
@@ -467,6 +733,20 @@ function palindromeSteps(values: number[]): LLStep[] {
       codeLine: 10,
     });
     if (!match) { isPalindrome = false; break; }
+    // line 11 — advance both pointers
+    if (k + 1 < compareCount) {
+      steps.push({
+        description: `Match — advance p → ${left + 1}, q → ${right + 1}.`,
+        event: 'visit',
+        nodes: snap(reordered),
+        pointers: [
+          { name: 'p', index: left + 1, color: 'green' },
+          { name: 'q', index: right + 1, color: 'red' },
+        ],
+        highlights: [{ index: left + 1, color: 'yellow' }, { index: right + 1, color: 'yellow' }],
+        codeLine: 11,
+      });
+    }
   }
 
   steps.push({
@@ -582,6 +862,34 @@ function segregateSteps(values: number[]): LLStep[] {
     pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
     highlights: [{ index: 0, color: 'blue' }],
     meta: ['evens = [ ]', 'odds = [ ]'],
+    codeLine: 0,
+  });
+
+  steps.push({
+    description: 'Create an empty evens chain to collect even-valued nodes.',
+    event: 'visit',
+    nodes: snap(nodes),
+    pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
+    highlights: [{ index: 0, color: 'blue' }],
+    meta: ['evens = [ ]'],
+    codeLine: 1,
+  });
+  steps.push({
+    description: 'Create an empty odds chain to collect odd-valued nodes.',
+    event: 'visit',
+    nodes: snap(nodes),
+    pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
+    highlights: [{ index: 0, color: 'blue' }],
+    meta: ['evens = [ ]', 'odds = [ ]'],
+    codeLine: 2,
+  });
+  steps.push({
+    description: 'Set curr = head and scan the list once.',
+    event: 'visit',
+    nodes: snap(nodes),
+    pointers: [{ name: 'curr', index: 0, color: 'yellow' }],
+    highlights: [{ index: 0, color: 'blue' }],
+    meta: ['evens = [ ]', 'odds = [ ]'],
     codeLine: 3,
   });
 
@@ -590,15 +898,38 @@ function segregateSteps(values: number[]): LLStep[] {
   for (let i = 0; i < n; i += 1) {
     const node = nodes[i];
     const isEven = node.value % 2 === 0;
+    // line 4 — loop condition
+    steps.push({
+      description: `Loop check: curr = ${node.value} (index ${i}) is not null — process it.`,
+      event: 'visit',
+      nodes: snap(nodes),
+      pointers: [{ name: 'curr', index: i, color: 'yellow' }],
+      highlights: [{ index: i, color: 'blue' }],
+      meta: [`evens = [${evens.map((e) => e.value).join(', ')}]`, `odds = [${odds.map((o) => o.value).join(', ')}]`],
+      codeLine: 4,
+    });
+    // line 5/6 — classify and append
     if (isEven) evens.push(node); else odds.push(node);
     steps.push({
-      description: `Node ${node.value} at index ${i} is ${isEven ? 'EVEN → append to evens chain' : 'ODD → append to odds chain'}.`,
+      description: `Node ${node.value} is ${isEven ? 'EVEN → append to evens chain' : 'ODD → append to odds chain'}.`,
       event: 'compare',
       nodes: snap(nodes),
       pointers: [{ name: 'curr', index: i, color: 'yellow' }],
       highlights: [{ index: i, color: isEven ? 'green' : 'red' }],
       meta: [`evens = [${evens.map((e) => e.value).join(', ')}]`, `odds = [${odds.map((o) => o.value).join(', ')}]`],
       codeLine: isEven ? 5 : 6,
+    });
+    // line 7 — advance
+    steps.push({
+      description: i + 1 < n
+        ? `Advance curr → index ${i + 1} (value ${nodes[i + 1].value}).`
+        : 'Advance curr → null. Scan complete.',
+      event: 'visit',
+      nodes: snap(nodes),
+      pointers: i + 1 < n ? [{ name: 'curr', index: i + 1, color: 'yellow' }] : [],
+      highlights: i + 1 < n ? [{ index: i + 1, color: 'blue' }] : [],
+      meta: [`evens = [${evens.map((e) => e.value).join(', ')}]`, `odds = [${odds.map((o) => o.value).join(', ')}]`],
+      codeLine: 7,
     });
   }
 
@@ -664,6 +995,19 @@ function detectCycleSteps(input: string): LLStep[] {
   const maxIter = n * 4 + 10;
   while (guard < maxIter) {
     guard += 1;
+    // line 3 — loop condition
+    steps.push({
+      description: `Loop check: fast (index ${fast}) and its next exist — take a paired step.`,
+      event: 'compare',
+      nodes: snap(nodes),
+      pointers: [
+        { name: 'slow', index: slow, color: 'green' },
+        { name: 'fast', index: fast, color: 'red' },
+      ],
+      highlights: [{ index: slow, color: 'green' }, { index: fast, color: 'red' }],
+      cycleTo,
+      codeLine: 3,
+    });
     slow = next(slow);
     const f1 = next(fast);
     fast = f1 === -1 ? -1 : next(f1);
@@ -758,7 +1102,7 @@ function detectCycleSteps(input: string): LLStep[] {
     highlights: [{ index: loopStart, color: 'yellow' }, { index: n - 1, color: 'red' }],
     cycleTo,
     meta: [`loop start = index ${loopStart}`, `loop length = ${len}`],
-    codeLine: 13,
+    codeLine: 12,
   });
   steps.push({
     description: 'Loop removed — the list is now a clean acyclic chain ending in null. ✓',
@@ -813,8 +1157,20 @@ function sortListSteps(values: number[]): LLStep[] {
 
   // offset = where this segment starts in the global `order` array.
   const mergeSort = (lo: number, hi: number) => {
-    if (hi - lo <= 1) return;
+    if (hi - lo <= 1) {
+      // lines 1–2 — base case
+      steps.push({
+        description: `Base case: indices ${lo}…${hi - 1} is a single node (${order[lo].value}) — already sorted, return it.`,
+        event: 'visit',
+        nodes: snap(order),
+        pointers: [],
+        highlights: lo < hi ? [{ index: lo, color: 'green' as const }] : [],
+        codeLine: 2,
+      });
+      return;
+    }
     const mid = (lo + hi) >> 1;
+    // line 3 — split
     steps.push({
       description: `Split indices ${lo}…${hi - 1} into [${lo}…${mid - 1}] and [${mid}…${hi - 1}].`,
       event: 'recurse',
@@ -826,7 +1182,25 @@ function sortListSteps(values: number[]): LLStep[] {
       ],
       codeLine: 3,
     });
+    // line 4 — sort the left half
+    steps.push({
+      description: `Recurse on the left half: sortList(indices ${lo}…${mid - 1}).`,
+      event: 'recurse',
+      nodes: snap(order),
+      pointers: [],
+      highlights: range(lo, mid).map((i) => ({ index: i, color: 'green' as const })),
+      codeLine: 4,
+    });
     mergeSort(lo, mid);
+    // line 5 — sort the right half
+    steps.push({
+      description: `Recurse on the right half: sortList(indices ${mid}…${hi - 1}).`,
+      event: 'recurse',
+      nodes: snap(order),
+      pointers: [],
+      highlights: range(mid, hi).map((i) => ({ index: i, color: 'red' as const })),
+      codeLine: 5,
+    });
     mergeSort(mid, hi);
 
     // Merge order[lo..mid) and order[mid..hi)
@@ -843,6 +1217,7 @@ function sortListSteps(values: number[]): LLStep[] {
     while (j < right.length) { merged.push(right[j]); j += 1; }
     for (let k = 0; k < merged.length; k += 1) order[lo + k] = merged[k];
 
+    // line 6 — merge sorted runs
     steps.push({
       description: `Merge → [${merged.map((m) => m.value).join(', ')}] sorted into indices ${lo}…${hi - 1}.`,
       event: 'swap',

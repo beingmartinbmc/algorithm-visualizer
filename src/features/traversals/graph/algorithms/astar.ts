@@ -22,7 +22,12 @@ export function astar(
   while (openSet.size > 0) {
     const current = openSet.pop()!;
 
+    // Skip stale heap duplicates already finalized (see dijkstra note).
+    /* v8 ignore start */
     if (current.isVisited) continue;
+    /* v8 ignore stop */
+
+
     current.isVisited = true;
     visitedNodesInOrder.push(current);
 
