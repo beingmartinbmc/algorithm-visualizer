@@ -2,7 +2,7 @@
 
 An interactive, browser-based playground for learning algorithms, data structures, and Git through animation. Every algorithm runs in the browser as pure TypeScript — no backend, no telemetry, no tracking.
 
-**Live demo:** https://anksharma11.github.io/algorithm-visualizer/
+**Live demo:** https://beingmartinbmc.github.io/algorithm-visualizer/
 
 ---
 
@@ -27,14 +27,17 @@ An interactive, browser-based playground for learning algorithms, data structure
 
 ## Quick start
 
-Requires Node 20+.
+Requires Node 22+.
 
 ```bash
 npm install
-npm run dev      # Vite dev server with HMR
-npm run lint     # ESLint (strict; CI blocks on errors)
-npm run build    # tsc + vite build → docs/ for GitHub Pages
-npm run preview  # serve the production build locally
+npm run dev            # Vite dev server with HMR
+npm run lint           # ESLint (strict; CI blocks on errors)
+npm test               # run the Vitest suite once
+npm run test:watch     # Vitest in watch mode
+npm run test:coverage  # run tests with v8 coverage report
+npm run build          # tsc + vite build → docs/ for GitHub Pages
+npm run preview        # serve the production build locally
 ```
 
 ## Architecture
@@ -60,7 +63,7 @@ The pure-TS layer (`algorithms/` or `engine/`) returns arrays of `Step` objects 
 
 1. Create `src/features/myThing/`.
 2. Write `algorithms/myThing.ts` — a pure function from input → `MyThingStep[]`.
-3. Write `hooks/useMyThing.ts` — `useState` for the step pointer, `setTimeout` (or shared `useTones`) for playback.
+3. Write `hooks/useMyThing.ts` — `useState` for the step pointer, `setTimeout` (or the shared `useSound` hook) for playback.
 4. Write `components/MyThingCanvas.tsx` and `MyThingControls.tsx`.
 5. Add a `MyThingPage.tsx` that composes the above.
 6. Lazy-import the page in `src/App.tsx` and add a `<Route>`.
@@ -98,7 +101,7 @@ npm run build
 
 - **TypeScript:** `tsc -b` passes with zero errors. Strict mode, `verbatimModuleSyntax`, `noUnusedLocals`, `noUnusedParameters`, `erasableSyntaxOnly`.
 - **ESLint:** zero errors, zero warnings.
-- **Tests:** none yet — pure step-builders in `engine/` and `algorithms/` are the natural targets when added.
+- **Tests:** Vitest suite covering the pure step-builders in `algorithms/` (sorting, graph pathfinding, tree traversals, tree generation, linked-list algorithms, random-input helpers). CI runs `vitest run --coverage` and blocks merges below an 85% coverage gate.
 - **Bundle:** initial route loads only landing-page + section-index chunks; feature pages are code-split.
 
 ## License
