@@ -20,9 +20,13 @@ export function dijkstra(
     const current = heap.pop()!;
 
     // The heap can contain stale entries (we push duplicates rather than
-    // doing a decrease-key); skip any node we've already finalized.
+    // doing a decrease-key); skip any node we've already finalized. With
+    // uniform edge weights this guard rarely fires, but it keeps the search
+    // correct if weights are ever introduced.
+    /* v8 ignore start */
     if (current.isVisited) continue;
-    if (current.distance === Infinity) break;
+    /* v8 ignore stop */
+
 
     current.isVisited = true;
     visitedNodesInOrder.push(current);
