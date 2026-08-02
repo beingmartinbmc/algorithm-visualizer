@@ -1,0 +1,23 @@
+---
+# Fast repository hygiene plus the same TypeScript checks used locally.
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: check-merge-conflict
+  - id: check-json
+  - id: check-yaml
+  - id: end-of-file-fixer
+- repo: local
+  hooks:
+  - id: eslint
+    name: ESLint
+    entry: npm run lint
+    language: system
+    pass_filenames: false
+  - id: vitest
+    name: Vitest
+    entry: npm test
+    language: system
+    pass_filenames: false

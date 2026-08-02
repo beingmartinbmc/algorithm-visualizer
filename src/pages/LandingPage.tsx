@@ -1,166 +1,142 @@
-import { useEffect } from 'react';
+import { ArrowRight, BookMarked, Braces, Eye, ListTree, MousePointer2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Database, Gamepad2, Waypoints, GitBranch, ArrowRight, Sparkles, Code2, Eye } from 'lucide-react';
+import { BOOK_CHAPTERS } from '@/content/book';
 
-const modules = [
+const READING_STEPS = [
   {
-    path: '/algorithms',
-    title: 'Algorithms',
-    description: 'Explore sorting, searching, tree, graph, recursion, stack/queue, and frequency algorithms with interactive visualizations and audio effects.',
-    icon: Waypoints,
-    gradient: 'from-indigo-500 to-blue-500',
-    shadowColor: 'shadow-indigo-500/20',
-    tags: ['Sorting', 'BFS', 'DFS', 'Binary Search', 'Hanoi', 'Top K'],
+    icon: BookMarked,
+    number: '01',
+    title: 'Read the idea',
+    description: 'Start with the purpose, invariants, and complexity before touching the controls.',
   },
   {
-    path: '/data-structures',
-    title: 'Data Structures',
-    description: 'Visualize how data structures organize and retrieve information. Explore trees, arrays, linked lists, tries, segment trees, and Fenwick trees.',
-    icon: Database,
-    gradient: 'from-rose-500 to-red-500',
-    shadowColor: 'shadow-rose-500/20',
-    tags: ['BST', 'AVL', 'Trie', 'Segment Tree', 'Fenwick', 'Linked List'],
+    icon: MousePointer2,
+    number: '02',
+    title: 'Change the input',
+    description: 'Try edge cases, move one step at a time, and predict the next state.',
   },
-  {
-    path: '/games',
-    title: 'Games',
-    description: 'Master algorithms and mathematical concepts through interactive games. Challenge yourself, build intuition, and learn by doing — not just watching.',
-    icon: Gamepad2,
-    gradient: 'from-cyan-500 to-teal-500',
-    shadowColor: 'shadow-cyan-500/20',
-    tags: ['Fibonacci', 'Dijkstra', 'World Map', 'Sudoku', 'Mahjong', 'Rubik', 'Battles', 'Evolution GA'],
-  },
-  {
-    path: '/git',
-    title: 'Git Visualizer',
-    description: 'Type real Git commands in an interactive terminal and watch the commit graph, branches, and file states update in real time with audio feedback.',
-    icon: GitBranch,
-    gradient: 'from-orange-500 to-amber-500',
-    shadowColor: 'shadow-orange-500/20',
-    tags: ['Commit', 'Branch', 'Merge', 'Rebase', 'Reset', 'Stash', 'Cherry-pick'],
-  },
-];
-
-const features = [
   {
     icon: Eye,
-    title: 'Visual Learning',
-    description: 'See algorithms come alive with step-by-step animations and color-coded states.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Audio Feedback',
-    description: 'Hear the algorithms work with synthesized tones that adapt to visualization speed.',
-  },
-  {
-    icon: Code2,
-    title: 'Interactive Controls',
-    description: 'Adjust speed, draw obstacles, resize arrays, and step through each decision.',
+    number: '03',
+    title: 'Watch state move',
+    description: 'Follow pointers, frontiers, arrays, and call stacks as the algorithm runs.',
   },
 ];
 
 export default function LandingPage() {
-  useEffect(() => {
-    const img = new Image();
-    img.src = 'https://s01.flagcounter.com/count2/rg8G/bg_FFFFFF/txt_000000/border_CCCCCC/columns_2/maxflags_10/viewers_0/labels_0/pageviews_0/flags_0/percent_0/';
-  }, []);
+  const lessonCount = BOOK_CHAPTERS.reduce((count, chapter) => count + Math.max(1, chapter.topics.length), 0);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {/* Hero */}
-      <section className="relative flex flex-col items-center justify-center px-6 pt-16 pb-12 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent pointer-events-none" />
-        <div className="relative">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-4 py-1.5 ring-1 ring-indigo-500/20">
-            <Sparkles size={14} className="text-indigo-400" />
-            <span className="text-xs font-medium text-indigo-300">Interactive Algorithm Visualizer</span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Understand Algorithms
-            <br />
-            <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-              by Watching Them Work
-            </span>
-          </h2>
-          <p className="mt-5 max-w-2xl mx-auto text-base text-slate-400 leading-relaxed">
-            Explore graph traversal, sorting, tree structures, and constraint-solving algorithms
-            through beautiful, interactive visualizations with real-time audio feedback.
-          </p>
-        </div>
-      </section>
-
-      {/* Features row */}
-      <section className="px-6 pb-10">
-        <div className="mx-auto max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div
-              key={title}
-              className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-5 backdrop-blur-sm"
-            >
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800/80">
-                <Icon size={18} className="text-slate-300" />
-              </div>
-              <h4 className="text-sm font-semibold text-white">{title}</h4>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">{description}</p>
+    <div className="book-page flex-1 overflow-y-auto">
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 sm:pt-16 lg:px-8 lg:pt-20">
+        <section className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-16">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-300/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200">
+              <BookMarked size={13} /> A visual computer science handbook
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Module cards */}
-      <section className="px-6 pb-16">
-        <div className="mx-auto max-w-4xl">
-          <h3 className="mb-6 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">
-            Choose a Module
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {modules.map(({ path, title, description, icon: Icon, gradient, shadowColor, tags }) => (
-              <Link
-                key={path}
-                to={path}
-                className={`
-                  group relative flex flex-col rounded-2xl border border-slate-700/40 bg-slate-900/50 p-6 backdrop-blur-sm
-                  transition-all duration-300 hover:border-slate-600/60 hover:bg-slate-900/70 hover:scale-[1.02]
-                  shadow-lg ${shadowColor}
-                `}
-              >
-                <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-lg ${shadowColor}`}>
-                  <Icon size={20} className="text-white" />
-                </div>
-                <h4 className="text-base font-bold text-white">{title}</h4>
-                <p className="mt-2 flex-1 text-xs text-slate-400 leading-relaxed">{description}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-slate-800/60 px-2 py-0.5 text-[10px] font-medium text-slate-400"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-medium text-indigo-400 opacity-0 transition-opacity group-hover:opacity-100">
-                  Explore <ArrowRight size={12} />
-                </div>
+            <h1 className="font-display mt-7 text-5xl font-semibold leading-[1.02] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+              Learn algorithms as
+              <span className="block bg-gradient-to-r from-amber-200 via-orange-200 to-rose-300 bg-clip-text text-transparent">ideas you can see.</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-slate-400 sm:text-lg">
+              A structured path through data structures, algorithms, practice challenges, and developer tools—each paired with an interactive visualization.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link to="/data-structures" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-amber-300 px-5 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-200">
+                Start chapter one <ArrowRight size={16} />
               </Link>
+              <Link to="/visualize-code" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-slate-200 transition-colors hover:border-emerald-300/30 hover:bg-emerald-300/8 hover:text-emerald-200">
+                <Braces size={16} /> Visualize your code
+              </Link>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-600">
+              <span><strong className="mr-1 font-mono text-slate-300">{lessonCount}</strong>interactive lessons</span>
+              <span><strong className="mr-1 font-mono text-slate-300">100%</strong>browser based</span>
+              <span><strong className="mr-1 font-mono text-slate-300">0</strong>tracking scripts</span>
+            </div>
+          </div>
+
+          <aside className="book-panel p-4 sm:p-5" aria-label="Table of contents">
+            <div className="flex items-center justify-between border-b border-white/[0.07] px-2 pb-4">
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">The handbook</p>
+                <h2 className="mt-1 text-sm font-semibold text-white">Table of contents</h2>
+              </div>
+              <ListTree size={18} className="text-amber-300" />
+            </div>
+            <nav className="mt-2 space-y-1">
+              {BOOK_CHAPTERS.map((chapter) => {
+                const Icon = chapter.icon;
+                return (
+                  <Link key={chapter.id} to={chapter.path} className="group flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-white/[0.045]">
+                    <span className={`flex h-9 w-9 items-center justify-center rounded-lg ring-1 ${chapter.accent.soft} ${chapter.accent.text} ${chapter.accent.border}`}>
+                      <Icon size={16} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[9px] font-bold uppercase tracking-[0.16em] text-slate-600">{chapter.number}</span>
+                      <span className="block truncate text-sm font-medium text-slate-300 group-hover:text-white">{chapter.title}</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-slate-700">{Math.max(1, chapter.topics.length)}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        </section>
+
+        <section className="mt-20 border-y border-white/[0.07] py-8 sm:py-10" aria-labelledby="reading-title">
+          <div className="mb-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-300">How to use the atlas</p>
+            <h2 id="reading-title" className="mt-2 text-2xl font-semibold text-white">A repeatable way to build intuition</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {READING_STEPS.map(({ icon: Icon, number, title, description }) => (
+              <article key={number} className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-5">
+                <div className="flex items-center justify-between">
+                  <Icon size={18} className="text-amber-300" />
+                  <span className="font-mono text-[10px] font-bold tracking-[0.16em] text-slate-700">STEP {number}</span>
+                </div>
+                <h3 className="mt-5 text-sm font-semibold text-white">{title}</h3>
+                <p className="mt-2 text-xs leading-6 text-slate-500">{description}</p>
+              </article>
             ))}
           </div>
-        </div>
-      </section>
-      {/* Footer */}
-      <footer className="border-t border-slate-800/50 px-6 py-6">
-        <div className="mx-auto max-w-4xl flex flex-col items-center gap-3">
-          <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} Algorithm Visualizer. Made with passion and creativity.</p>
-          <a
-            href="https://info.flagcounter.com/rg8G"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[10px] text-slate-600 hover:text-slate-400 transition-colors"
-          >
-            <span>📊</span>
-            <span>View Analytics</span>
-          </a>
-        </div>
+        </section>
+
+        <section className="mt-16" aria-labelledby="chapters-title">
+          <div className="mb-7 max-w-2xl">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">The curriculum</p>
+            <h2 id="chapters-title" className="font-display mt-2 text-3xl font-semibold text-white sm:text-4xl">Chapters built around mental models</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-500">Follow the order or jump directly to the concept you need. Existing URLs remain intact.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {BOOK_CHAPTERS.map((chapter) => {
+              const Icon = chapter.icon;
+              return (
+                <Link key={chapter.id} to={chapter.path} className="book-topic-card group flex min-h-72 flex-col p-6">
+                  <div className="flex items-start justify-between">
+                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl ring-1 ${chapter.accent.soft} ${chapter.accent.text} ${chapter.accent.border}`}>
+                      <Icon size={19} />
+                    </span>
+                    <span className="font-mono text-[10px] font-bold tracking-[0.16em] text-slate-600">{chapter.number}</span>
+                  </div>
+                  <h3 className="font-display mt-6 text-xl font-semibold text-white">{chapter.title}</h3>
+                  <p className="mt-3 flex-1 text-xs leading-6 text-slate-400">{chapter.description}</p>
+                  <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-4">
+                    <span className="text-[10px] font-medium text-slate-600">{Math.max(1, chapter.topics.length)} {chapter.topics.length === 1 ? 'lesson' : 'lessons'}</span>
+                    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${chapter.accent.text}`}>
+                      Open <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/[0.07] px-4 py-6 text-center text-[10px] text-slate-600">
+        Algorithm Atlas · Learn by reading, changing, and watching state.
       </footer>
     </div>
   );
