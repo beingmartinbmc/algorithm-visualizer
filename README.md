@@ -24,6 +24,7 @@ An interactive, browser-based playground for learning algorithms, data structure
   - Evolution Simulator (genetic algorithm)
   - Rubik's Cube Solver
 - **Git Visualizer** — a 1.7k-LOC pure-TS Git simulator with terminal, commit-DAG canvas, freeplay mode, and guided lessons (init/add/commit, branching, merging, rebase, reset, stash, cherry-pick, remotes, push/pull, etc.).
+- **Visualize Your Code** — enter a bounded JavaScript subset and play through line highlights, variable snapshots, array bars, and console output. A whitelist interpreter enforces source, operation, loop, trace, time, and memory limits without `eval` or browser-code execution.
 
 ## Quick start
 
@@ -83,6 +84,7 @@ The pure-TS layer (`algorithms/` or `engine/`) returns arrays of `Step` objects 
 | Styling    | Tailwind CSS v4 (`@tailwindcss/vite`)       |
 | Routing    | `react-router-dom` v7 with code-split routes |
 | Icons      | `lucide-react`                              |
+| Code parsing | Acorn 8 + a bounded, purpose-built interpreter |
 | Audio      | Web Audio API (single shared `AudioContext`) |
 | Lint       | ESLint flat config + `typescript-eslint` + `react-hooks` |
 

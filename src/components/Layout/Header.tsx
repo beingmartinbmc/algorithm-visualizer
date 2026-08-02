@@ -1,120 +1,89 @@
-import { useCallback, useState, type ComponentType } from 'react';
-import { Network, Database, Gamepad2, Waypoints, GitBranch, Menu, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { BookOpen, Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { BOOK_CHAPTERS, type BookChapter } from '@/content/book';
 
-interface NavItem {
-  path: string;
-  label: string;
-  icon: ComponentType<{ size?: number; className?: string }>;
-}
-
-const navItems: NavItem[] = [
-  { path: '/algorithms', label: 'Algorithms', icon: Waypoints },
-  { path: '/data-structures', label: 'Data Structures', icon: Database },
-  { path: '/games', label: 'Games', icon: Gamepad2 },
-  { path: '/git', label: 'Git', icon: GitBranch },
-];
-
-const SECTION_PREFIXES = ['/games', '/algorithms', '/data-structures', '/git'] as const;
-
-/** Compute whether a nav item is "active" given the current pathname. */
-function isNavActive(itemPath: string, pathname: string): boolean {
-  // Legacy paths (`/sorting`, `/traversals/*`) live under the Algorithms section.
-  const legacyAlgorithmsActive =
-    itemPath === '/algorithms' && (pathname.startsWith('/traversals') || pathname === '/sorting');
-  const isSectionItem = (SECTION_PREFIXES as readonly string[]).includes(itemPath);
-  return isSectionItem
-    ? pathname.startsWith(itemPath) || legacyAlgorithmsActive
-    : pathname === itemPath;
-}
-
-interface NavLinkProps {
-  item: NavItem;
-  active: boolean;
-  onNavigate: () => void;
-  variant: 'desktop' | 'mobile';
-}
-
-function NavLink({ item, active, onNavigate, variant }: NavLinkProps) {
-  const { path, label, icon: Icon } = item;
-  const layoutClasses =
-    variant === 'desktop'
-      ? 'gap-2 px-3 py-2'
-      : 'gap-3 px-3 py-2.5';
-  return (
-    <Link
-      to={path}
-      onClick={onNavigate}
-      aria-current={active ? 'page' : undefined}
-      className={`
-        flex items-center rounded-lg text-sm font-medium transition-all duration-200
-        ${layoutClasses}
-        ${active
-          ? 'bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30'
-          : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-300'
-        }
-      `}
-    >
-      <Icon size={variant === 'desktop' ? 15 : 16} />
-      {label}
-    </Link>
-  );
+function isChapterActive(chapter: BookChapter, pathname: string): boolean {
+  if (chapter.id === 'algorithms' && (pathname.startsWith('/traversals') || pathname === '/sorting')) return true;
+  return pathname === chapter.path || pathname.startsWith(`${chapter.path}/`);
 }
 
 export default function Header() {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleMenu = useCallback(() => setMenuOpen((p) => !p), []);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   return (
-    <header className="relative border-b border-slate-800/50">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/20">
-            <Network size={16} className="text-white sm:hidden" />
-            <Network size={18} className="text-white hidden sm:block" />
-          </div>
-          <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">Algorithm Visualizer</h1>
+    <header className="relative z-50 shrink-0 border-b border-white/[0.07] bg-slate-950/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link to="/" onClick={closeMenu} className="group flex min-w-0 items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-300 text-slate-950 shadow-lg shadow-amber-300/10 transition-transform group-hover:-rotate-3">
+            <BookOpen size={18} strokeWidth={2.3} />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate font-display text-base font-semibold tracking-tight text-white">Algorithm Atlas</span>
+            <span className="hidden text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600 sm:block">Interactive handbook</span>
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              item={item}
-              active={isNavActive(item.path, location.pathname)}
-              onNavigate={closeMenu}
-              variant="desktop"
-            />
-          ))}
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
+          {BOOK_CHAPTERS.map((chapter) => {
+            const active = isChapterActive(chapter, pathname);
+            const Icon = chapter.icon;
+            return (
+              <Link
+                key={chapter.id}
+                to={chapter.path}
+                aria-current={active ? 'page' : undefined}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+                  active
+                    ? `${chapter.accent.soft} ${chapter.accent.text} ring-1 ${chapter.accent.border}`
+                    : 'text-slate-500 hover:bg-white/5 hover:text-slate-200'
+                }`}
+              >
+                <Icon size={14} />
+                <span className="font-mono text-[9px] opacity-60">{chapter.number}</span>
+                {chapter.shortTitle}
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Mobile hamburger */}
         <button
-          onClick={toggleMenu}
-          className="md:hidden flex items-center justify-center h-9 w-9 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/5 hover:text-white lg:hidden"
+          aria-label={menuOpen ? 'Close table of contents' : 'Open table of contents'}
           aria-expanded={menuOpen}
         >
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile menu dropdown */}
       {menuOpen && (
-        <nav className="md:hidden border-t border-slate-800/50 bg-slate-950/95 backdrop-blur-md px-4 pb-3 pt-2 flex flex-col gap-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              item={item}
-              active={isNavActive(item.path, location.pathname)}
-              onNavigate={closeMenu}
-              variant="mobile"
-            />
-          ))}
+        <nav className="absolute inset-x-0 top-full border-b border-white/[0.07] bg-slate-950/95 p-4 shadow-2xl backdrop-blur-xl lg:hidden" aria-label="Mobile navigation">
+          <p className="mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">Table of contents</p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {BOOK_CHAPTERS.map((chapter) => {
+              const active = isChapterActive(chapter, pathname);
+              const Icon = chapter.icon;
+              return (
+                <Link
+                  key={chapter.id}
+                  to={chapter.path}
+                  onClick={closeMenu}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium ${
+                    active ? `${chapter.accent.soft} ${chapter.accent.text}` : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span className="w-8 font-mono text-[10px] opacity-60">{chapter.number}</span>
+                  {chapter.title}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       )}
     </header>

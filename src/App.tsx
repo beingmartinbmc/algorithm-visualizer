@@ -35,11 +35,12 @@ const EvolutionSimulatorPage = lazy(() => import('@/features/games/evolution-sim
 const RubiksCubeGamePage = lazy(() => import('@/features/games/rubiks-cube/RubiksCubeGamePage'));
 const WorldMapGamePage = lazy(() => import('@/features/games/world-map/WorldMapGamePage'));
 const GitPage = lazy(() => import('@/features/git/GitPage'));
+const CodeVisualizerPage = lazy(() => import('@/features/code-visualizer/CodeVisualizerPage'));
 
 function App() {
   return (
     <BrowserRouter basename="/algorithm-visualizer">
-      <div className="flex h-screen flex-col text-white font-sans">
+      <div className="flex h-dvh flex-col font-sans text-white">
         <Header />
         <ErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
@@ -92,6 +93,7 @@ function App() {
               <Route path="/games/rubiks-cube" element={<RubiksCubeGamePage />} />
               <Route path="/games/world-map" element={<WorldMapGamePage />} />
               <Route path="/git" element={<GitPage />} />
+              <Route path="/visualize-code" element={<CodeVisualizerPage />} />
             </Routes>
           </Suspense>
         </ErrorBoundary>
