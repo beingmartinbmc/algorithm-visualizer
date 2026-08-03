@@ -46,10 +46,12 @@ export default function LinkedListCanvas({ nodes, currentStep, variant }: Linked
           Empty List — null
         </div>
       ) : (
+        <div className="w-full overflow-auto">
         <svg
           viewBox={`0 0 ${totalWidth + 20} ${svgHeight}`}
-          width="100%"
-          style={{ maxWidth: `${totalWidth + 20}px`, overflow: 'visible' }}
+          width={totalWidth + 20}
+          height={svgHeight}
+          className="mx-auto block"
         >
           {rows.map((row, rowIdx) => {
             const y = rowIdx * rowH + 20;
@@ -210,6 +212,7 @@ export default function LinkedListCanvas({ nodes, currentStep, variant }: Linked
             </g>
           )}
         </svg>
+        </div>
       )}
 
       {/* Description */}

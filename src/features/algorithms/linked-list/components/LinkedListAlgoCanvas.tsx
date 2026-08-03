@@ -64,7 +64,8 @@ function ListView({ step }: { step: LLStep }) {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-4 overflow-auto px-2">
-      <svg viewBox={`0 0 ${width + 20} ${height}`} width="100%" style={{ maxWidth: `${width + 20}px`, overflow: 'visible' }}>
+      <div className="w-full overflow-auto">
+      <svg viewBox={`0 0 ${width + 20} ${height}`} width={width + 20} height={height} className="mx-auto block">
         {/* edges */}
         {nodes.map((node, idx) => {
           const isLast = idx === nodes.length - 1;
@@ -148,6 +149,7 @@ function ListView({ step }: { step: LLStep }) {
           );
         })}
       </svg>
+      </div>
 
       {step.description && (
         <div className="w-full max-w-xl rounded-lg bg-slate-800/60 px-4 py-2 text-center text-xs leading-relaxed text-indigo-300">

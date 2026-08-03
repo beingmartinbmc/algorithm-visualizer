@@ -29,10 +29,11 @@ export default function TreeCanvas({ root, visitedIds, processedIds, currentId, 
   }
 
   return (
-    <div className="flex-1 w-full rounded-xl border border-slate-700/50 bg-slate-950/80 p-4 shadow-2xl backdrop-blur-sm overflow-auto">
+    <div className="flex-1 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/80 p-4 shadow-2xl backdrop-blur-sm overflow-auto">
       <svg
         viewBox={`${minX - 40} -20 ${width} ${height}`}
         className="w-full h-full"
+        style={{ minWidth: width, minHeight: height }}
         preserveAspectRatio="xMidYMid meet"
       >
         {edges.map((edge, i) => (

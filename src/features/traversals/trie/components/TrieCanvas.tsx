@@ -8,8 +8,8 @@ interface TrieCanvasProps {
 }
 
 export default function TrieCanvas({ layout, matchedNodeIds, currentStepNodeId }: TrieCanvasProps) {
-  const { viewBox, edges } = useMemo(() => {
-    if (layout.length === 0) return { viewBox: '0 0 100 100', edges: [] };
+  const { viewBox, contentWidth, contentHeight, edges } = useMemo(() => {
+    if (layout.length === 0) return { viewBox: '0 0 100 100', contentWidth: 100, contentHeight: 100, edges: [] };
 
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const n of layout) {
@@ -20,7 +20,9 @@ export default function TrieCanvas({ layout, matchedNodeIds, currentStepNodeId }
     }
 
     const padding = 40;
-    const vb = `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
+    const width = maxX - minX + padding * 2;
+    const height = maxY - minY + padding * 2;
+    const vb = `${minX - padding} ${minY - padding} ${width} ${height}`;
 
     const nodeMap = new Map<string, LayoutNode>();
     for (const n of layout) nodeMap.set(n.id, n);
@@ -34,7 +36,7 @@ export default function TrieCanvas({ layout, matchedNodeIds, currentStepNodeId }
       }
     }
 
-    return { viewBox: vb, edges: edgeList };
+    return { viewBox: vb, contentWidth: width, contentHeight: height, edges: edgeList };
   }, [layout, matchedNodeIds]);
 
   if (layout.length === 0) {
@@ -46,8 +48,13 @@ export default function TrieCanvas({ layout, matchedNodeIds, currentStepNodeId }
   }
 
   return (
-    <div className="flex-1 w-full min-h-[200px] rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-hidden">
-      <svg viewBox={viewBox} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+    <div className="flex-1 w-full min-w-0 min-h-[200px] rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-auto">
+      <svg
+        viewBox={viewBox}
+        className="w-full h-full"
+        style={{ minWidth: contentWidth, minHeight: contentHeight }}
+        preserveAspectRatio="xMidYMid meet"
+      >
         {/* Edges */}
         {edges.map((e, i) => (
           <line

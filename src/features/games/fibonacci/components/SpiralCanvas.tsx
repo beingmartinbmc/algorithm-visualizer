@@ -15,16 +15,18 @@ const COLORS = [
 ];
 
 export default function SpiralCanvas({ placedSquares, lastPlacedId }: SpiralCanvasProps) {
-  const { viewBox, squares } = useMemo(() => {
+  const { viewBox, contentWidth, contentHeight, squares } = useMemo(() => {
     if (placedSquares.length === 0) {
-      return { viewBox: '-5 -5 10 10', squares: [] };
+      return { viewBox: '-5 -5 10 10', contentWidth: 10, contentHeight: 10, squares: [] };
     }
 
     const bb = getBoundingBox(placedSquares);
     const padding = Math.max((bb.maxX - bb.minX) * 0.15, 2);
-    const vb = `${bb.minX - padding} ${bb.minY - padding} ${bb.maxX - bb.minX + padding * 2} ${bb.maxY - bb.minY + padding * 2}`;
+    const width = bb.maxX - bb.minX + padding * 2;
+    const height = bb.maxY - bb.minY + padding * 2;
+    const vb = `${bb.minX - padding} ${bb.minY - padding} ${width} ${height}`;
 
-    return { viewBox: vb, squares: placedSquares };
+    return { viewBox: vb, contentWidth: width, contentHeight: height, squares: placedSquares };
   }, [placedSquares]);
 
   if (placedSquares.length === 0) {
@@ -36,10 +38,11 @@ export default function SpiralCanvas({ placedSquares, lastPlacedId }: SpiralCanv
   }
 
   return (
-    <div className="flex-1 w-full min-h-[200px] rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-hidden">
+    <div className="flex-1 w-full min-w-0 min-h-[200px] rounded-xl border border-slate-700/50 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-sm overflow-auto">
       <svg
         viewBox={viewBox}
         className="w-full h-full"
+        style={{ minWidth: contentWidth, minHeight: contentHeight }}
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>

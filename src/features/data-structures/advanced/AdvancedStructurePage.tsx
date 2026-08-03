@@ -203,24 +203,39 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function TreeView({ step }: { step: StructureStep }) {
   const nodes = step.nodes ?? [];
   const highlights = new Set(step.highlights ?? []);
+  const padding = 48;
+  const minX = Math.min(...nodes.map((node) => node.x), 0) - padding;
+  const maxX = Math.max(...nodes.map((node) => node.x), 0) + padding;
+  const minY = Math.min(...nodes.map((node) => node.y), 0) - padding;
+  const maxY = Math.max(...nodes.map((node) => node.y), 0) + padding;
+  const width = maxX - minX;
+  const height = maxY - minY;
+
   return (
-    <svg viewBox="0 0 720 380" className="h-full min-h-[420px] w-full">
-      {nodes.map((node) => {
-        const parent = nodes.find((item) => item.id === node.parentId);
-        if (!parent) return null;
-        return <line key={`${parent.id}-${node.id}`} x1={parent.x} y1={parent.y} x2={node.x} y2={node.y} stroke="#475569" strokeWidth={1.5} />;
-      })}
-      {nodes.map((node) => {
-        const active = highlights.has(Number(node.id.replace(/\D/g, ''))) || highlights.has(nodes.indexOf(node));
-        return (
-          <g key={node.id}>
-            <circle cx={node.x} cy={node.y} r={22} fill={active ? 'rgba(244,63,94,0.22)' : 'rgba(30,41,59,0.9)'} stroke={active ? '#fb7185' : '#64748b'} strokeWidth={2} />
-            <text x={node.x} y={node.y + 4} textAnchor="middle" fontSize="12" fontWeight="800" fill={active ? '#fecdd3' : '#cbd5e1'}>{node.label}</text>
-            {node.value !== undefined && <text x={node.x} y={node.y + 35} textAnchor="middle" fontSize="10" fill="#94a3b8">{node.value}</text>}
-          </g>
-        );
-      })}
-    </svg>
+    <div className="h-full min-h-[420px] w-full min-w-0 overflow-auto">
+      <svg
+        viewBox={`${minX} ${minY} ${width} ${height}`}
+        className="h-full w-full"
+        style={{ minWidth: Math.max(width, 720), minHeight: Math.max(height, 420) }}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {nodes.map((node) => {
+          const parent = nodes.find((item) => item.id === node.parentId);
+          if (!parent) return null;
+          return <line key={`${parent.id}-${node.id}`} x1={parent.x} y1={parent.y} x2={node.x} y2={node.y} stroke="#475569" strokeWidth={1.5} />;
+        })}
+        {nodes.map((node) => {
+          const active = highlights.has(Number(node.id.replace(/\D/g, ''))) || highlights.has(nodes.indexOf(node));
+          return (
+            <g key={node.id}>
+              <circle cx={node.x} cy={node.y} r={22} fill={active ? 'rgba(244,63,94,0.22)' : 'rgba(30,41,59,0.9)'} stroke={active ? '#fb7185' : '#64748b'} strokeWidth={2} />
+              <text x={node.x} y={node.y + 4} textAnchor="middle" fontSize="12" fontWeight="800" fill={active ? '#fecdd3' : '#cbd5e1'}>{node.label}</text>
+              {node.value !== undefined && <text x={node.x} y={node.y + 35} textAnchor="middle" fontSize="10" fill="#94a3b8">{node.value}</text>}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
